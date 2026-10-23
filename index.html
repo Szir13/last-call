@@ -466,6 +466,218 @@ nav{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5;backgr
 (function(){
 "use strict";
 
+/* ---------- types (JSDoc only, no code): checked by `npm run typecheck`, read by editors ---------- */
+
+/** @typedef {{[k:string]:number}} NumMap */
+
+/**
+ * A staff role, from STAFF (bartenders, who make drinks) or SUPPORT (everyone else).
+ * @typedef {object} Role
+ * @property {string} id
+ * @property {string} n     name
+ * @property {string} pl    plural, lower case
+ * @property {number} w     base monthly wage (WAGE)
+ * @property {number} [sp]  drinks per second for bartenders; support roles have none
+ * @property {number} [g]   support roles: hiring fee growth
+ * @property {string} d     description
+ */
+
+/**
+ * Someone on the team.
+ * @typedef {object} Employee
+ * @property {number} id
+ * @property {string} name
+ * @property {string} role     Role.id
+ * @property {number} lvl      0 junior, 1 mid-level, 2 senior
+ * @property {number} xp       days worked
+ * @property {number[]} sk     skills, 1-5 each (names: skillNames(role))
+ * @property {number} wage     monthly
+ * @property {number} cl       clerks: how many ingredients they watch
+ * @property {number} [starter] months left on the stand's half-wage starter deal
+ */
+
+/**
+ * An ingredient. u is the cost of one serving (an array of three tiers for spirits, beer and wine).
+ * @typedef {object} Ingredient
+ * @property {string} id
+ * @property {string} n
+ * @property {number|number[]} u
+ * @property {string} g        unlock group (TIERS key or "0")
+ * @property {number} [c]      unlock fee
+ * @property {boolean} [raw]   raw produce, only bought by the prep chef
+ * @property {number} [shelf]  raw produce: days before it spoils
+ * @property {number|boolean} [q]  has brand tiers
+ * @property {string[]} [tn]   tier names
+ * @property {number[]} [sv]   neat serve value per tier
+ * @property {string} [gs]     rare ingredient: the role whose training unlocks it
+ * @property {number} [gn]     ... at this training level
+ * @property {number} [rep]    ... and this reputation
+ * @property {{raw:string,y:number,shelf:number}} [pre]  prepared by the prep chef from raw produce
+ */
+
+/**
+ * Anything on the menu: a recipe (REC) or a neat serve of one ingredient tier (solo).
+ * @typedef {object} Item
+ * @property {string} id
+ * @property {string} n
+ * @property {string[]} i      ingredient ids
+ * @property {number} p        popularity
+ * @property {string} f        drink family (Soft, Classic, Tropical...)
+ * @property {number|boolean} [s]  secret recipe
+ * @property {boolean} [solo]  neat serve
+ * @property {number} [tier]   neat serve: brand tier
+ * @property {string} [ing]    neat serve: the ingredient
+ */
+
+/**
+ * A venue (EXPS): price to expand into it, seconds between arrivals, drinks per order, monthly rent and utilities.
+ * @typedef {{n:string,c:number,int:number,k:number,rent:number,util:number}} Venue
+ */
+
+/**
+ * A customer type (CUST). w: how likely in each of the six parts of the day; pref: favourite families.
+ * @typedef {object} CustomerType
+ * @property {string} n
+ * @property {number} pat      patience in seconds
+ * @property {number} m        tip multiplier
+ * @property {number} wb       wealth bias
+ * @property {number[]} w
+ * @property {NumMap} [pref]
+ * @property {number} [bi]     extra drinks per order
+ */
+
+/** @typedef {{r:string,done:boolean}} OrderItem */
+
+/**
+ * A guest's order, from spawnOrder() until collect() or a walkout.
+ * @typedef {object} Order
+ * @property {number} id
+ * @property {number} [cid]    first order of the same guest (repeat rounds)
+ * @property {number} re       repeat round, 0 for the first
+ * @property {number} [rid]    a regular's id
+ * @property {number} slot     seat
+ * @property {string} who      CustomerType.n
+ * @property {number} m        tip multiplier
+ * @property {number} cls      wealth class 0-3
+ * @property {OrderItem[]} items
+ * @property {number} pat      patience at the start
+ * @property {number} left     patience left
+ * @property {boolean} ready
+ * @property {number} reward   set by finishOrder()
+ * @property {number} sat      satisfaction 0-100, set by finishOrder()
+ * @property {boolean} [rowdy]
+ * @property {number} [rt]     seconds rowdy
+ * @property {boolean} [gone]  a rowdy guest who already left
+ */
+
+/**
+ * A served guest still at their seat (S.hold), who may order another round.
+ * @typedef {{slot:number,left:number,id:number,who:string,cls:number,rid?:number,drink:?string,again:boolean,re:number}} Hold
+ */
+
+/** @typedef {{rev:number,cogs:number,rent:number,util:number,pay:number,waste:number,interest:number,gs:number,gn:number,gp:number}} Month */
+/** @typedef {{rev:number,cogs:number,rent:number,util:number,pay:number,waste:number,interest:number,profit:number,unpaid:number,branch:number}} LastMonth */
+
+/**
+ * A special mission. type drink: serve n of item; family: n drinks of fam; streak: n orders without a walkout.
+ * @typedef {{id:number,type:string,n:number,days:number,title:string,reward:number,item?:string,fam?:string,p?:number,dl?:number}} Mission
+ */
+/** @typedef {{offers:Mission[],active:Mission[],next:number,day:number,done:number,failed:number,earned:number,last:?{t:string,r:number},seen:boolean}} Missions */
+
+/** @typedef {{id:number,name:string,type:string,cls:number,fav:string,bond:number,visits:number,last:number}} Regular */
+
+/** @typedef {{id:string,n:string,d:string,col:number,row:number,cost?:number[],max?:number,req?:string[],role?:string,kind?:string}} TreeNode */
+/** @typedef {{id:string,n:string,k:number,cost:number}} City */
+/** @typedef {{id:string,n:string,d:string,max:number,cost:number[]}} LegacyPerk */
+/** @typedef {{h:string,ids:("all"|string[]),f:number,dur:number}} NewsEvent */
+
+/**
+ * The whole game state, S. Created by def(), saved as JSON, upgraded by MIGRATIONS on load.
+ * @typedef {object} State
+ * @property {number} v         save version
+ * @property {number} seed      seed of this game
+ * @property {number} rng       random() state
+ * @property {number} money
+ * @property {number} totalEarned
+ * @property {number} served
+ * @property {number} walkouts
+ * @property {NumMap} ing       unlocked ingredients (1)
+ * @property {NumMap} ql        brand tier unlocked per ingredient
+ * @property {NumMap} brand     brand tier in use per ingredient
+ * @property {NumMap} stock     servings in stock, by stock key (skey)
+ * @property {Object<string,{d:number,n:number}[]>} bat  prepared batches and the day they were made
+ * @property {Object<string,boolean>} auto  ingredients a clerk restocks
+ * @property {NumMap} par       stock to hold per ingredient
+ * @property {Object<string,string>} parCat  how much the controller asks clerks to hold: hi, mid, lo
+ * @property {string[]} notes
+ * @property {NumMap} price     prices you typed, by item
+ * @property {NumMap} act       prices on the menu now
+ * @property {NumMap} cprice    prices the cost controller set
+ * @property {NumMap} staff     headcount per role (syncStaff)
+ * @property {NumMap} train     training level per role
+ * @property {NumMap} upg       upgrades bought
+ * @property {number} exp       venue: 0 stand ... 4 global chain
+ * @property {number} expAt     month of the last expansion (lease ramp)
+ * @property {Order[]} orders
+ * @property {{o:number,i:number,p:number}[]} jobs  drinks being made
+ * @property {Hold[]} hold
+ * @property {number} arrive    seconds to the next guest
+ * @property {number} nextId
+ * @property {number} sat       guest satisfaction 0-100
+ * @property {number} reorders
+ * @property {{drift:NumMap,ev:any[],next:number,t20:number}} mkt  market
+ * @property {number} ctlT
+ * @property {number} chefB
+ * @property {number} rep       reputation
+ * @property {number} pts       perk points
+ * @property {NumMap} perm      perks bought
+ * @property {Object<string,number>} ach  achievements earned
+ * @property {{p:boolean,u:boolean}} sold  sold premium / ultra premium
+ * @property {boolean} paidDebt
+ * @property {number} debt
+ * @property {number} late      months behind with the bank
+ * @property {number} mcount    months played
+ * @property {Month} month
+ * @property {?LastMonth} lastMonth
+ * @property {?{type:string,[k:string]:any}} notice  shown by loop() when the overlay is free
+ * @property {number} gt        game time in minutes
+ * @property {number} curDay
+ * @property {number[][]} hours opening and closing hour per weekday
+ * @property {number} dayE
+ * @property {number} dayN
+ * @property {{e:number,n:number}} prev
+ * @property {NumMap} picks
+ * @property {string[]} known   recipes discovered
+ * @property {boolean} kits     a run has started
+ * @property {string} barName
+ * @property {Employee[]} team
+ * @property {Object<string,{day:number,list:any[]}>} cands  today's hiring candidates per role
+ * @property {number} mood      team mood 0-100
+ * @property {number} moodB
+ * @property {number} nextEmp
+ * @property {NumMap} maxStaff
+ * @property {Object<string,number>} starter
+ * @property {number} wkMig
+ * @property {number} hhUntil   happy hour ends (ms)
+ * @property {number} hhReady   happy hour available again (ms)
+ * @property {number} last      saved at (ms)
+ * @property {boolean} newRec
+ * @property {Missions} ms
+ * @property {Regular[]} reg
+ * @property {number} nextReg
+ * @property {?{score:number,stars:number,comp:NumMap,month:number}} guide  Bar Guide rating
+ * @property {{items:NumMap,theme?:?string}} deco
+ * @property {{mode:string,until?:number,lk?:NumMap}} sup  supplier
+ * @property {Object<string,string>} nights  themed night booked per day
+ * @property {{from:number,until:number,dem:number,sat:number}[]} mods  temporary demand modifiers
+ * @property {NumMap} ban       ingredients unavailable until a day
+ * @property {?{id:string,ing?:string}} inc  pending incident
+ * @property {number} calmed
+ * @property {string[]} br      branch cities
+ * @property {{pts:number,perks:NumMap}} leg
+ * @property {number} legacy    bars retired
+ * @property {number} [tut]     tests only
+ */
 /* ---------- balance: every number that tunes the economy ----------
    Design targets (docs/ECONOMY.md): a fully equipped, attentive player keeps a 50-57% margin at every
    stage; the next expansion pays back in 1.5-2.5 months of profit; staff past the stage limit earn less
@@ -475,6 +687,7 @@ nav{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5;backgr
 
 /* venues. c = expansion price, int = seconds between arrivals, k = max drinks per order, rent and util monthly.
    Target: margin 50-57% with the reference team; c / monthly profit of the stage before = 1.5-2.5 months. */
+/** @type {Venue[]} */
 var EXPS=[
  {n:"Lemonade stand",c:0,int:9.6,k:1,rent:900,util:150},
  {n:"Neighborhood bar",c:10000,int:7.8,k:2,rent:17000,util:2700},
@@ -509,7 +722,7 @@ var SEATINC=[1,1,2,2,3];         /* seats added by each seat upgrade: bigger ven
 var LINGER=[8,12,16,18,20];      /* seconds a served customer stays seated, by venue */
 var MAXRE=3;                     /* a happy customer can ask for another round up to this many times */
 
-/* missions, incidents, decor and nights are priced in days of revenue (ic()).
+/* missions, incidents, decor and nights are priced in days of revenue (dayPrice()).
    MS_DAYREV: copy the "daily revenue" line printed by tools/reference.py. */
 var MS_DAYREV=[505,3000,10400,22300,34000];   /* typical revenue of one day in each venue; rewards are a share of it */
 var MS_MAX=2;                    /* missions you can hold at once */
@@ -524,6 +737,7 @@ var REPO_KEEP=2;                 /* after a repossession the bank writes off deb
 var RESTRUCTURE=0.5;             /* at the stand there is nothing to sell: the debt is cut to this share */
 
 /* branches. Target: income from branches stays below what the chain itself earns. */
+/** @type {City[]} */
 var CITIES=[
   {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
   {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
@@ -542,6 +756,7 @@ var TN=["Standard","Premium","Ultra premium"];
 function QI(id,n,u0,v0,g,more){
   return Object.assign({id:id,n:n,q:1,u:[u0,Math.round(u0*2.2*100)/100,u0*5],sv:[v0,Math.round(v0*1.9*10)/10,v0*4],tn:TN,g:g},more||{});
 }
+/** @type {Ingredient[]} */
 var ING=[
  {id:"lemonjuice",n:"Lemon juice",u:0.45,g:"0",pre:{raw:"lemon",y:2,shelf:3}},
  {id:"syrup",n:"Simple syrup",u:0.3,c:20,g:"0",pre:{raw:"sugar",y:4,shelf:10}},
@@ -598,6 +813,7 @@ function u0(x){return x.q?x.u[0]:x.u}
 function nameOf(id){return INGM[id].n}
 
 /* Drinks. p = what the drink is worth (its list price). Soft drinks, then cocktails. */
+/** @type {Item[]} */
 var REC=[
  {id:"lemonade",n:"Lemonade",i:["lemonjuice"],p:3,f:"Soft"},
  {id:"sweetlem",n:"Sweet lemonade",i:["lemonjuice","syrup"],p:3.5,f:"Soft"},
@@ -656,6 +872,7 @@ var CLASSN=["budget","regular","affluent","wealthy"];
 var TP=[[1,0.1,0],[1,0.35,0.03],[0.5,1,0.25],[0.1,0.8,1]]; /* quality taste by wealth */
 
 /* market news. f multiplies the price of the listed ingredients for dur seconds. */
+/** @type {NewsEvent[]} */
 var NEWS=[
  {h:"Citrus shortage: lemons and limes cost more",ids:["lemon","lime"],f:1.8,dur:150},
  {h:"Bumper citrus harvest: lemons and limes get cheaper",ids:["lemon","lime"],f:0.6,dur:150},
@@ -674,6 +891,7 @@ var NEWS=[
 ];
 
 /* workers: sp = how fast one person works (you work the counter yourself at speed 1). w = monthly wage (data/balance.js). */
+/** @type {Role[]} */
 var STAFF=[
  {id:"apprentice",n:"Apprentice bartender",pl:"apprentices",w:WAGE.apprentice,sp:0.5,d:"Slow, but learning fast."},
  {id:"bartender",n:"Bartender",pl:"bartenders",w:WAGE.bartender,sp:1,d:"Knows the drill."},
@@ -682,6 +900,7 @@ var STAFF=[
  {id:"manager",n:"Bar manager",pl:"bar managers",w:WAGE.manager,sp:8,d:"Works the floor and the counter."},
  {id:"ambassador",n:"Brand ambassador",pl:"brand ambassadors",w:WAGE.ambassador,sp:16,d:"Your bar, in every city."}
 ];
+/** @type {Role[]} */
 var SUPPORT=[
  {id:"cashier",n:"Cashier",pl:"cashiers",w:WAGE.cashier,g:1.35,d:"Collects finished orders for one counter slot."},
  {id:"clerk",n:"Stock clerk",pl:"clerks",w:WAGE.clerk,g:1.35,d:"Keeps ingredients stocked. Starts with one and can be upgraded to watch up to 3."},
@@ -706,6 +925,7 @@ function wk(){return (WAGEK[S.exp]||1)*(1-0.04*legLvl("crew"))}
 /* w = how likely each customer type is in each part of the day:
    [morning 6-10, lunch 10-15, afternoon 15-18, evening 18-22, night 22-2, late 2-6].
    wb = how well off they are (0-3). pref = tastes. m = tipping. bi = extra drinks per order. */
+/** @type {CustomerType[]} */
 var CUST=[
  {n:"Jogger",pat:50,m:0.8,wb:0.3,w:[40,5,5,0,0,0],pref:{Soft:4}},
  {n:"Commuter",pat:35,m:0.9,wb:0.6,w:[35,10,15,5,0,0],pref:{Soft:2,Refreshing:1.3,Beer:1.2}},
@@ -763,6 +983,7 @@ var FR_CAP=[30,50,80,120];
    upg:   unlocks, paid with money, bought once. Roles are unlocked here, then hired in the Team tab.
    train: staff training, paid with money, 3 levels
    perm:  reputation perks, paid with perk points, 1 point per reputation level */
+/** @type {TreeNode[]} */
 var UT=[
  {id:"apprentice",n:"Apprentices",d:"Lets you hire apprentice bartenders in the Team tab.",cost:[100],col:0,row:0},
  {id:"bartender",n:"Bartenders",d:"Lets you hire bartenders in the Team tab.",cost:[500],req:["apprentice"],col:0,row:1},
@@ -796,10 +1017,12 @@ function trainPerk(role){
   return t;
 }
 var TT_POS=[[0,0],[1,0],[2,0],[2,1],[1,1],[0,1]];
+/** @type {TreeNode[]} */
 var TT=STAFF.map(function(s,i){
   return{id:"t_"+s.id,role:s.id,n:"Train "+s.pl,d:"Doubles the working speed of every "+s.n.toLowerCase()+", per level. Costs "+TRAIN_COST.map(function(m){return Math.round(m*s.w).toLocaleString("en-US")}).join(", ")+" dollars per level."+trainPerk(s.id),
     col:TT_POS[i][0],row:TT_POS[i][1],req:i?["t_"+STAFF[i-1].id]:[]};
 });
+/** @type {TreeNode[]} */
 var PT=[
  {id:"press",n:"Press coverage",d:"Customers arrive 8% faster, per level.",max:4,cost:[1,1,2,2],col:0,row:0},
  {id:"vip",n:"VIP list",d:"Richer customers walk in more often, per level.",max:3,cost:[1,2,3],req:["press"],col:0,row:1},
@@ -866,13 +1089,15 @@ var MIGRATIONS=[
   function(raw){if(S.kits&&!raw.wkMig){var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}S.wkMig=1},
   /* 1 -> 2: weekly schedules and overtime are gone; overtime already owed counts as payroll */
   function(){
-    S.team.forEach(function(e){delete e.sch;delete e.ot});
-    [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
+    /* fields that no longer exist in the types: reach them as plain objects */
+    S.team.forEach(function(e){var o=/** @type {any} */(e);delete o.sch;delete o.ot});
+    [S.month,S.lastMonth].forEach(function(m){var o=/** @type {any} */(m);if(o&&o.ot!==undefined){o.pay+=o.ot||0;delete o.ot}});
   }
 ];
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
 function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
 /* every field the game uses, with the value it has before the feature is first touched */
+/** @returns {State} */
 function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed,money:300,totalEarned:0,served:0,walkouts:0,
   ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
   price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,expAt:0,
@@ -888,6 +1113,7 @@ function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed
   ms:{offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true},
   reg:[],nextReg:0,guide:null,deco:{items:{},theme:null},sup:{mode:"spot"},nights:{},mods:[],ban:{},
   inc:null,calmed:0,br:[],leg:{pts:0,perks:{}},legacy:0}}
+/** @type {State} */
 var S=def();
 /* load a saved object: defaults first, then the save, then the migration steps it has not had yet */
 function fromSave(raw){S=Object.assign(def(),raw);S.v=raw.v||0;migrate(raw)}
@@ -1238,6 +1464,7 @@ function perfMult(){return S.team.length?clamp(0.75+0.5*S.mood/100,0.75,1.25):1}
 function cashierAt(slot){return shiftCounts().cashiers[slot]||null}
 /* ---------- people, fixed costs, month end and day change ---------- */
 function syncStaff(){
+  /** @type {NumMap} */
   var c={};
   S.team.forEach(function(e){c[e.role]=(c[e.role]||0)+1});
   S.staff=c;
@@ -1249,6 +1476,7 @@ function payroll(){var t=0;S.team.forEach(function(e){t+=wageOf(e)});return t}
 function rampK(){var m=S.mcount-(S.expAt||0);return RAMP[Math.max(0,Math.min(m,RAMP.length-1))]}   /* a new venue's lease builds up over three months */
 function dailyCost(){var st=EXPS[S.exp],k=rampK();return{rent:st.rent*k/28,util:st.util*k/28,pay:payroll()/28}}
 function trimAssign(){while(assignedCount()>clerkCap()){for(var k in S.auto){if(S.auto[k]){delete S.auto[k];break}}}}
+/** @param {Employee} e */
 function fireEmp(e){
   var ix=S.team.indexOf(e);if(ix<0)return;
   S.team.splice(ix,1);
@@ -1256,6 +1484,7 @@ function fireEmp(e){
   emit("fired",e);
 }
 function staffQuits(quiet){
+  /** @type {?Employee} */
   var best=null;
   S.team.forEach(function(e){if(!best||e.wage>best.wage)best=e});
   if(!best)return;
@@ -1263,6 +1492,7 @@ function staffQuits(quiet){
   if(!quiet)toast(best.name+" quit because wages were not paid.");
 }
 function moodQuit(quiet){
+  /** @type {?Employee} */
   var worst=null,wr=9;
   S.team.forEach(function(e){var r=e.wage/refWage(e);if(r<wr){wr=r;worst=e}});
   if(!worst)return;
@@ -1284,6 +1514,7 @@ function bankBorrow(a){
   toast("The bank lent you "+money0(a)+". Interest is 4% a month.");
   return true;
 }
+/** The bank takes the bar: back one venue, sell it, reset what was bought. @param {boolean} quiet */
 function repossess(quiet){
   var from=EXPS[S.exp],k0=wk();
   if(S.exp<=0){
@@ -1315,6 +1546,7 @@ function repossess(quiet){
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }
+/** Pay the month's bills, rate the bar, roll the bank. @param {boolean} quiet */
 function monthEnd(quiet){
   var m=S.month;
   if(S.mcount===0){m.rent*=OPENING;m.util*=OPENING;m.pay*=OPENING}   /* the opening month is cheaper */
@@ -1370,6 +1602,7 @@ function staffDay(quiet){
   S.moodB*=0.9;
   if(n>0&&S.mood<40&&random()<(40-S.mood)/200)moodQuit(quiet);
 }
+/** A new day: daily costs, team experience, missions, events. @param {boolean} quiet */
 function dayChange(quiet){
   var d=gDay();
   var dc=dailyCost();
@@ -1425,6 +1658,8 @@ function freeSlot(){
   return -1;
 }
 function demandCls(o){return WTP[o.cls]}
+/** A guest sits down and orders. re: a repeat round or a regular's visit ({slot,cust,cls,cid,n,rid,fav,reg}).
+ * @param {{slot?:number,cust:CustomerType,cls:number,cid?:number,n?:number,rid?:number,fav?:string,reg?:Regular}} [re] */
 function spawnOrder(re){
   var m=mi();if(!m.list.length)return;
   if(!re){var rg=pickRegular();if(rg)re={cust:custByName(rg.type),cls:rg.cls,rid:rg.id,fav:rg.fav,reg:rg}}
@@ -1452,8 +1687,12 @@ function spawnOrder(re){
   S.orders.push(od);
   if(re&&re.reg)re.reg.last=gDay();
 }
+/** @param {Order} o @returns {number} menu price of the whole order */
 function orderBase(o){var b=0;o.items.forEach(function(it){b+=priceOf(ITM[it.r])});return b}
+/** @param {Order} o @returns {number} what the order pays with a full tip */
 function maxReward(o){return orderBase(o)*(1+tipMax()*o.m)}
+/** Every drink is made: work out satisfaction, reward and tip; a cashier collects at once.
+ * @param {Order} o */
 function finishOrder(o){
   o.ready=true;
   var b=0,ps=0;
@@ -1472,12 +1711,16 @@ function finishOrder(o){
   o.reward=b*(1+tipMax()*frac*o.m)*(ce?1+0.02*ce.sk[1]:1)*(o.rid?1+bondOf(o.rid)/300:1)*(1+0.04*legLvl("fame"));
   if(ce)collect(o);
 }
+/** Chance that a served guest orders another round.
+ * @param {{sat:number,slot:number,re?:number,rid?:number}} o @returns {number} 0-0.6 */
 function reorderChance(o){
   var rc=o.re||0;if(rc>=MAXRE)return 0;
   var hosp=clamp((floorAvg(2)-1)/4,0,1),ce=cashierAt(o.slot),charm=ce?clamp((ce.sk[0]-1)/4,0,1):0;
   var satF=clamp((o.sat-55)/45,0,1);
   return clamp(satF*(0.10+0.25*hosp+0.20*charm+(o.rid?bondOf(o.rid)/500:0))*Math.pow(0.75,rc),0,0.6);
 }
+/** Take the money for a ready order; the guest stays seated (S.hold) and may order again.
+ * @param {Order} o */
 function collect(o){
   var ix=S.orders.indexOf(o);if(ix<0)return;
   S.orders.splice(ix,1);
@@ -1490,6 +1733,7 @@ function collect(o){
   if(again)S.reorders=(S.reorders||0)+1;
   (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
 }
+/** Remove an order that will not be served (walkout, turned away). @param {Order} o */
 function dropOrder(o){
   msStreakBreak();
   var ix=S.orders.indexOf(o);if(ix>=0)S.orders.splice(ix,1);
@@ -1604,6 +1848,7 @@ function controllerTick(dt){
   });
 }
 
+/** Advance the game. @param {number} dt seconds @param {boolean} quiet no toasts or windows (offline) */
 function tick(dt,quiet){
   T+=dt;
   tickMarket(dt,quiet);
@@ -1679,6 +1924,7 @@ function tick(dt,quiet){
   }
 }
 function offlineCap(){return (2+2*lvl("offline"))*3600}
+/** Play secs seconds at once (offline progress, tests). @param {number} secs @returns {{earned:number,served:number}} */
 function simulate(secs){
   var steps=Math.floor(secs/2);
   var m0=S.totalEarned,s0=S.served;
@@ -1741,6 +1987,7 @@ function newGame(){S=def();TV++;menuChanged();recomputeMarket();emit("stage")}  
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
+    /** @type {?string} */
     var best=null,bs=1e9;
     ING.forEach(function(x){
       if(!x.raw&&has(x.id)&&!S.auto[x.id]&&!(x.pre&&chefActive())){var st=S.stock[x.id]||0;if(st<bs){bs=st;best=x.id}}
@@ -1784,6 +2031,7 @@ function candsToday(role){
   if(!c||c.day!==gDay()||!c.list.length)S.cands[role]=c={day:gDay(),list:[genCand(role),genCand(role),genCand(role)]};
   return c;
 }
+/** Hire today's candidate i for a role. @param {string} role @param {number} i */
 function hireCand(role,i){
   var c=S.cands[role],cd=c&&c.list[i];if(!cd)return;
   if(S.money<cd.fee){toast("You need "+money0(cd.fee)+" to hire "+cd.name+".");return}
@@ -1929,7 +2177,9 @@ function msDay(quiet){
 
 /* ====================== long-term systems ====================== */
 function dRev(){return MS_DAYREV[S.exp]}
-function ic(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
+/** A price set as a share of a typical day's revenue at this venue (MS_DAYREV), in whole $10, at least $10.
+ * Incidents, decor, themes and nights scale with the bar this way. @param {number} f @returns {number} */
+function dayPrice(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
 function hasRole(r){return (S.staff[r]||0)>0}
 function legLvl(id){return ((S.leg&&S.leg.perks)||{})[id]||0}
 
@@ -1948,7 +2198,7 @@ var NIGHTS={
   quiz:{n:"Quiz night",k:0.06,per:{3:1.4},type:{"Office crowd":1.7,"Party crowd":1.2},fam:{},sat:3},
   cocktail:{n:"Cocktail night",k:0.09,per:{3:1.3,4:1.25},type:{"Food critic":1.8,"Couple":1.3},fam:{Classic:1.4,Sour:1.4,Tropical:1.3},sat:5}
 };
-function nightCost(t){return ic(NIGHTS[t].k)}
+function nightCost(t){return dayPrice(NIGHTS[t].k)}
 function bookNight(day,t){
   S.nights=S.nights||{};
   if(S.nights[day]||!NIGHTS[t])return false;
@@ -2019,7 +2269,7 @@ function styleSat(){return Math.min(4,0.35*stylePts())}
 function decorCost(d){return Math.max(10,Math.round(d.k*dRev()*3/10)*10)}
 function themeType(n){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.type[n])||1}
 function themeFam(f){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.fam[f])||1}
-function themeCost(){return (S.deco&&S.deco.theme)?ic(0.4):0}
+function themeCost(){return (S.deco&&S.deco.theme)?dayPrice(0.4):0}
 function setTheme(id){
   if(!THEMES[id])return false;
   var c=themeCost();if(S.money<c)return false;
@@ -2058,26 +2308,26 @@ function incIng(){return S.inc&&S.inc.ing?INGM[S.inc.ing]:null}
 function shortCost(f){var x=incIng();return x?Math.round(40*unitCost(x,0)*f/10)*10:0}
 var INCS=[
   {id:"fridge",from:1,t:"The fridge broke down",x:"The cold room stopped overnight and the stock is warming up.",o:[
-    {l:"Emergency repair",c:function(){return ic(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
+    {l:"Emergency repair",c:function(){return dayPrice(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
     {l:"Wait for the technician",c:function(){return 0},r:function(){loseStock(0.35);return "A third of your stock spoiled before it was fixed."}},
-    {l:"Let your manager handle it",role:"manager",c:function(){return ic(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
+    {l:"Let your manager handle it",role:"manager",c:function(){return dayPrice(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
   {id:"inspect",from:2,t:"Health inspection",x:"An inspector walked in and wants to see the kitchen.",o:[
-    {l:"Deep clean right now",c:function(){return ic(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
-    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
-    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
+    {l:"Deep clean right now",c:function(){return dayPrice(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
+    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,dayPrice(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
+    {l:"Let your cost controller handle it",role:"controller",c:function(){return dayPrice(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
   {id:"review",from:1,t:"A bad review is spreading",x:"A guest posted a harsh review of the bar and people are sharing it.",o:[
     {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
     {l:"Ignore it",c:function(){return 0},r:function(){addRep(-5);addMod(3,0.92,0);return "It stung: fewer guests for a few days."}},
-    {l:"Offer a free round to apologise",c:function(){return ic(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
+    {l:"Offer a free round to apologise",c:function(){return dayPrice(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
   {id:"shortage",from:1,t:"Supplier shortage",x:"Your supplier cannot deliver one of your ingredients this week.",o:[
     {l:"Emergency order at a premium",c:function(){return shortCost(1.6)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "A rush delivery arrived: 40 units on the shelf."}},
     {l:"Do without for a few days",c:function(){return 0},r:function(){var x=incIng();if(x){S.ban=S.ban||{};S.ban[x.id]=gDay()+3;S.stock[x.id]=0}return "Drinks that need it are off the menu until the supplier recovers."}},
     {l:"Let your clerk negotiate",role:"clerk",c:function(){return shortCost(1.15)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "Your clerk found another supplier at a fair price."}}]},
   {id:"power",from:2,t:"Power cut",x:"The lights went out across the street and your bar is dark.",o:[
-    {l:"Rent a generator",c:function(){return ic(0.05)},r:function(){return "The generator kept everything running."}},
+    {l:"Rent a generator",c:function(){return dayPrice(0.05)},r:function(){return "The generator kept everything running."}},
     {l:"Serve by candlelight",c:function(){return 0},r:function(){addMod(1,0.8,4);return "Fewer guests came, but the mood was lovely."}}]},
   {id:"viral",from:1,t:"Your bar is trending",x:"A photo of your bar is going round the internet.",o:[
-    {l:"Run a quick promotion",c:function(){return ic(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
+    {l:"Run a quick promotion",c:function(){return dayPrice(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
     {l:"Let it ride",c:function(){return 0},r:function(){addMod(2,1.2,0);return "A few more curious guests came through."}}]}
 ];
 function incById(id){for(var i=0;i<INCS.length;i++){if(INCS[i].id===id)return INCS[i]}return null}
@@ -2119,7 +2369,7 @@ function dropQuiet(o){
   S.jobs=S.jobs.filter(function(j){return j.o!==o.id});o.gone=true;
 }
 function rowdyEscalate(o,quiet){
-  var f=Math.min(S.money,ic(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
+  var f=Math.min(S.money,dayPrice(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
   S.orders.forEach(function(n){if(n!==o&&Math.abs(n.slot-o.slot)<=1&&!n.ready)n.left*=0.6});
   o.rowdy=false;S.walkouts++;addSat(0);msStreakBreak();dropQuiet(o);
   if(!quiet)toast("A rowdy guest made a scene: "+money0(f)+" in damages.");
@@ -2144,6 +2394,7 @@ function branchIncome(){
   return Math.round(inc);
 }
 function openBranch(id){
+  /** @type {?City} */
   var c=null;CITIES.forEach(function(x){if(x.id===id)c=x});
   S.br=S.br||[];
   if(!c||S.exp<4||S.br.indexOf(id)>=0||S.money<c.cost)return false;
@@ -2160,6 +2411,7 @@ var LEGP=[
   {id:"recipes",n:"Recipe book",d:"Keep the recipes you learned when you start over.",max:1,cost:[4]}
 ];
 function buyLeg(id){
+  /** @type {?LegacyPerk} */
   var p=null;LEGP.forEach(function(x){if(x.id===id)p=x});if(!p)return false;
   S.leg=S.leg||{pts:0,perks:{}};var l=legLvl(id);
   if(l>=p.max||S.leg.pts<p.cost[l])return false;
@@ -2705,12 +2957,12 @@ function updateCal(){
     else if(k===0){ln.style.display="";setT(ln,"A regular day. Weekends are busier than Mondays.")}
     else ln.style.display="none";
   }
-  var fx=fxFor(sel),dm=[],mx=0.01,h2;
-  for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
-  for(h2=0;h2<24;h2++){
-    var bar=C.bars[h2],ph=Math.max(4,Math.round(dm[h2]/mx*100));
+  var fx=fxFor(sel),dm=[],mx=0.01,hour;
+  for(hour=0;hour<24;hour++){var v=demandAt(sel,hour,fx);dm.push(v);if(v>mx)mx=v}
+  for(hour=0;hour<24;hour++){
+    var bar=C.bars[hour],ph=Math.max(4,Math.round(dm[hour]/mx*100));
     if(bar._ph!==ph){bar._ph=ph;bar.style.height=ph+"%"}
-    setC(bar,(isOpenAt(sel,h2)?"open":"")+(sel===today&&Math.floor(gHour())===h2?" now":""));
+    setC(bar,(isOpenAt(sel,hour)?"open":"")+(sel===today&&Math.floor(gHour())===hour?" now":""));
   }
   for(var p=0;p<6;p++){
     var arr=CUST.map(function(c){return{n:c.n,w:c.w[p]*(fx.type[c.n]||1)}}).filter(function(x){return x.w>0}).sort(function(a,b){return b.w-a.w}).slice(0,3);
@@ -3109,7 +3361,6 @@ var SLOTX=[28,56,84,112,140,42,70,98,126,154,28,56,84,112,140],SLOTY=[132,132,13
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c}
 function rn(n){var x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function sp(a,n){return a[Math.floor(rn(n)*a.length)]}
-function cl(v,a,b){return v<a?a:(v>b?b:v)}
 function fr(c,x,y,w,hh,col){c.fillStyle=col;c.fillRect(x,y,w,hh)}
 
 /* ---------- sprites ---------- */
@@ -3251,7 +3502,7 @@ var TH=[
 var SKYR=[[0,0,PW,48],[26,10,16,30],[26,10,16,30],[0,0,PW,50],[104,10,52,30]];
 var stage=-1,LA=null,LB=null,shelfSig="";
 function ownedSig(){return stageNow()+"|"+Object.keys(S.ing).join(",")}
-function stageNow(){return cl(S.exp||0,0,4)}
+function stageNow(){return clamp(S.exp||0,0,4)}
 function drawShelf(a,st,x0,x1,y1){
   var th=TH[st];
   fr(a,x0,y1+9,x1-x0,2,th.trim);fr(a,x0,y1+9,x1-x0,1,th.hi);
@@ -3460,12 +3711,12 @@ function statusTick(){
       if(rdy)c.b.setAttribute("aria-label",(c.b.getAttribute("aria-label")||"").replace(/\. Ready.*$/,"")+". Ready: collect "+eur(o.reward));c.items.style.display=rdy?"none":"";c.rd.style.display=rdy?"flex":"none";c.xb.style.display=rdy?"none":"";c.pt.style.display=rdy?"none":""}
     if(rdy){c.rv.textContent=eur(o.reward)}
     else{
-      var f=cl(o.left/o.pat,0,1);c.pf.style.width=(f*100)+"%";c.pf.style.background=f>0.5?"#4f9a3a":(f>0.25?"#e0a020":"#c0402a");
+      var f=clamp(o.left/o.pat,0,1);c.pf.style.width=(f*100)+"%";c.pf.style.background=f>0.5?"#4f9a3a":(f>0.25?"#e0a020":"#c0402a");
       for(var k=0;k<o.items.length;k++){
         var it=o.items[k],cell=c.cells[k],st,p=0;if(!cell)continue;
         if(it.done){st="done"}
         else{var job=jobFor(o.id,k);
-          if(job){var ix=S.jobs.indexOf(job);if(ix>=WK.length){st="q"}else{st="mix";p=cl(job.p/prepTime(ITM[it.r]),0,1)}}
+          if(job){var ix=S.jobs.indexOf(job);if(ix>=WK.length){st="q"}else{st="mix";p=clamp(job.p/prepTime(ITM[it.r]),0,1)}}
           else if(missingOf(ITM[it.r])){st="out"}else st="q"}
         if(cell.st!==st){cell.st=st;cell.e.className="pbg "+st}
         var pp=Math.round(p*100);if(cell.p!==pp){cell.p=pp;cell.s.style.setProperty("--p",pp+"%")}
@@ -3856,7 +4107,7 @@ function updDash(){
   if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");clear(ic);ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
   dash.l1.textContent="Payday in "+left+" day"+(left>1?"s":"");
   dash.f1.style.width=((28-left)/28*100)+"%";
-  var cov=est>0?cl(S.money/est,0,1):1;
+  var cov=est>0?clamp(S.money/est,0,1):1;
   dash.l2.textContent="Cash covers "+Math.round(cov*100)+"% of the bills";
   dash.f2.style.width=(cov*100)+"%";dash.f2.style.background=cov>=1?"#4f9a3a":cov>=0.6?"#e0a020":"#c0402a";
   var w="";
@@ -3877,7 +4128,7 @@ function buildPrev(st){
 }
 function updExpPrev(){
   var row=ref.exp&&ref.exp.row;if(!row)return;
-  var st=cl(S.exp+1,0,4);
+  var st=clamp(S.exp+1,0,4);
   if(row._pv!==st){
     if(row._pc&&row._pc.parentNode)row._pc.parentNode.removeChild(row._pc);
     row._pv=st;row._pc=buildPrev(st);row.insertBefore(row._pc,row.firstChild);row.setAttribute("data-exp","1");
@@ -4095,52 +4346,52 @@ function openRowdy(o){
 
 /* ---- the venue window ---- */
 var VPAGE="guide",MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-function vBar(pg,label,frac,color){
+function vBar(page,label,frac,color){
   var row=el("div","vbar");row.appendChild(el("span",null,label));
-  var bar=el("div","pxbr"),fi=el("i");fi.style.width=Math.round(clamp(frac,0,1)*100)+"%";if(color)fi.style.background=color;bar.appendChild(fi);row.appendChild(bar);pg.appendChild(row);
+  var bar=el("div","pxbr"),fi=el("i");fi.style.width=Math.round(clamp(frac,0,1)*100)+"%";if(color)fi.style.background=color;bar.appendChild(fi);row.appendChild(bar);page.appendChild(row);
 }
-function vGuide(pg){
+function vGuide(page){
   var stars=guideStars(),gd=S.guide,sr=el("div","vstars");
-  sr.textContent="\u2605".repeat(stars)+"\u2606".repeat(5-stars);pg.appendChild(sr);
-  pg.appendChild(el("p",null,gd?"The Bar Guide rated you at the end of last month. Each star brings 3% more guests, richer guests and more critics.":"Your first rating arrives at the end of this month. Until then you are at 2 stars."));
+  sr.textContent="\u2605".repeat(stars)+"\u2606".repeat(5-stars);page.appendChild(sr);
+  page.appendChild(el("p",null,gd?"The Bar Guide rated you at the end of last month. Each star brings 3% more guests, richer guests and more critics.":"Your first rating arrives at the end of this month. Until then you are at 2 stars."));
   var comp=gd?gd.comp:guideCalc().comp;
-  [["sat","Guest satisfaction"],["price","Fair prices"],["menu","Menu variety"],["rep","Reputation"],["style","Style and decor"]].forEach(function(r){vBar(pg,r[1],comp[r[0]])});
+  [["sat","Guest satisfaction"],["price","Fair prices"],["menu","Menu variety"],["rep","Reputation"],["style","Style and decor"]].forEach(function(r){vBar(page,r[1],comp[r[0]])});
   var TIP={sat:"Faster service and friendlier staff lift satisfaction.",price:"Prices close to the fair price score best.",menu:"Unlock more ingredients to widen the menu.",rep:"Reputation grows with good months and happy guests.",style:"Decor and a theme add style points."};
   var low=null,lv=2;for(var k in comp){if(comp[k]<lv){lv=comp[k];low=k}}
-  if(low)pg.appendChild(el("p","note","Weakest area: "+TIP[low]));
+  if(low)page.appendChild(el("p","note","Weakest area: "+TIP[low]));
 }
-function vRegs(pg){
-  pg.appendChild(el("p",null,"Regulars are guests who keep coming back for their favourite drink. A strong bond means bigger tips and more rounds. Happy guests can become regulars. Room for "+regCap()+" at this venue."));
+function vRegs(page){
+  page.appendChild(el("p",null,"Regulars are guests who keep coming back for their favourite drink. A strong bond means bigger tips and more rounds. Happy guests can become regulars. Room for "+regCap()+" at this venue."));
   var a=S.reg||[];
-  if(!a.length){pg.appendChild(el("p","note","Nobody yet. Serve guests well and friendly staff will win some over."));return}
+  if(!a.length){page.appendChild(el("p","note","Nobody yet. Serve guests well and friendly staff will win some over."));return}
   a.forEach(function(r){
     var box=el("div","cand");
     box.appendChild(el("b",null,"\u2665 "+r.name+" \u00b7 "+r.type));
     box.appendChild(el("span",null,"Favourite: "+(ITM[r.fav]?ITM[r.fav].n:"anything")+" \u00b7 "+r.visits+" visit"+(r.visits===1?"":"s")+" \u00b7 bond "+Math.round(r.bond)+"%"));
     var bar=el("div","pxbr"),fi=el("i");fi.style.width=r.bond+"%";bar.appendChild(fi);box.appendChild(bar);
-    pg.appendChild(box);
+    page.appendChild(box);
   });
 }
-function vStyle(pg){
+function vStyle(page){
   var d=S.deco||{items:{}};
-  pg.appendChild(el("p",null,"Style points: "+stylePts()+" of 11. Each one makes guests a little happier and the bar a little busier. A theme attracts certain guests."));
-  pg.appendChild(el("div","h","Theme"));
+  page.appendChild(el("p",null,"Style points: "+stylePts()+" of 11. Each one makes guests a little happier and the bar a little busier. A theme attracts certain guests."));
+  page.appendChild(el("div","h","Theme"));
   Object.keys(THEMES).forEach(function(id){
     var t=THEMES[id],box=el("div","cand"),on=d.theme===id;
     box.appendChild(el("b",null,t.n+(on?" \u2713":"")));box.appendChild(el("span",null,t.d));
     if(!on){var c=themeCost(),b=el("button","buy sm",c?"Switch "+money0(c):"Choose");b.disabled=S.money<c;b.onclick=function(){if(setTheme(id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
-    pg.appendChild(box);
+    page.appendChild(box);
   });
-  pg.appendChild(el("div","h","Decor"));
+  page.appendChild(el("div","h","Decor"));
   DECOR.forEach(function(it){
     var box=el("div","cand"),own=!!d.items[it.id];
     box.appendChild(el("b",null,it.n+(own?" \u2713":"")));box.appendChild(el("span",null,"+"+it.pts+" style point"+(it.pts>1?"s":"")+(it.id==="neon"?" \u00b7 shows your theme":"")));
     if(!own){var c=decorCost(it),b=el("button","buy sm","Buy "+money0(c));b.disabled=S.money<c;b.onclick=function(){if(buyDecor(it.id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
-    pg.appendChild(box);
+    page.appendChild(box);
   });
 }
-function vNights(pg){
-  pg.appendChild(el("p",null,"Book a themed night to pull a crowd in the evening. You pay when you book. The calendar and the weather still apply."));
+function vNights(page){
+  page.appendChild(el("p",null,"Book a themed night to pull a crowd in the evening. You pay when you book. The calendar and the weather still apply."));
   var d0=gDay(),hr=gHour();
   for(var i=0;i<7;i++){
     (function(day){
@@ -4158,38 +4409,38 @@ function vNights(pg){
         });
         box.appendChild(row);
       }
-      pg.appendChild(box);
+      page.appendChild(box);
     })(d0+i);
   }
 }
-function vSup(pg){
-  pg.appendChild(el("p",null,"Choose how you buy your ingredients. Your clerks' negotiation still lowers the price on top."));
+function vSup(page){
+  page.appendChild(el("p",null,"Choose how you buy your ingredients. Your clerks' negotiation still lowers the price on top."));
   Object.keys(SUPS).forEach(function(id){
     var s2=SUPS[id],box=el("div","cand"),on=supMode()===id;
     box.appendChild(el("b",null,s2.n+(on?" \u2713":"")));box.appendChild(el("span",null,s2.d));
     if(id==="volume")box.appendChild(el("span",null,"Commitment: "+money0(volCommit())+" of purchases a month."));
     if(on&&id==="contract")box.appendChild(el("span",null,Math.max(0,S.sup.until-gDay())+" days left."));
     if(!on){var locked=supMode()==="contract"&&gDay()<S.sup.until,b=el("button","buy sm",locked?"Locked until the contract ends":"Switch");b.disabled=locked;b.onclick=function(){if(supSet(id)){sfx("buy");openVenue("sup")}};box.appendChild(b)}
-    pg.appendChild(box);
+    page.appendChild(box);
   });
 }
-function vLegacy(pg){
+function vLegacy(page){
   var L=S.leg||{pts:0,perks:{}};
-  pg.appendChild(el("p",null,["Legacy points: ",el("b",null,L.pts)," \u00b7 bars retired: "+(S.legacy||0)+"."]));
-  pg.appendChild(el("div","h","Branches"));
-  if(S.exp<4)pg.appendChild(el("p","note","Branches open once you run the global chain. Each branch needs a brand ambassador and pays a share of a chain's profit every month."));
-  else pg.appendChild(el("p","note","Active branches: "+branchActive()+" of "+(S.br||[]).length+" open (each needs its own brand ambassador). Income last month: "+money0((S.lastMonth&&S.lastMonth.branch)||0)+"."));
+  page.appendChild(el("p",null,["Legacy points: ",el("b",null,L.pts)," \u00b7 bars retired: "+(S.legacy||0)+"."]));
+  page.appendChild(el("div","h","Branches"));
+  if(S.exp<4)page.appendChild(el("p","note","Branches open once you run the global chain. Each branch needs a brand ambassador and pays a share of a chain's profit every month."));
+  else page.appendChild(el("p","note","Active branches: "+branchActive()+" of "+(S.br||[]).length+" open (each needs its own brand ambassador). Income last month: "+money0((S.lastMonth&&S.lastMonth.branch)||0)+"."));
   CITIES.forEach(function(c){
     var box=el("div","cand"),open=(S.br||[]).indexOf(c.id)>=0;
     box.appendChild(el("b",null,c.n+(open?" \u2713":"")));
     box.appendChild(el("span",null,open?"Open. Pays about "+money0(BRANCH_SHARE*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
     if(!open){var b=el("button","buy sm","Open branch");b.disabled=S.exp<4||S.money<c.cost;b.onclick=function(){if(openBranch(c.id)){sfx("new");openVenue("legacy")}};box.appendChild(b)}
-    pg.appendChild(box);
+    page.appendChild(box);
   });
-  pg.appendChild(el("div","h","Retire and restart"));
-  pg.appendChild(el("p",null,["Hand the keys to the next generation. You start again at the lemonade stand, but your reputation perks stay, and you earn legacy points to spend on permanent bonuses. You would earn ",el("b",null,legacyPoints())," points now."]));
+  page.appendChild(el("div","h","Retire and restart"));
+  page.appendChild(el("p",null,["Hand the keys to the next generation. You start again at the lemonade stand, but your reputation perks stay, and you earn legacy points to spend on permanent bonuses. You would earn ",el("b",null,legacyPoints())," points now."]));
   var rb=el("button","buy","Retire and restart");rb.disabled=!canRetire();
-  if(!canRetire())pg.appendChild(el("p","note","Available at the global chain once you have earned at least $3,000,000 in total."));
+  if(!canRetire())page.appendChild(el("p","note","Available at the global chain once you have earned at least $3,000,000 in total."));
   rb.onclick=function(){
     var c=el("div","card");c.appendChild(el("h2",null,"Retire for good?"));
     c.appendChild(el("p",null,"Your bar, team, stock and money are gone. You keep reputation perks, legacy points ("+legacyPoints()+" new) and any permanent bonuses."));
@@ -4197,25 +4448,26 @@ function vLegacy(pg){
     yes.onclick=function(){retire();location.reload()};no.setAttribute("data-close","");no.onclick=function(){openVenue("legacy")};
     c.appendChild(yes);c.appendChild(no);showOv(c);
   };
-  pg.appendChild(rb);
-  pg.appendChild(el("div","h","Legacy bonuses"));
+  page.appendChild(rb);
+  page.appendChild(el("div","h","Legacy bonuses"));
   LEGP.forEach(function(p){
     var l=legLvl(p.id),box=el("div","cand");
     box.appendChild(el("b",null,p.n+" \u00b7 level "+l+" of "+p.max));box.appendChild(el("span",null,p.d));
     if(l<p.max){var b=el("button","buy sm","Buy for "+p.cost[l]+" points");b.disabled=L.pts<p.cost[l];b.onclick=function(){if(buyLeg(p.id)){sfx("buy");openVenue("legacy")}};box.appendChild(b)}
-    pg.appendChild(box);
+    page.appendChild(box);
   });
 }
-function openVenue(page){
-  if(page)VPAGE=page;
+/* which: the tab to show (guide, regs, style, nights, sup, legacy); the last one shown when omitted */
+function openVenue(which){
+  if(which)VPAGE=which;
   var card=el("div","card vh");card.appendChild(el("h2",null,"Venue"));
   var tabs=el("div","vtabs");
   [["guide","Guide"],["regs","Regulars"],["style","Style"],["nights","Nights"],["sup","Suppliers"],["legacy","Legacy"]].forEach(function(t){
     var b=el("button","ghost"+(VPAGE===t[0]?" on":""),t[1]);b.onclick=function(){openVenue(t[0])};tabs.appendChild(b);
   });
   card.appendChild(tabs);
-  var pg=el("div","vpage");card.appendChild(pg);
-  ({guide:vGuide,regs:vRegs,style:vStyle,nights:vNights,sup:vSup,legacy:vLegacy})[VPAGE](pg);
+  var page=el("div","vpage");card.appendChild(page);
+  ({guide:vGuide,regs:vRegs,style:vStyle,nights:vNights,sup:vSup,legacy:vLegacy})[VPAGE](page);
   var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);updVenBtn();
 }

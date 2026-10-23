@@ -70,7 +70,7 @@ function updDash(){
   if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");clear(ic);ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
   dash.l1.textContent="Payday in "+left+" day"+(left>1?"s":"");
   dash.f1.style.width=((28-left)/28*100)+"%";
-  var cov=est>0?cl(S.money/est,0,1):1;
+  var cov=est>0?clamp(S.money/est,0,1):1;
   dash.l2.textContent="Cash covers "+Math.round(cov*100)+"% of the bills";
   dash.f2.style.width=(cov*100)+"%";dash.f2.style.background=cov>=1?"#4f9a3a":cov>=0.6?"#e0a020":"#c0402a";
   var w="";

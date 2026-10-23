@@ -109,12 +109,12 @@ function statusTick(){
       if(rdy)c.b.setAttribute("aria-label",(c.b.getAttribute("aria-label")||"").replace(/\. Ready.*$/,"")+". Ready: collect "+eur(o.reward));c.items.style.display=rdy?"none":"";c.rd.style.display=rdy?"flex":"none";c.xb.style.display=rdy?"none":"";c.pt.style.display=rdy?"none":""}
     if(rdy){c.rv.textContent=eur(o.reward)}
     else{
-      var f=cl(o.left/o.pat,0,1);c.pf.style.width=(f*100)+"%";c.pf.style.background=f>0.5?"#4f9a3a":(f>0.25?"#e0a020":"#c0402a");
+      var f=clamp(o.left/o.pat,0,1);c.pf.style.width=(f*100)+"%";c.pf.style.background=f>0.5?"#4f9a3a":(f>0.25?"#e0a020":"#c0402a");
       for(var k=0;k<o.items.length;k++){
         var it=o.items[k],cell=c.cells[k],st,p=0;if(!cell)continue;
         if(it.done){st="done"}
         else{var job=jobFor(o.id,k);
-          if(job){var ix=S.jobs.indexOf(job);if(ix>=WK.length){st="q"}else{st="mix";p=cl(job.p/prepTime(ITM[it.r]),0,1)}}
+          if(job){var ix=S.jobs.indexOf(job);if(ix>=WK.length){st="q"}else{st="mix";p=clamp(job.p/prepTime(ITM[it.r]),0,1)}}
           else if(missingOf(ITM[it.r])){st="out"}else st="q"}
         if(cell.st!==st){cell.st=st;cell.e.className="pbg "+st}
         var pp=Math.round(p*100);if(cell.p!==pp){cell.p=pp;cell.s.style.setProperty("--p",pp+"%")}

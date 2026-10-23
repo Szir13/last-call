@@ -7,6 +7,7 @@
 
 /* venues. c = expansion price, int = seconds between arrivals, k = max drinks per order, rent and util monthly.
    Target: margin 50-57% with the reference team; c / monthly profit of the stage before = 1.5-2.5 months. */
+/** @type {Venue[]} */
 var EXPS=[
  {n:"Lemonade stand",c:0,int:9.6,k:1,rent:900,util:150},
  {n:"Neighborhood bar",c:10000,int:7.8,k:2,rent:17000,util:2700},
@@ -41,7 +42,7 @@ var SEATINC=[1,1,2,2,3];         /* seats added by each seat upgrade: bigger ven
 var LINGER=[8,12,16,18,20];      /* seconds a served customer stays seated, by venue */
 var MAXRE=3;                     /* a happy customer can ask for another round up to this many times */
 
-/* missions, incidents, decor and nights are priced in days of revenue (ic()).
+/* missions, incidents, decor and nights are priced in days of revenue (dayPrice()).
    MS_DAYREV: copy the "daily revenue" line printed by tools/reference.py. */
 var MS_DAYREV=[505,3000,10400,22300,34000];   /* typical revenue of one day in each venue; rewards are a share of it */
 var MS_MAX=2;                    /* missions you can hold at once */
@@ -56,6 +57,7 @@ var REPO_KEEP=2;                 /* after a repossession the bank writes off deb
 var RESTRUCTURE=0.5;             /* at the stand there is nothing to sell: the debt is cut to this share */
 
 /* branches. Target: income from branches stays below what the chain itself earns. */
+/** @type {City[]} */
 var CITIES=[
   {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
   {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}

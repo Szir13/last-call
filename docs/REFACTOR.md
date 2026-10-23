@@ -67,6 +67,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: focus management for `showOv`, 44 px targets, live region for toasts (exists), labels for icon-only controls.
 
 ## 13. Types and naming
+**Done.** `src/js/data/types.js` (State, Employee, Order, Item, Ingredient, Venue, Role, Mission...), data tables and central functions annotated, `npm run typecheck` (TypeScript as a dev tool only) passes and runs in `npm test` and CI. Renamed: the scene's `cl` (now `clamp`), `ic` (now `dayPrice`), `pg` (now `page`), `h2` (now `hour`); `h` went in step 6. The UI and scene files are not type-checked yet: they need DOM types and `ref.*` typedefs.
 - Short global names (`S`, `h`, `el`, `cl`, `h2`, `ic`, `pg`) and two clamp helpers (`clamp` in the engine, `cl` in the scene).
 - **Step**: `// @ts-check` with JSDoc typedefs for `State`, `Employee`, `Order`, `Item`, then rename gradually.
 

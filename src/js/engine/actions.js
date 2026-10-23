@@ -52,6 +52,7 @@ function newGame(){S=def();TV++;menuChanged();recomputeMarket();emit("stage")}  
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
+    /** @type {?string} */
     var best=null,bs=1e9;
     ING.forEach(function(x){
       if(!x.raw&&has(x.id)&&!S.auto[x.id]&&!(x.pre&&chefActive())){var st=S.stock[x.id]||0;if(st<bs){bs=st;best=x.id}}
@@ -95,6 +96,7 @@ function candsToday(role){
   if(!c||c.day!==gDay()||!c.list.length)S.cands[role]=c={day:gDay(),list:[genCand(role),genCand(role),genCand(role)]};
   return c;
 }
+/** Hire today's candidate i for a role. @param {string} role @param {number} i */
 function hireCand(role,i){
   var c=S.cands[role],cd=c&&c.list[i];if(!cd)return;
   if(S.money<cd.fee){toast("You need "+money0(cd.fee)+" to hire "+cd.name+".");return}

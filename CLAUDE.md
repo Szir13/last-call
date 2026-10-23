@@ -21,6 +21,7 @@ python tools/smoke.py                        # fresh game + tests/saves/*.json, 
 npm run test:unit                            # Node unit tests (tests/unit/*.test.js), under a second; includes every save in tests/saves/
 python tools/reference.py --check            # economy gate: medians of 10 seeded runs within 50-57% margin, 1.3-2.6 month payback
 python tools/reference.py --golden check     # exact seed-1 numbers vs tests/golden/reference.txt (--golden update after an intended change)
+npm run typecheck                            # TypeScript over the engine's JSDoc types (src/js/data/types.js), no build output
 npm run test:fast                            # build check + unit tests + golden, ~10 s
 python tools/a11y.py                         # accessibility audit (names, 44 px targets, contrast, keyboard, dialogs, reduced motion); part of npm test
 python tools/perf.py                         # CPU cost per second while playing (scene on/off screen, hidden, other tab)
@@ -39,7 +40,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 |---|---|
 | `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
 | `styles/` | one file per component, in this order: `tokens`, `base`, `layout`, `controls`, `panels`, `team`, `trees`, `calendar`, `windows`, `scene`, `shared` (rules that span components: pixel frame, fonts, reduced motion) |
-| `js/data/` | `balance` (every economy number, with its design target), `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
+| `js/data/` | `types` (JSDoc typedefs: State, Employee, Order, Item, Venue...), `balance` (every economy number, with its design target), `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()` (every field), `MIGRATIONS`, `fromSave()`, `migrate()` |
 | `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
 | `js/ui/` | `dom` (`$`, `el`, `clear`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |
@@ -74,6 +75,10 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 7. **Randomness is seeded.** The engine's `random()` is mulberry32 with its state in `S.rng` (`S.seed` records the start), so a save replays the same dice. New games get a random seed: compare balance with medians over many seeds (`--node` makes 20+ runs cheap), and use `--seed N` to reproduce a run exactly or to diff two builds. Cosmetic randomness in the scene still uses `Math.random`.
 8. Money is shown in dollars. Month = 28 days, year = 12 months. One game minute is about one real second while open, and time runs 12x faster while closed.
 9. Offline progress calls `simulate()`; orders are only collected automatically by cashiers.
+
+## Types and names
+- `src/js/data/types.js` documents every shape (`State` lists every field of `S`). Annotate new engine tables and functions with JSDoc (`/** @type {Role[]} */`, `/** @param {Order} o */`); `npm run typecheck` checks the engine as one file. A field missing from `State` is a type error, so add it to `def()` and to the typedef together.
+- One helper per job: `clamp` (no scene copy), `el` for DOM, `dayPrice(f)` for prices that scale with the venue's daily revenue. `S`, `el`, `mi`, `wk` stay short: they are used everywhere and documented here.
 
 ## UI rules
 - Pixel font (`--px`, Pixelify Sans): money, section titles, nav labels, buy buttons. Everything with digits at body size uses `--sans` (Hanken Grotesk). Pixel digits at small sizes are unreadable (8 looks like S).

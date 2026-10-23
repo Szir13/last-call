@@ -2,6 +2,7 @@
    upg:   unlocks, paid with money, bought once. Roles are unlocked here, then hired in the Team tab.
    train: staff training, paid with money, 3 levels
    perm:  reputation perks, paid with perk points, 1 point per reputation level */
+/** @type {TreeNode[]} */
 var UT=[
  {id:"apprentice",n:"Apprentices",d:"Lets you hire apprentice bartenders in the Team tab.",cost:[100],col:0,row:0},
  {id:"bartender",n:"Bartenders",d:"Lets you hire bartenders in the Team tab.",cost:[500],req:["apprentice"],col:0,row:1},
@@ -35,10 +36,12 @@ function trainPerk(role){
   return t;
 }
 var TT_POS=[[0,0],[1,0],[2,0],[2,1],[1,1],[0,1]];
+/** @type {TreeNode[]} */
 var TT=STAFF.map(function(s,i){
   return{id:"t_"+s.id,role:s.id,n:"Train "+s.pl,d:"Doubles the working speed of every "+s.n.toLowerCase()+", per level. Costs "+TRAIN_COST.map(function(m){return Math.round(m*s.w).toLocaleString("en-US")}).join(", ")+" dollars per level."+trainPerk(s.id),
     col:TT_POS[i][0],row:TT_POS[i][1],req:i?["t_"+STAFF[i-1].id]:[]};
 });
+/** @type {TreeNode[]} */
 var PT=[
  {id:"press",n:"Press coverage",d:"Customers arrive 8% faster, per level.",max:4,cost:[1,1,2,2],col:0,row:0},
  {id:"vip",n:"VIP list",d:"Richer customers walk in more often, per level.",max:3,cost:[1,2,3],req:["press"],col:0,row:1},

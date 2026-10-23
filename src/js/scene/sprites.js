@@ -2,7 +2,6 @@
 function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;return c}
 function rn(n){var x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function sp(a,n){return a[Math.floor(rn(n)*a.length)]}
-function cl(v,a,b){return v<a?a:(v>b?b:v)}
 function fr(c,x,y,w,hh,col){c.fillStyle=col;c.fillRect(x,y,w,hh)}
 
 /* ---------- sprites ---------- */

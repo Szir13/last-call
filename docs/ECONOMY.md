@@ -19,7 +19,7 @@ Every tunable lives in one file, with its meaning and design target in a comment
 | `SLOTBASE`, `SEATINC` | seats before upgrades, seats per seat upgrade | base 3,4,5,7,9; +1,+1,+2,+2,+3 each (max 5, 6, 9, 11, 15) |
 | `LINGER` | seconds a served guest stays seated | 8, 12, 16, 18, 20 |
 | `MAXRE` | repeat rounds per guest | 3 |
-| `MS_DAYREV` | typical daily revenue per stage, scales mission rewards, incident costs, decor and night prices (`ic()`) | 505, 3000, 10400, 22300, 34000 |
+| `MS_DAYREV` | typical daily revenue per stage, scales mission rewards, incident costs, decor and night prices (`dayPrice()`) | 505, 3000, 10400, 22300, 34000 |
 | `MS_MAX` | missions held at once | 2 |
 | `LATE_MAX`, `INTEREST`, `LOAN_K`, `LOAN_MIN` | months behind before repossession; monthly interest; loan limit | 3; 4%; 2 x last month's profit (min 2,000) |
 | `REPO_SALE`, `REPO_KEEP`, `RESTRUCTURE` | repossession: sale price share, debt kept in months of fixed costs; debt cut at the stand | 0.5; 2; 0.5 |

@@ -1,4 +1,5 @@
 /* workers: sp = how fast one person works (you work the counter yourself at speed 1). w = monthly wage (data/balance.js). */
+/** @type {Role[]} */
 var STAFF=[
  {id:"apprentice",n:"Apprentice bartender",pl:"apprentices",w:WAGE.apprentice,sp:0.5,d:"Slow, but learning fast."},
  {id:"bartender",n:"Bartender",pl:"bartenders",w:WAGE.bartender,sp:1,d:"Knows the drill."},
@@ -7,6 +8,7 @@ var STAFF=[
  {id:"manager",n:"Bar manager",pl:"bar managers",w:WAGE.manager,sp:8,d:"Works the floor and the counter."},
  {id:"ambassador",n:"Brand ambassador",pl:"brand ambassadors",w:WAGE.ambassador,sp:16,d:"Your bar, in every city."}
 ];
+/** @type {Role[]} */
 var SUPPORT=[
  {id:"cashier",n:"Cashier",pl:"cashiers",w:WAGE.cashier,g:1.35,d:"Collects finished orders for one counter slot."},
  {id:"clerk",n:"Stock clerk",pl:"clerks",w:WAGE.clerk,g:1.35,d:"Keeps ingredients stocked. Starts with one and can be upgraded to watch up to 3."},
@@ -31,6 +33,7 @@ function wk(){return (WAGEK[S.exp]||1)*(1-0.04*legLvl("crew"))}
 /* w = how likely each customer type is in each part of the day:
    [morning 6-10, lunch 10-15, afternoon 15-18, evening 18-22, night 22-2, late 2-6].
    wb = how well off they are (0-3). pref = tastes. m = tipping. bi = extra drinks per order. */
+/** @type {CustomerType[]} */
 var CUST=[
  {n:"Jogger",pat:50,m:0.8,wb:0.3,w:[40,5,5,0,0,0],pref:{Soft:4}},
  {n:"Commuter",pat:35,m:0.9,wb:0.6,w:[35,10,15,5,0,0],pref:{Soft:2,Refreshing:1.3,Beer:1.2}},

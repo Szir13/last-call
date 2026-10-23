@@ -73,7 +73,9 @@ function msDay(quiet){
 
 /* ====================== long-term systems ====================== */
 function dRev(){return MS_DAYREV[S.exp]}
-function ic(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
+/** A price set as a share of a typical day's revenue at this venue (MS_DAYREV), in whole $10, at least $10.
+ * Incidents, decor, themes and nights scale with the bar this way. @param {number} f @returns {number} */
+function dayPrice(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
 function hasRole(r){return (S.staff[r]||0)>0}
 function legLvl(id){return ((S.leg&&S.leg.perks)||{})[id]||0}
 

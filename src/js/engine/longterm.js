@@ -13,7 +13,7 @@ var NIGHTS={
   quiz:{n:"Quiz night",k:0.06,per:{3:1.4},type:{"Office crowd":1.7,"Party crowd":1.2},fam:{},sat:3},
   cocktail:{n:"Cocktail night",k:0.09,per:{3:1.3,4:1.25},type:{"Food critic":1.8,"Couple":1.3},fam:{Classic:1.4,Sour:1.4,Tropical:1.3},sat:5}
 };
-function nightCost(t){return ic(NIGHTS[t].k)}
+function nightCost(t){return dayPrice(NIGHTS[t].k)}
 function bookNight(day,t){
   S.nights=S.nights||{};
   if(S.nights[day]||!NIGHTS[t])return false;
@@ -84,7 +84,7 @@ function styleSat(){return Math.min(4,0.35*stylePts())}
 function decorCost(d){return Math.max(10,Math.round(d.k*dRev()*3/10)*10)}
 function themeType(n){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.type[n])||1}
 function themeFam(f){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.fam[f])||1}
-function themeCost(){return (S.deco&&S.deco.theme)?ic(0.4):0}
+function themeCost(){return (S.deco&&S.deco.theme)?dayPrice(0.4):0}
 function setTheme(id){
   if(!THEMES[id])return false;
   var c=themeCost();if(S.money<c)return false;
@@ -123,26 +123,26 @@ function incIng(){return S.inc&&S.inc.ing?INGM[S.inc.ing]:null}
 function shortCost(f){var x=incIng();return x?Math.round(40*unitCost(x,0)*f/10)*10:0}
 var INCS=[
   {id:"fridge",from:1,t:"The fridge broke down",x:"The cold room stopped overnight and the stock is warming up.",o:[
-    {l:"Emergency repair",c:function(){return ic(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
+    {l:"Emergency repair",c:function(){return dayPrice(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
     {l:"Wait for the technician",c:function(){return 0},r:function(){loseStock(0.35);return "A third of your stock spoiled before it was fixed."}},
-    {l:"Let your manager handle it",role:"manager",c:function(){return ic(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
+    {l:"Let your manager handle it",role:"manager",c:function(){return dayPrice(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
   {id:"inspect",from:2,t:"Health inspection",x:"An inspector walked in and wants to see the kitchen.",o:[
-    {l:"Deep clean right now",c:function(){return ic(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
-    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
-    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
+    {l:"Deep clean right now",c:function(){return dayPrice(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
+    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,dayPrice(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
+    {l:"Let your cost controller handle it",role:"controller",c:function(){return dayPrice(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
   {id:"review",from:1,t:"A bad review is spreading",x:"A guest posted a harsh review of the bar and people are sharing it.",o:[
     {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
     {l:"Ignore it",c:function(){return 0},r:function(){addRep(-5);addMod(3,0.92,0);return "It stung: fewer guests for a few days."}},
-    {l:"Offer a free round to apologise",c:function(){return ic(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
+    {l:"Offer a free round to apologise",c:function(){return dayPrice(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
   {id:"shortage",from:1,t:"Supplier shortage",x:"Your supplier cannot deliver one of your ingredients this week.",o:[
     {l:"Emergency order at a premium",c:function(){return shortCost(1.6)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "A rush delivery arrived: 40 units on the shelf."}},
     {l:"Do without for a few days",c:function(){return 0},r:function(){var x=incIng();if(x){S.ban=S.ban||{};S.ban[x.id]=gDay()+3;S.stock[x.id]=0}return "Drinks that need it are off the menu until the supplier recovers."}},
     {l:"Let your clerk negotiate",role:"clerk",c:function(){return shortCost(1.15)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "Your clerk found another supplier at a fair price."}}]},
   {id:"power",from:2,t:"Power cut",x:"The lights went out across the street and your bar is dark.",o:[
-    {l:"Rent a generator",c:function(){return ic(0.05)},r:function(){return "The generator kept everything running."}},
+    {l:"Rent a generator",c:function(){return dayPrice(0.05)},r:function(){return "The generator kept everything running."}},
     {l:"Serve by candlelight",c:function(){return 0},r:function(){addMod(1,0.8,4);return "Fewer guests came, but the mood was lovely."}}]},
   {id:"viral",from:1,t:"Your bar is trending",x:"A photo of your bar is going round the internet.",o:[
-    {l:"Run a quick promotion",c:function(){return ic(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
+    {l:"Run a quick promotion",c:function(){return dayPrice(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
     {l:"Let it ride",c:function(){return 0},r:function(){addMod(2,1.2,0);return "A few more curious guests came through."}}]}
 ];
 function incById(id){for(var i=0;i<INCS.length;i++){if(INCS[i].id===id)return INCS[i]}return null}
@@ -184,7 +184,7 @@ function dropQuiet(o){
   S.jobs=S.jobs.filter(function(j){return j.o!==o.id});o.gone=true;
 }
 function rowdyEscalate(o,quiet){
-  var f=Math.min(S.money,ic(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
+  var f=Math.min(S.money,dayPrice(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
   S.orders.forEach(function(n){if(n!==o&&Math.abs(n.slot-o.slot)<=1&&!n.ready)n.left*=0.6});
   o.rowdy=false;S.walkouts++;addSat(0);msStreakBreak();dropQuiet(o);
   if(!quiet)toast("A rowdy guest made a scene: "+money0(f)+" in damages.");
@@ -209,6 +209,7 @@ function branchIncome(){
   return Math.round(inc);
 }
 function openBranch(id){
+  /** @type {?City} */
   var c=null;CITIES.forEach(function(x){if(x.id===id)c=x});
   S.br=S.br||[];
   if(!c||S.exp<4||S.br.indexOf(id)>=0||S.money<c.cost)return false;
@@ -225,6 +226,7 @@ var LEGP=[
   {id:"recipes",n:"Recipe book",d:"Keep the recipes you learned when you start over.",max:1,cost:[4]}
 ];
 function buyLeg(id){
+  /** @type {?LegacyPerk} */
   var p=null;LEGP.forEach(function(x){if(x.id===id)p=x});if(!p)return false;
   S.leg=S.leg||{pts:0,perks:{}};var l=legLvl(id);
   if(l>=p.max||S.leg.pts<p.cost[l])return false;

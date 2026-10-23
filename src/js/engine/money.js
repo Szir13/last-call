@@ -1,5 +1,6 @@
 /* ---------- people, fixed costs, month end and day change ---------- */
 function syncStaff(){
+  /** @type {NumMap} */
   var c={};
   S.team.forEach(function(e){c[e.role]=(c[e.role]||0)+1});
   S.staff=c;
@@ -11,6 +12,7 @@ function payroll(){var t=0;S.team.forEach(function(e){t+=wageOf(e)});return t}
 function rampK(){var m=S.mcount-(S.expAt||0);return RAMP[Math.max(0,Math.min(m,RAMP.length-1))]}   /* a new venue's lease builds up over three months */
 function dailyCost(){var st=EXPS[S.exp],k=rampK();return{rent:st.rent*k/28,util:st.util*k/28,pay:payroll()/28}}
 function trimAssign(){while(assignedCount()>clerkCap()){for(var k in S.auto){if(S.auto[k]){delete S.auto[k];break}}}}
+/** @param {Employee} e */
 function fireEmp(e){
   var ix=S.team.indexOf(e);if(ix<0)return;
   S.team.splice(ix,1);
@@ -18,6 +20,7 @@ function fireEmp(e){
   emit("fired",e);
 }
 function staffQuits(quiet){
+  /** @type {?Employee} */
   var best=null;
   S.team.forEach(function(e){if(!best||e.wage>best.wage)best=e});
   if(!best)return;
@@ -25,6 +28,7 @@ function staffQuits(quiet){
   if(!quiet)toast(best.name+" quit because wages were not paid.");
 }
 function moodQuit(quiet){
+  /** @type {?Employee} */
   var worst=null,wr=9;
   S.team.forEach(function(e){var r=e.wage/refWage(e);if(r<wr){wr=r;worst=e}});
   if(!worst)return;
@@ -46,6 +50,7 @@ function bankBorrow(a){
   toast("The bank lent you "+money0(a)+". Interest is 4% a month.");
   return true;
 }
+/** The bank takes the bar: back one venue, sell it, reset what was bought. @param {boolean} quiet */
 function repossess(quiet){
   var from=EXPS[S.exp],k0=wk();
   if(S.exp<=0){
@@ -77,6 +82,7 @@ function repossess(quiet){
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }
+/** Pay the month's bills, rate the bar, roll the bank. @param {boolean} quiet */
 function monthEnd(quiet){
   var m=S.month;
   if(S.mcount===0){m.rent*=OPENING;m.util*=OPENING;m.pay*=OPENING}   /* the opening month is cheaper */
@@ -132,6 +138,7 @@ function staffDay(quiet){
   S.moodB*=0.9;
   if(n>0&&S.mood<40&&random()<(40-S.mood)/200)moodQuit(quiet);
 }
+/** A new day: daily costs, team experience, missions, events. @param {boolean} quiet */
 function dayChange(quiet){
   var d=gDay();
   var dc=dailyCost();

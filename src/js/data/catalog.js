@@ -10,6 +10,7 @@ var TN=["Standard","Premium","Ultra premium"];
 function QI(id,n,u0,v0,g,more){
   return Object.assign({id:id,n:n,q:1,u:[u0,Math.round(u0*2.2*100)/100,u0*5],sv:[v0,Math.round(v0*1.9*10)/10,v0*4],tn:TN,g:g},more||{});
 }
+/** @type {Ingredient[]} */
 var ING=[
  {id:"lemonjuice",n:"Lemon juice",u:0.45,g:"0",pre:{raw:"lemon",y:2,shelf:3}},
  {id:"syrup",n:"Simple syrup",u:0.3,c:20,g:"0",pre:{raw:"sugar",y:4,shelf:10}},
@@ -66,6 +67,7 @@ function u0(x){return x.q?x.u[0]:x.u}
 function nameOf(id){return INGM[id].n}
 
 /* Drinks. p = what the drink is worth (its list price). Soft drinks, then cocktails. */
+/** @type {Item[]} */
 var REC=[
  {id:"lemonade",n:"Lemonade",i:["lemonjuice"],p:3,f:"Soft"},
  {id:"sweetlem",n:"Sweet lemonade",i:["lemonjuice","syrup"],p:3.5,f:"Soft"},
@@ -124,6 +126,7 @@ var CLASSN=["budget","regular","affluent","wealthy"];
 var TP=[[1,0.1,0],[1,0.35,0.03],[0.5,1,0.25],[0.1,0.8,1]]; /* quality taste by wealth */
 
 /* market news. f multiplies the price of the listed ingredients for dur seconds. */
+/** @type {NewsEvent[]} */
 var NEWS=[
  {h:"Citrus shortage: lemons and limes cost more",ids:["lemon","lime"],f:1.8,dur:150},
  {h:"Bumper citrus harvest: lemons and limes get cheaper",ids:["lemon","lime"],f:0.6,dur:150},

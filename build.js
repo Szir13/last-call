@@ -15,7 +15,7 @@ var STYLES = ["tokens", "base", "layout", "controls", "panels", "team", "trees",
 var SCRIPTS = [
   "main-open",
   /* engine: no DOM, no storage. Talks to the UI only through emit() (engine/events.js) */
-  "data/balance", "data/catalog", "data/people", "data/calendar", "data/trees",
+  "data/types", "data/balance", "data/catalog", "data/people", "data/calendar", "data/trees",
   "engine/events", "state",
   "engine/helpers", "engine/calendar", "engine/shifts", "engine/money", "engine/orders", "engine/actions",
   "engine/missions", "engine/longterm",

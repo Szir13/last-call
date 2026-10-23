@@ -8,13 +8,15 @@ var MIGRATIONS=[
   function(raw){if(S.kits&&!raw.wkMig){var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}S.wkMig=1},
   /* 1 -> 2: weekly schedules and overtime are gone; overtime already owed counts as payroll */
   function(){
-    S.team.forEach(function(e){delete e.sch;delete e.ot});
-    [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
+    /* fields that no longer exist in the types: reach them as plain objects */
+    S.team.forEach(function(e){var o=/** @type {any} */(e);delete o.sch;delete o.ot});
+    [S.month,S.lastMonth].forEach(function(m){var o=/** @type {any} */(m);if(o&&o.ot!==undefined){o.pay+=o.ot||0;delete o.ot}});
   }
 ];
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
 function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
 /* every field the game uses, with the value it has before the feature is first touched */
+/** @returns {State} */
 function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed,money:300,totalEarned:0,served:0,walkouts:0,
   ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
   price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,expAt:0,
@@ -30,6 +32,7 @@ function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed
   ms:{offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true},
   reg:[],nextReg:0,guide:null,deco:{items:{},theme:null},sup:{mode:"spot"},nights:{},mods:[],ban:{},
   inc:null,calmed:0,br:[],leg:{pts:0,perks:{}},legacy:0}}
+/** @type {State} */
 var S=def();
 /* load a saved object: defaults first, then the save, then the migration steps it has not had yet */
 function fromSave(raw){S=Object.assign(def(),raw);S.v=raw.v||0;migrate(raw)}

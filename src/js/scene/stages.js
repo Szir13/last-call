@@ -9,7 +9,7 @@ var TH=[
 var SKYR=[[0,0,PW,48],[26,10,16,30],[26,10,16,30],[0,0,PW,50],[104,10,52,30]];
 var stage=-1,LA=null,LB=null,shelfSig="";
 function ownedSig(){return stageNow()+"|"+Object.keys(S.ing).join(",")}
-function stageNow(){return cl(S.exp||0,0,4)}
+function stageNow(){return clamp(S.exp||0,0,4)}
 function drawShelf(a,st,x0,x1,y1){
   var th=TH[st];
   fr(a,x0,y1+9,x1-x0,2,th.trim);fr(a,x0,y1+9,x1-x0,1,th.hi);

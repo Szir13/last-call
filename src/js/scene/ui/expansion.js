@@ -7,7 +7,7 @@ function buildPrev(st){
 }
 function updExpPrev(){
   var row=ref.exp&&ref.exp.row;if(!row)return;
-  var st=cl(S.exp+1,0,4);
+  var st=clamp(S.exp+1,0,4);
   if(row._pv!==st){
     if(row._pc&&row._pc.parentNode)row._pc.parentNode.removeChild(row._pc);
     row._pv=st;row._pc=buildPrev(st);row.insertBefore(row._pc,row.firstChild);row.setAttribute("data-exp","1");

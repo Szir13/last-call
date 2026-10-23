@@ -77,12 +77,12 @@ function updateCal(){
     else if(k===0){ln.style.display="";setT(ln,"A regular day. Weekends are busier than Mondays.")}
     else ln.style.display="none";
   }
-  var fx=fxFor(sel),dm=[],mx=0.01,h2;
-  for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
-  for(h2=0;h2<24;h2++){
-    var bar=C.bars[h2],ph=Math.max(4,Math.round(dm[h2]/mx*100));
+  var fx=fxFor(sel),dm=[],mx=0.01,hour;
+  for(hour=0;hour<24;hour++){var v=demandAt(sel,hour,fx);dm.push(v);if(v>mx)mx=v}
+  for(hour=0;hour<24;hour++){
+    var bar=C.bars[hour],ph=Math.max(4,Math.round(dm[hour]/mx*100));
     if(bar._ph!==ph){bar._ph=ph;bar.style.height=ph+"%"}
-    setC(bar,(isOpenAt(sel,h2)?"open":"")+(sel===today&&Math.floor(gHour())===h2?" now":""));
+    setC(bar,(isOpenAt(sel,hour)?"open":"")+(sel===today&&Math.floor(gHour())===hour?" now":""));
   }
   for(var p=0;p<6;p++){
     var arr=CUST.map(function(c){return{n:c.n,w:c.w[p]*(fx.type[c.n]||1)}}).filter(function(x){return x.w>0}).sort(function(a,b){return b.w-a.w}).slice(0,3);

@@ -35,7 +35,7 @@ main IIFE
 Customer identity across rounds is `o.cid || o.id`. Regulars carry `o.rid`.
 
 ## State `S`
-Created by `def()`, which lists every field (`v` is the save version). Important groups:
+Created by `def()`, which lists every field (`v` is the save version); `src/js/data/types.js` describes each one (`State`). Important groups:
 - Money and score: `money totalEarned served walkouts sat rep pts`.
 - Venue: `exp` (0 stand .. 4 global chain), `expAt` (month of last expansion, drives the lease ramp), `upg`, `ing ql brand stock`, `price act`, `hours`.
 - People: `team[] {id name role lvl xp sk[] wage cl starter?}`, `staff{role:n}` (derived by `syncStaff`), `maxStaff`, `train`, `picks`, `cands`.

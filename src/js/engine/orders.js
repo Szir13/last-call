@@ -28,6 +28,8 @@ function freeSlot(){
   return -1;
 }
 function demandCls(o){return WTP[o.cls]}
+/** A guest sits down and orders. re: a repeat round or a regular's visit ({slot,cust,cls,cid,n,rid,fav,reg}).
+ * @param {{slot?:number,cust:CustomerType,cls:number,cid?:number,n?:number,rid?:number,fav?:string,reg?:Regular}} [re] */
 function spawnOrder(re){
   var m=mi();if(!m.list.length)return;
   if(!re){var rg=pickRegular();if(rg)re={cust:custByName(rg.type),cls:rg.cls,rid:rg.id,fav:rg.fav,reg:rg}}
@@ -55,8 +57,12 @@ function spawnOrder(re){
   S.orders.push(od);
   if(re&&re.reg)re.reg.last=gDay();
 }
+/** @param {Order} o @returns {number} menu price of the whole order */
 function orderBase(o){var b=0;o.items.forEach(function(it){b+=priceOf(ITM[it.r])});return b}
+/** @param {Order} o @returns {number} what the order pays with a full tip */
 function maxReward(o){return orderBase(o)*(1+tipMax()*o.m)}
+/** Every drink is made: work out satisfaction, reward and tip; a cashier collects at once.
+ * @param {Order} o */
 function finishOrder(o){
   o.ready=true;
   var b=0,ps=0;
@@ -75,12 +81,16 @@ function finishOrder(o){
   o.reward=b*(1+tipMax()*frac*o.m)*(ce?1+0.02*ce.sk[1]:1)*(o.rid?1+bondOf(o.rid)/300:1)*(1+0.04*legLvl("fame"));
   if(ce)collect(o);
 }
+/** Chance that a served guest orders another round.
+ * @param {{sat:number,slot:number,re?:number,rid?:number}} o @returns {number} 0-0.6 */
 function reorderChance(o){
   var rc=o.re||0;if(rc>=MAXRE)return 0;
   var hosp=clamp((floorAvg(2)-1)/4,0,1),ce=cashierAt(o.slot),charm=ce?clamp((ce.sk[0]-1)/4,0,1):0;
   var satF=clamp((o.sat-55)/45,0,1);
   return clamp(satF*(0.10+0.25*hosp+0.20*charm+(o.rid?bondOf(o.rid)/500:0))*Math.pow(0.75,rc),0,0.6);
 }
+/** Take the money for a ready order; the guest stays seated (S.hold) and may order again.
+ * @param {Order} o */
 function collect(o){
   var ix=S.orders.indexOf(o);if(ix<0)return;
   S.orders.splice(ix,1);
@@ -93,6 +103,7 @@ function collect(o){
   if(again)S.reorders=(S.reorders||0)+1;
   (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
 }
+/** Remove an order that will not be served (walkout, turned away). @param {Order} o */
 function dropOrder(o){
   msStreakBreak();
   var ix=S.orders.indexOf(o);if(ix>=0)S.orders.splice(ix,1);
@@ -207,6 +218,7 @@ function controllerTick(dt){
   });
 }
 
+/** Advance the game. @param {number} dt seconds @param {boolean} quiet no toasts or windows (offline) */
 function tick(dt,quiet){
   T+=dt;
   tickMarket(dt,quiet);
@@ -282,6 +294,7 @@ function tick(dt,quiet){
   }
 }
 function offlineCap(){return (2+2*lvl("offline"))*3600}
+/** Play secs seconds at once (offline progress, tests). @param {number} secs @returns {{earned:number,served:number}} */
 function simulate(secs){
   var steps=Math.floor(secs/2);
   var m0=S.totalEarned,s0=S.served;
