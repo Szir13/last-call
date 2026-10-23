@@ -31,7 +31,7 @@ Everything persistent goes through `storeGet(key)` and `storeSet(key, value)` in
 ## Background music
 - `audio/music-lofi.ogg` (the original) and `audio/music-lofi.m4a` (AAC 96 kbps, for browsers without Ogg, such as older iOS Safari); the page picks one with `canPlayType`. It loops seamlessly at volume 0.35 (`MUSIC_VOL` in `scene/ui/effects.js`).
 - It starts on the first tap, pauses while the page is hidden and resumes when it comes back; "Music on/off" (next to "Sound on", saved in the scene settings) is independent of the sound effects. The file is only fetched when the music first plays.
-- Before a store release, confirm the track's licence allows distributing it inside an app.
+- Licence: confirmed by the owner on 2026-10-23. The track may be distributed inside the app and needs no credit.
 
 ## Sound on iOS
 - The audio context starts or wakes on a tap (`touchend`, `click`, a key); `pointerdown` alone does not count on iOS.
