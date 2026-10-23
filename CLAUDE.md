@@ -22,6 +22,7 @@ npm run test:unit                            # Node unit tests (tests/unit/*.tes
 python tools/reference.py --check            # economy gate: medians of 10 seeded runs within 50-57% margin, 1.3-2.6 month payback
 python tools/reference.py --golden check     # exact seed-1 numbers vs tests/golden/reference.txt (--golden update after an intended change)
 npm run test:fast                            # build check + unit tests + golden, ~10 s
+python tools/perf.py                         # CPU cost per second while playing (scene on/off screen, hidden, other tab)
 python tools/styles.py snapshot BASE.json     # computed style of every element in 84 UI states (~25 min); then after a CSS change:
 python tools/styles.py check BASE.json        # must print "identical in every state" unless the change was meant to be visible
 npm test                                     # everything, ~2 min: the same gate CI runs (.github/workflows/test.yml); activate .venv first

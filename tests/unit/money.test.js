@@ -93,3 +93,10 @@ test("rampK: a new venue's lease builds up over three months", function () {
   var seen = [5, 6, 7, 8, 9].map(function (m) { g.run("S.mcount=" + m); return g.fn("rampK")(); });
   assert.deepStrictEqual(seen, [0.4, 0.65, 0.85, 1, 1]);
 });
+
+test("newGame: the old team is gone from the shift at once", function () {
+  var g = h.game(30, "for(var i=0;i<3;i++)S.team.push({id:50+i,name:'E'+i,role:'cashier',lvl:0,xp:0,sk:[3,3],wage:1000,cl:1});syncStaff();TV++");
+  assert.strictEqual(g.val("shiftCounts().emps.length"), 3);
+  g.run("newGame()");
+  assert.strictEqual(g.val("shiftCounts().emps.length"), 0);
+});

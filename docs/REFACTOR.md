@@ -57,6 +57,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: merge into one ordered stylesheet by component, delete overridden rules, give the engine's rows stable class names instead of structure selectors, and keep `data-*` for state.
 
 ## 11. Performance and battery (matters for the mobile app)
+**Done.** Scene at ~30 fps and not drawn off screen, sprites cached per palette, bubble positions written only when they move, crew sorted once per team change, audio context suspended between sounds, money formatting without `Intl`. `tools/perf.py`: busy main thread 174 -> 100 ms/s with the scene on screen, 171 -> 65 scrolled away, 205 -> 67 on another tab. Still possible: draw only when something changed (the scene has ambient animation, so this needs a dirty flag per layer).
 - `render()` redraws the whole scene every frame, including weather and decor; the scene is mostly static. `workers()` and `shiftCounts()` are recomputed often.
 - **Step**: render at 30 fps (or on dirty), pause when hidden, cache per-frame derived data, avoid per-frame `Array.sort` on customers.
 

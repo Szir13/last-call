@@ -9,7 +9,7 @@ function hint(x){
 function moodWord(q){return q<=0.85?"Bargain":q<=1.15?"Fair":q<=1.6?"Pricey":"Too pricey"}
 function satTeam(v){return v>=80?"Thrilled":v>=60?"Happy":v>=40?"Okay":v>=25?"Unhappy":"About to walk out"}
 function satWord(v){return v>=80?"Delighted":v>=60?"Happy":v>=40?"Okay":v>=20?"Unhappy":"Furious"}
-function mshow(n){return n<1e6?"$"+Math.round(n).toLocaleString("en-US"):eur(n)}
+function mshow(n){return n<1e6?money0(n):eur(n)}
 
 function updateOrders(W){
   var slots=maxSlots(),cs=onShift("cashier"),map={};

@@ -7,7 +7,14 @@ function fmt(n){
   return (n<10?n.toFixed(2):n<100?n.toFixed(1):n.toFixed(0))+SUF[i];
 }
 function eur(n){return "$"+fmt(n)}
-function money0(n){return "$"+Math.round(n).toLocaleString("en-US")}
+/* whole number with thousands commas, same text as toLocaleString("en-US") but much cheaper */
+function commas(n){
+  if(!isFinite(n))return n.toLocaleString("en-US");
+  var neg=n<0||1/n<0,s=String(Math.abs(n)),out="";
+  while(s.length>3){out=","+s.slice(-3)+out;s=s.slice(0,-3)}
+  return (neg?"-":"")+s+out;
+}
+function money0(n){return "$"+commas(Math.round(n))}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function lvl(id){return S.perm[id]||0}
 function has(id){return !!S.ing[id]}

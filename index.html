@@ -903,7 +903,14 @@ function fmt(n){
   return (n<10?n.toFixed(2):n<100?n.toFixed(1):n.toFixed(0))+SUF[i];
 }
 function eur(n){return "$"+fmt(n)}
-function money0(n){return "$"+Math.round(n).toLocaleString("en-US")}
+/* whole number with thousands commas, same text as toLocaleString("en-US") but much cheaper */
+function commas(n){
+  if(!isFinite(n))return n.toLocaleString("en-US");
+  var neg=n<0||1/n<0,s=String(Math.abs(n)),out="";
+  while(s.length>3){out=","+s.slice(-3)+out;s=s.slice(0,-3)}
+  return (neg?"-":"")+s+out;
+}
+function money0(n){return "$"+commas(Math.round(n))}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function lvl(id){return S.perm[id]||0}
 function has(id){return !!S.ing[id]}
@@ -1723,7 +1730,7 @@ function startHappyHour(){
 }
 function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
 function nameBar(v){S.barName=v}
-function newGame(){S=def();menuChanged();recomputeMarket();emit("stage")}
+function newGame(){S=def();TV++;menuChanged();recomputeMarket();emit("stage")}   /* TV++: shiftCounts() must forget the old team */
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
@@ -2588,7 +2595,7 @@ function hint(x){
 function moodWord(q){return q<=0.85?"Bargain":q<=1.15?"Fair":q<=1.6?"Pricey":"Too pricey"}
 function satTeam(v){return v>=80?"Thrilled":v>=60?"Happy":v>=40?"Okay":v>=25?"Unhappy":"About to walk out"}
 function satWord(v){return v>=80?"Delighted":v>=60?"Happy":v>=40?"Okay":v>=20?"Unhappy":"Furious"}
-function mshow(n){return n<1e6?"$"+Math.round(n).toLocaleString("en-US"):eur(n)}
+function mshow(n){return n<1e6?money0(n):eur(n)}
 
 function updateOrders(W){
   var slots=maxSlots(),cs=onShift("cashier"),map={};
@@ -3081,9 +3088,22 @@ var SP={
  coin:["..KKKK..",".KLLLLK.","KLLWLLLK","KLWLLLLK","KLLLLLLK","KLLLLLLK",".KLLLLK.","..KKKK.."],
  stool:["KKKKK","KLLLK","KKKKK",".K.K.",".K.K."]
 };
-function spr(c,s,x,y,pal){
+function sprRaw(c,s,x,y,pal){
   for(var r=0;r<s.length;r++){var row=s[r];
     for(var k=0;k<row.length;k++){var ch=row.charAt(k);if(ch===".")continue;var col=pal[ch];if(!col)continue;c.fillStyle=col;c.fillRect(x+k,y+r,1,1)}}
+}
+/* a sprite is painted pixel by pixel once per palette, then copied: the same pixels for whole-pixel
+   positions and opaque colours (anything else is painted directly) */
+function spr(c,s,x,y,pal){
+  var key="",k;
+  for(k in pal){var v=pal[k];if(typeof v!=="string"||v.charAt(0)!=="#"||window.__sprRaw)return sprRaw(c,s,x,y,pal);key+=k+v}
+  if(x!==Math.floor(x)||y!==Math.floor(y))return sprRaw(c,s,x,y,pal);
+  var cache=s.__img||(s.__img={}),im=cache[key];
+  if(!im){
+    var w=0;for(var r=0;r<s.length;r++)w=Math.max(w,s[r].length);
+    im=cache[key]=mk(Math.max(1,w),Math.max(1,s.length));sprRaw(im.getContext("2d"),s,0,0,pal);
+  }
+  c.drawImage(im,x,y);
 }
 function rects(c,list,x,y){for(var i=0;i<list.length;i++){var a=list[i];c.fillStyle=a[4];c.fillRect(x+a[0],y+a[1],a[2],a[3])}}
 var F3={A:["010","101","111","101","101"],B:["110","101","110","101","110"],C:["111","100","100","100","111"],D:["110","101","101","101","110"],
@@ -3406,6 +3426,7 @@ function statusTick(){
 }
 
 /* ---------- drawing ---------- */
+var crewOf=null,crewList=[],CREWX=[44].concat(STAFFX);
 function render(){
   var hr=(typeof gHour==="function")?gHour():12,st=stageNow(),open=isOpenNow(),i,id;
   if(stage!==st||shelfSig!==ownedSig())rebuild();
@@ -3422,8 +3443,11 @@ function render(){
   for(i=ms-1;i>=0;i--){spr(g,SP.stool,SLOTX[i]-2,SLOTY[i]-6,{K:"#2a1a14",L:"#a8743a"})}
   /* you, then the team on shift, behind the counter */
   var bob=(Math.floor(tt*1.6)%2)?1:0,busy=Math.min(S.jobs.length,WK.length);
-  var emps=shiftCounts().emps.slice().sort(function(a,b){return (STAFFM[b.role].sp?1:0)-(STAFFM[a.role].sp?1:0)});
-  var crew=[YOU].concat(emps.map(function(e){return staffLook(e)})),bx=[44].concat(STAFFX),extra=Math.max(0,crew.length-(1+STAFFX.length));
+  var sc=shiftCounts();
+  if(crewOf!==sc){   /* the crew only changes with the team: sort and dress it once, not every frame */
+    crewOf=sc;crewList=[YOU].concat(sc.emps.slice().sort(function(a,b){return (STAFFM[b.role].sp?1:0)-(STAFFM[a.role].sp?1:0)}).map(function(e){return staffLook(e)}));
+  }
+  var crew=crewList,bx=CREWX,extra=Math.max(0,crew.length-(1+STAFFX.length));
   for(i=0;i<crew.length&&i<bx.length;i++){
     var work=i<busy,dy=work?(Math.floor(tt*5+i)%2?-1:0):((Math.floor(tt*1.6+i*0.7)%2)?1:0);
     drawPerson(g,crew[i],bx[i],62,0,dy,false);
@@ -3444,7 +3468,10 @@ function render(){
       var gb=glassBase(ITM[c.drink]);g.drawImage(gb,Math.round(c.x+3),Math.round(c.y-12+(Math.floor(tt*0.8+c.id)%4===0?-1:0)));
     }
     if(c.state==="wait"){
-      c.b.style.display="";c.b.style.left=(c.x*Z)+"px";c.b.style.top=((c.y-19)*Z)+"px";
+      var bl=(c.x*Z)+"px",bt=((c.y-19)*Z)+"px";
+      if(c.b._shown!==1){c.b._shown=1;c.b.style.display=""}
+      if(c.b._l!==bl){c.b._l=bl;c.b.style.left=bl}
+      if(c.b._t!==bt){c.b._t=bt;c.b.style.top=bt}
     }
   }
   if(tutOn){drawPerson(g,JOE,14,124,0,(Math.floor(tt*1.6)%2)?1:0,true);g.fillStyle="#f2c14a";g.fillRect(13,98+(Math.floor(tt*3)%2),2,5);g.fillRect(13,105,2,2)}
@@ -3542,10 +3569,18 @@ function resize(){
   stg.style.setProperty("--z",Z);stg.style.width=w+"px";cv.style.width=w+"px";cv.style.height=(PH*Z)+"px";
 }
 window.addEventListener("resize",resize);
+/* the scene draws at about 30 fps while it is on screen; off screen (scrolled away, tab in the background)
+   guests keep moving 4 times a second so sounds and seats stay right, but nothing is drawn */
+var DRAW_S=0.03,OFF_S=0.25,acc=0;
 function frame(now){
   var dt=Math.min(0.1,(now-lastF)/1000);lastF=now;if(!(dt>0))dt=0.016;tt+=dt;
   statT-=dt;if(statT<=0){statT=0.12;statusTick()}
-  if(!hidden){try{sync(dt);render()}catch(e){if(!window.__pxerr){window.__pxerr=e;if(window.console)console.error("pixel scene:",e)}}}
+  acc+=dt;
+  var vis=sceneVis&&!document.hidden;
+  if(!hidden&&acc>=(vis?DRAW_S:OFF_S)){
+    try{sync(Math.min(acc,OFF_S));if(vis)render()}catch(e){if(!window.__pxerr){window.__pxerr=e;if(window.console)console.error("pixel scene:",e)}}
+    acc=0;
+  }
   tutTick(dt);
   requestAnimationFrame(frame);
 }
@@ -3627,7 +3662,7 @@ function faceEl(mood,sc){
 }
 
 /* ---- sound ---- */
-var AC=null,muted=!!pget().mute;
+var AC=null,acSleep=0,muted=!!pget().mute;
 function audio(){if(AC===null){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=false}}return AC||null}
 function sfx(kind){
   if(muted)return;var a=audio();if(!a)return;if(a.state==="suspended"){try{a.resume()}catch(e){}}
@@ -3635,6 +3670,7 @@ function sfx(kind){
   function n(f,s,d){var o=a.createOscillator(),gg=a.createGain();o.type="square";o.frequency.value=f;
     gg.gain.setValueAtTime(0.0001,now+s);gg.gain.exponentialRampToValueAtTime(0.045,now+s+0.01);gg.gain.exponentialRampToValueAtTime(0.0001,now+s+d);
     o.connect(gg);gg.connect(a.destination);o.start(now+s);o.stop(now+s+d+0.03)}
+  clearTimeout(acSleep);acSleep=setTimeout(function(){if(AC&&AC.state==="running")AC.suspend()},1500);
   if(kind==="coin"){n(988,0,0.06);n(1319,0.06,0.14)}
   else if(kind==="new"){n(659,0,0.09);n(784,0.09,0.09);n(988,0.18,0.09);n(1319,0.27,0.22)}
   else if(kind==="tab"){n(523,0,0.07);n(784,0.07,0.1)}

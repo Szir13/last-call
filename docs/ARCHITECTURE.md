@@ -57,6 +57,8 @@ The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock ac
 4. Layer 3 has no timers. `scene/ui/refresh.js` runs its updates on events: `menu` (recipe banner, stock groups), `stage` (expansion preview), structural changes inside the panels (a `MutationObserver`: row icons, folds; its own edits are discarded), and the `render` event from `loop()`, where values that change all the time refresh every 500 ms (dashboard and trees only while their tab is open). The only timers left are `loop()` (100 ms) and the scene's `requestAnimationFrame`.
 
 ## Scene
+The scene draws at about 30 fps while it is on screen (`frame()` in `scene/layout.js`); scrolled away or with the page hidden it only moves the guests 4 times a second (`sync`) and draws nothing. Sprites are painted pixel by pixel once per palette and then copied (`spr()` in `scene/sprites.js`); the sound context is suspended 1.5 s after the last sound. Measure with `python tools/perf.py`.
+
 Canvas is 160x140 logical pixels scaled by `Z` (fractional, snapped to device pixels). Layers: sky (dynamic) -> `LA` back (cached per stage and shelf contents) -> weather -> crew behind counter -> `LB` counter (cached) -> decor -> customers sorted by y -> weather in front -> day/night tint. Customers are NPCs derived each frame from `S.orders` and `S.hold` (`sync()`), never stored. Seats: up to 15 in three rows (`SLOTX/SLOTY`).
 
 ## Persistence

@@ -1,4 +1,5 @@
 /* ---------- drawing ---------- */
+var crewOf=null,crewList=[],CREWX=[44].concat(STAFFX);
 function render(){
   var hr=(typeof gHour==="function")?gHour():12,st=stageNow(),open=isOpenNow(),i,id;
   if(stage!==st||shelfSig!==ownedSig())rebuild();
@@ -15,8 +16,11 @@ function render(){
   for(i=ms-1;i>=0;i--){spr(g,SP.stool,SLOTX[i]-2,SLOTY[i]-6,{K:"#2a1a14",L:"#a8743a"})}
   /* you, then the team on shift, behind the counter */
   var bob=(Math.floor(tt*1.6)%2)?1:0,busy=Math.min(S.jobs.length,WK.length);
-  var emps=shiftCounts().emps.slice().sort(function(a,b){return (STAFFM[b.role].sp?1:0)-(STAFFM[a.role].sp?1:0)});
-  var crew=[YOU].concat(emps.map(function(e){return staffLook(e)})),bx=[44].concat(STAFFX),extra=Math.max(0,crew.length-(1+STAFFX.length));
+  var sc=shiftCounts();
+  if(crewOf!==sc){   /* the crew only changes with the team: sort and dress it once, not every frame */
+    crewOf=sc;crewList=[YOU].concat(sc.emps.slice().sort(function(a,b){return (STAFFM[b.role].sp?1:0)-(STAFFM[a.role].sp?1:0)}).map(function(e){return staffLook(e)}));
+  }
+  var crew=crewList,bx=CREWX,extra=Math.max(0,crew.length-(1+STAFFX.length));
   for(i=0;i<crew.length&&i<bx.length;i++){
     var work=i<busy,dy=work?(Math.floor(tt*5+i)%2?-1:0):((Math.floor(tt*1.6+i*0.7)%2)?1:0);
     drawPerson(g,crew[i],bx[i],62,0,dy,false);
@@ -37,7 +41,10 @@ function render(){
       var gb=glassBase(ITM[c.drink]);g.drawImage(gb,Math.round(c.x+3),Math.round(c.y-12+(Math.floor(tt*0.8+c.id)%4===0?-1:0)));
     }
     if(c.state==="wait"){
-      c.b.style.display="";c.b.style.left=(c.x*Z)+"px";c.b.style.top=((c.y-19)*Z)+"px";
+      var bl=(c.x*Z)+"px",bt=((c.y-19)*Z)+"px";
+      if(c.b._shown!==1){c.b._shown=1;c.b.style.display=""}
+      if(c.b._l!==bl){c.b._l=bl;c.b.style.left=bl}
+      if(c.b._t!==bt){c.b._t=bt;c.b.style.top=bt}
     }
   }
   if(tutOn){drawPerson(g,JOE,14,124,0,(Math.floor(tt*1.6)%2)?1:0,true);g.fillStyle="#f2c14a";g.fillRect(13,98+(Math.floor(tt*3)%2),2,5);g.fillRect(13,105,2,2)}

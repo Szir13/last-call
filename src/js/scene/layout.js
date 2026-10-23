@@ -6,10 +6,18 @@ function resize(){
   stg.style.setProperty("--z",Z);stg.style.width=w+"px";cv.style.width=w+"px";cv.style.height=(PH*Z)+"px";
 }
 window.addEventListener("resize",resize);
+/* the scene draws at about 30 fps while it is on screen; off screen (scrolled away, tab in the background)
+   guests keep moving 4 times a second so sounds and seats stay right, but nothing is drawn */
+var DRAW_S=0.03,OFF_S=0.25,acc=0;
 function frame(now){
   var dt=Math.min(0.1,(now-lastF)/1000);lastF=now;if(!(dt>0))dt=0.016;tt+=dt;
   statT-=dt;if(statT<=0){statT=0.12;statusTick()}
-  if(!hidden){try{sync(dt);render()}catch(e){if(!window.__pxerr){window.__pxerr=e;if(window.console)console.error("pixel scene:",e)}}}
+  acc+=dt;
+  var vis=sceneVis&&!document.hidden;
+  if(!hidden&&acc>=(vis?DRAW_S:OFF_S)){
+    try{sync(Math.min(acc,OFF_S));if(vis)render()}catch(e){if(!window.__pxerr){window.__pxerr=e;if(window.console)console.error("pixel scene:",e)}}
+    acc=0;
+  }
   tutTick(dt);
   requestAnimationFrame(frame);
 }

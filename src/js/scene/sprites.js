@@ -24,9 +24,22 @@ var SP={
  coin:["..KKKK..",".KLLLLK.","KLLWLLLK","KLWLLLLK","KLLLLLLK","KLLLLLLK",".KLLLLK.","..KKKK.."],
  stool:["KKKKK","KLLLK","KKKKK",".K.K.",".K.K."]
 };
-function spr(c,s,x,y,pal){
+function sprRaw(c,s,x,y,pal){
   for(var r=0;r<s.length;r++){var row=s[r];
     for(var k=0;k<row.length;k++){var ch=row.charAt(k);if(ch===".")continue;var col=pal[ch];if(!col)continue;c.fillStyle=col;c.fillRect(x+k,y+r,1,1)}}
+}
+/* a sprite is painted pixel by pixel once per palette, then copied: the same pixels for whole-pixel
+   positions and opaque colours (anything else is painted directly) */
+function spr(c,s,x,y,pal){
+  var key="",k;
+  for(k in pal){var v=pal[k];if(typeof v!=="string"||v.charAt(0)!=="#"||window.__sprRaw)return sprRaw(c,s,x,y,pal);key+=k+v}
+  if(x!==Math.floor(x)||y!==Math.floor(y))return sprRaw(c,s,x,y,pal);
+  var cache=s.__img||(s.__img={}),im=cache[key];
+  if(!im){
+    var w=0;for(var r=0;r<s.length;r++)w=Math.max(w,s[r].length);
+    im=cache[key]=mk(Math.max(1,w),Math.max(1,s.length));sprRaw(im.getContext("2d"),s,0,0,pal);
+  }
+  c.drawImage(im,x,y);
 }
 function rects(c,list,x,y){for(var i=0;i<list.length;i++){var a=list[i];c.fillStyle=a[4];c.fillRect(x+a[0],y+a[1],a[2],a[3])}}
 var F3={A:["010","101","111","101","101"],B:["110","101","110","101","110"],C:["111","100","100","100","111"],D:["110","101","101","101","110"],

@@ -1,5 +1,5 @@
 /* ---- sound ---- */
-var AC=null,muted=!!pget().mute;
+var AC=null,acSleep=0,muted=!!pget().mute;
 function audio(){if(AC===null){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=false}}return AC||null}
 function sfx(kind){
   if(muted)return;var a=audio();if(!a)return;if(a.state==="suspended"){try{a.resume()}catch(e){}}
@@ -7,6 +7,7 @@ function sfx(kind){
   function n(f,s,d){var o=a.createOscillator(),gg=a.createGain();o.type="square";o.frequency.value=f;
     gg.gain.setValueAtTime(0.0001,now+s);gg.gain.exponentialRampToValueAtTime(0.045,now+s+0.01);gg.gain.exponentialRampToValueAtTime(0.0001,now+s+d);
     o.connect(gg);gg.connect(a.destination);o.start(now+s);o.stop(now+s+d+0.03)}
+  clearTimeout(acSleep);acSleep=setTimeout(function(){if(AC&&AC.state==="running")AC.suspend()},1500);
   if(kind==="coin"){n(988,0,0.06);n(1319,0.06,0.14)}
   else if(kind==="new"){n(659,0,0.09);n(784,0.09,0.09);n(988,0.18,0.09);n(1319,0.27,0.22)}
   else if(kind==="tab"){n(523,0,0.07);n(784,0.07,0.1)}

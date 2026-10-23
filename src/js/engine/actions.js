@@ -48,7 +48,7 @@ function startHappyHour(){
 }
 function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
 function nameBar(v){S.barName=v}
-function newGame(){S=def();menuChanged();recomputeMarket();emit("stage")}
+function newGame(){S=def();TV++;menuChanged();recomputeMarket();emit("stage")}   /* TV++: shiftCounts() must forget the old team */
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
