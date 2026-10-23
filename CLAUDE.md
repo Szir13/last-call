@@ -13,7 +13,7 @@ Source of truth: `src/` (styles, HTML shell, 39 script slices). `node build.js` 
 ```
 node build.js                                # src/ -> index.html (also syntax-checks the script)
 node build.js --check                        # fail if index.html is stale
-open index.html                              # play (needs fonts/ next to it; no network)
+open index.html                              # play (needs fonts/ and audio/ next to it; no network)
 pip install -r tools/requirements.txt && playwright install chromium
 python tools/reference.py [--sweep] [--node] # economy check, one equipped team per stage, ~20 s (~4 s with --node)
 python tools/run_bots.py [styles] --months 30 --seeds 5 [--node]   # five bot play styles, ~3 min

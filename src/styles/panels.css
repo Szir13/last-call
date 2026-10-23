@@ -45,8 +45,7 @@
 .row.ing .sub,.row.ing .tog,.row.rec .sub{display:none;font-size:13px}
 .row.ing[data-open] .sub,.row.ing[data-open] .tog,.row.ing.locked .sub,.row.tier.locked .sub,.row.rec[data-open] .sub{display:block}
 .row.ing[data-open],.row.tier[data-open],.row.rec[data-open]{grid-column:1/-1}
-.row.ing.locked,.row.tier.locked{opacity:.65}
-.row.ing.locked{border-style:dashed}   /* locked brand tiers keep a solid border */
+.row.ing.locked,.row.tier.locked{opacity:.65;border-style:dashed}
 .row.rec .pbox{grid-area:act;align-items:stretch;flex:none;max-width:none;width:100%}
 .row.rec .pbox input{width:100%;text-align:center;font-size:18px;padding:6px 8px}
 .row.rec .pbox small,.row.rec .pbox .tog{display:none}

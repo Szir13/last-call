@@ -40,3 +40,4 @@ Search the function names in `src/js/`.
 
 ## UI specifics
 - Fixed dock + fixed nav, scrollable `#main`. Tabs appear as the bar grows (`TABRULE`). Sections fold (`applyFolds`). Ingredient and recipe cards open on tap. Upgrade trees show only the next nodes (`updNext`). Scene can be hidden; a strip keeps "waiting / Collect" visible.
+- Background music: one looping lo-fi track with its own Music switch (`scene/ui/effects.js`, files in `audio/`); it waits for the first tap and pauses while the page is hidden.

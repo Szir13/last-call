@@ -286,7 +286,7 @@ function update(){
     if(S.exp===0&&(x.id==="cashier"||x.id==="clerk")&&!(S.starter&&S.starter[x.id]))extra+=" Starter deal: your first one at the stand works for half wage until you expand.";
     }else if(x.id==="cashier")extra=" Covering "+onShift("cashier")+" of "+maxSlots()+" slots right now.";
     else if(x.id==="clerk")extra=" Watching "+assignedCount()+" of "+clerkCap()+" ingredient slots.";
-    setT(r.sub,x.d+" Typical wage "+money0(x.w*wk())+" a month."+extra+(n>0?" On shift now: "+onShift(x.id)+" of "+n+".":""));
+    setT(r.sub,x.d+" Typical wage "+money0(x.w*wk())+" a month."+extra);
     setC(r.row,r.cls);
     var lim=roleLimit(x.id);
     if(n>=lim){setT(r.btn,S.team.length>=staffCap()?"Team full":"Max");r.btn.disabled=true;setC(r.btn,"buy owned")}

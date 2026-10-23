@@ -26,11 +26,12 @@ branchIncome dateOf setEnv""".split()
 
 
 def copy_assets(dest_dir):
-    """Pages copied elsewhere still load their files by relative URL: bring fonts/ along."""
+    """Pages copied elsewhere still load their files by relative URL: bring fonts/ and audio/ along."""
     import shutil
-    src = ROOT / "fonts"
-    if src.exists():
-        shutil.copytree(src, pathlib.Path(dest_dir) / "fonts", dirs_exist_ok=True)
+    for name in ("fonts", "audio"):
+        src = ROOT / name
+        if src.exists():
+            shutil.copytree(src, pathlib.Path(dest_dir) / name, dirs_exist_ok=True)
 
 
 def build_hook():

@@ -24,6 +24,29 @@ function sfx(kind){
   if(a.state==="running")play();
   else{try{var r=a.resume();if(r&&r.then)r.then(function(){if(a.state==="running")play()},function(){});}catch(e){}}   /* no gesture yet: stay quiet */
 }
+/* ---- background music: one track on a seamless loop, with its own switch (Music) ----
+   It starts on the first tap (browsers and iOS refuse sound before one), pauses while the page is hidden
+   and comes back with the next visit or tap. Ogg where the browser plays it, AAC elsewhere (Safari, iOS).
+   The file is only fetched when the music is about to play. */
+var MUSIC_VOL=0.35,musicOn=pget().music!==false,mus=null;
+function musicEl(){
+  if(!mus){
+    mus=new Audio();mus.loop=true;mus.volume=MUSIC_VOL;mus.preload="none";
+    mus.src=mus.canPlayType('audio/ogg; codecs="vorbis"')?"audio/music-lofi.ogg":"audio/music-lofi.m4a";
+  }
+  return mus;
+}
+function musicSync(){
+  var want=musicOn&&!document.hidden;
+  if(!want){if(mus&&!mus.paused)mus.pause();return}
+  var m=musicEl();
+  if(m.paused){try{var r=m.play();if(r&&r.catch)r.catch(function(){})}catch(e){}}   /* refused before a tap: the next tap retries */
+}
+["touchend","click","keydown"].forEach(function(ev){document.addEventListener(ev,function(){if(musicOn&&(!mus||mus.paused))musicSync()},true)});
+document.addEventListener("visibilitychange",musicSync);
+function syncMus(){var b=document.getElementById("pxmus");b.textContent=musicOn?"Music on":"Music off";b.setAttribute("aria-pressed",musicOn?"true":"false")}
+document.getElementById("pxmus").addEventListener("click",function(){musicOn=!musicOn;pset("music",musicOn);syncMus();musicSync()});
+syncMus();
 function syncSnd(){var b=document.getElementById("pxsnd");b.textContent=muted?"Sound off":"Sound on";b.setAttribute("aria-pressed",muted?"false":"true")}
 document.getElementById("pxsnd").addEventListener("click",function(){muted=!muted;pset("mute",muted);syncSnd();if(!muted)sfx("tap")});
 syncSnd();

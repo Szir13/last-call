@@ -1,9 +1,9 @@
 # Packaging Last Call as a mobile app
 
-The game is one page (`index.html`) plus `fonts/`. It needs no network and no server: everything below is about the app shell around it (Capacitor, or a PWA).
+The game is one page (`index.html`) plus `fonts/` and `audio/`. It needs no network and no server: everything below is about the app shell around it (Capacitor, or a PWA).
 
 ## What ships
-- `index.html` and the `fonts/` folder next to it (four woff2 files and their SIL Open Font License texts). Nothing else is loaded, so the game runs offline and inside an app's web view as is.
+- `index.html` and two folders next to it: `fonts/` (four woff2 files and their SIL Open Font License texts) and `audio/` (the background music as Ogg Vorbis and AAC). Nothing else is loaded, so the game runs offline and inside an app's web view as is.
 - Build it with `node build.js`; test with `npm test` (it includes a WebKit run with an iPhone profile, the engine of iOS Safari and of an iOS app shell).
 
 ## Storage
@@ -28,6 +28,11 @@ Everything persistent goes through `storeGet(key)` and `storeSet(key, value)` in
 
 - **Moving a game**: Brand tab, "Your game": *Export save* (copy or download a JSON file) and *Import save* (paste or pick the file; it replaces the game after a second tap). `exportSave()` and `parseSave()` in `src/js/state.js` are the format; imports run the normal save migrations, and saves from a newer version are refused.
 
+## Background music
+- `audio/music-lofi.ogg` (the original) and `audio/music-lofi.m4a` (AAC 96 kbps, for browsers without Ogg, such as older iOS Safari); the page picks one with `canPlayType`. It loops seamlessly at volume 0.35 (`MUSIC_VOL` in `scene/ui/effects.js`).
+- It starts on the first tap, pauses while the page is hidden and resumes when it comes back; "Music on/off" (next to "Sound on", saved in the scene settings) is independent of the sound effects. The file is only fetched when the music first plays.
+- Before a store release, confirm the track's licence allows distributing it inside an app.
+
 ## Sound on iOS
 - The audio context starts or wakes on a tap (`touchend`, `click`, a key); `pointerdown` alone does not count on iOS.
 - It is suspended 1.5 s after the last sound so the audio hardware can sleep; the next sound waits for it to resume and is skipped if iOS refuses outside a tap.
@@ -35,6 +40,6 @@ Everything persistent goes through `storeGet(key)` and `storeSet(key, value)` in
 - Verified in WebKit with an iPhone 13 profile (Playwright). Not yet on a real iPhone: check on a device that sounds play after the first tap, after the app comes back from the background, and with music playing.
 
 ## Still to do for a store build
-- PWA: web app manifest, icons, a service worker that caches `index.html` and `fonts/`.
+- PWA: web app manifest, icons, a service worker that caches `index.html`, `fonts/` and `audio/`.
 - Capacitor: `capacitor.config`, the native store above, status bar colour per theme, `viewport-fit=cover` is already set and the layout pads for the safe areas.
 - Lifecycle: the game saves on `visibilitychange` and `pagehide`; check that a Capacitor `appStateChange` to background triggers them, and that offline progress (`simulate()`) runs when it returns.
