@@ -11,7 +11,7 @@
 "use strict";
 var fs = require("fs"), path = require("path"), vm = require("vm");
 
-var STYLES = ["base", "scene", "skin", "compact", "ui-layer", "app"];
+var STYLES = ["tokens", "base", "layout", "controls", "panels", "team", "trees", "calendar", "windows", "scene", "shared"];
 var SCRIPTS = [
   "main-open",
   /* engine: no DOM, no storage. Talks to the UI only through emit() (engine/events.js) */
@@ -38,6 +38,27 @@ var ROOT = __dirname, SRC = path.join(ROOT, "src"), OUT = path.join(ROOT, "index
 function read(f) { return fs.readFileSync(path.join(SRC, f), "utf8"); }
 function cat(dir, names, ext) { return names.map(function (n) { return read(dir + "/" + n + ext); }).join(""); }
 
+/* the browser silently drops everything after a stray brace: check each stylesheet's nesting first */
+function checkCss(name, text) {
+  var depth = 0, paren = 0, quote = null, line = 1;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (c === "\n") line++;
+    if (quote) { if (c === quote && text[i - 1] !== "\\") quote = null; continue; }
+    if (c === "/" && text[i + 1] === "*") { var end = text.indexOf("*/", i + 2); line += text.slice(i, end).split("\n").length - 1; i = end + 1; continue; }
+    if (c === '"' || c === "'") quote = c;
+    else if (c === "(") paren++;
+    else if (c === ")") paren--;
+    else if (c === "{") depth++;
+    else if (c === "}" && --depth < 0) return name + ":" + line + ": unexpected }";
+    if (paren < 0) return name + ":" + line + ": unexpected )";
+  }
+  return depth ? name + ": " + depth + " unclosed {" : paren ? name + ": unclosed (" : quote ? name + ": unclosed string" : null;
+}
+STYLES.forEach(function (n) {
+  var err = checkCss("src/styles/" + n + ".css", read("styles/" + n + ".css"));
+  if (err) { console.error("CSS error: " + err); process.exit(1); }
+});
 var css = cat("styles", STYLES, ".css"), js = cat("js", SCRIPTS, ".js");
 try { new vm.Script(js, { filename: "index.html <script>" }); }
 catch (e) { console.error("Syntax error in the built script:\n" + e.stack); process.exit(1); }

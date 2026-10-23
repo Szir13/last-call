@@ -184,7 +184,7 @@ function update(){
       setT(r.nm,x.n+" (raw)");
       setT(r.sub,"Stock "+Math.floor(rs)+" / "+(cp*2)+". The chef buys in bulk at "+eur(x.u*mkt(x.id)*0.7*disc())+" each.");
       r.barWrap.style.display="";r.bar.style.width=Math.min(100,rs/(cp*2)*100)+"%";
-      r.btn.style.display="none";r.tog.style.display="none";setC(r.row,"row");
+      r.btn.style.display="none";r.tog.style.display="none";setC(r.row,r.cls);
       return;
     }
     r.btn.style.display="";
@@ -199,7 +199,7 @@ function update(){
       r.barWrap.style.display="";r.bar.style.width=(st/cp*100)+"%";
       if(units<=0){setT(r.btn,"Full");r.btn.disabled=true}
       else{setT(r.btn,"+"+units+"  "+eur(cost));r.btn.disabled=S.money<cost}
-      setC(r.btn,"buy");setC(r.row,"row");
+      setC(r.btn,"buy");setC(r.row,r.cls);
       if(x.pre&&chef){r.tog.style.display=clerkUnlocked?"":"none";setT(r.tog,"Made by the prep chef")}
       else{
         r.tog.style.display=clerkUnlocked?"":"none";
@@ -219,12 +219,12 @@ function update(){
             tr.barWrap.style.display="";tr.bar.style.width=(s2/cp*100)+"%";
             if(n2<=0){setT(tr.btn,"Full");tr.btn.disabled=true}
             else{setT(tr.btn,"+"+n2+"  "+eur(n2*u2));tr.btn.disabled=S.money<n2*u2}
-            setC(tr.btn,"buy");setC(tr.row,"row cl");
+            setC(tr.btn,"buy");setC(tr.row,tr.cls);
           }else{
             var lk=tierLock(x,t),fee=Math.round(QFEE[t]*x.u[0]);
             tr.barWrap.style.display="none";
-            if(lk){setT(tr.btn,"Locked");tr.btn.disabled=true;setT(tr.sub,lk);setC(tr.row,"row cl locked")}
-            else{setT(tr.btn,"Unlock "+eur(fee));tr.btn.disabled=S.money<fee;setT(tr.sub,"A better brand for cocktails and for neat serves. Customers who can afford it will ask for it.");setC(tr.row,"row cl")}
+            if(lk){setT(tr.btn,"Locked");tr.btn.disabled=true;setT(tr.sub,lk);setC(tr.row,tr.cls+" locked")}
+            else{setT(tr.btn,"Unlock "+eur(fee));tr.btn.disabled=S.money<fee;setT(tr.sub,"A better brand for cocktails and for neat serves. Customers who can afford it will ask for it.");setC(tr.row,tr.cls)}
             setC(tr.btn,"buy");
           }
         }
@@ -234,8 +234,8 @@ function update(){
       if(x.q){r.bt.style.display="none";for(var t3=1;t3<3;t3++)r.tiers[t3].row.style.display="none"}
       var lock=ingLock(x),fee0=x.c||0;
       setT(r.nm,x.q?tierName(x,0):x.n);
-      if(lock){setT(r.btn,cfg?"No picks":"Locked");r.btn.disabled=true;setC(r.btn,"buy");setT(r.sub,lock);setC(r.row,"row locked")}
-      else{setT(r.btn,fee0?"Unlock "+eur(fee0):"Unlock");r.btn.disabled=S.money<fee0;setC(r.btn,"buy");setT(r.sub,hint(x)+(cfg?" Uses 1 pick.":""));setC(r.row,"row")}
+      if(lock){setT(r.btn,cfg?"No picks":"Locked");r.btn.disabled=true;setC(r.btn,"buy");setT(r.sub,lock);setC(r.row,r.cls+" locked")}
+      else{setT(r.btn,fee0?"Unlock "+eur(fee0):"Unlock");r.btn.disabled=S.money<fee0;setC(r.btn,"buy");setT(r.sub,hint(x)+(cfg?" Uses 1 pick.":""));setC(r.row,r.cls)}
     }
   });
 
@@ -273,7 +273,7 @@ function update(){
     setT(r.cnt,n?"×"+n:"");
     if(!unl){
       setT(r.sub,"Unlock it in the Upgrades tree first.");
-      setT(r.btn,"Locked");r.btn.disabled=true;setC(r.btn,"buy");setC(r.row,"row locked");
+      setT(r.btn,"Locked");r.btn.disabled=true;setC(r.btn,"buy");setC(r.row,r.cls+" locked");
       return;
     }
     var extra="";
@@ -286,7 +286,7 @@ function update(){
     }else if(x.id==="cashier")extra=" Covering "+onShift("cashier")+" of "+maxSlots()+" slots right now.";
     else if(x.id==="clerk")extra=" Watching "+assignedCount()+" of "+clerkCap()+" ingredient slots.";
     setT(r.sub,x.d+" Typical wage "+money0(x.w*wk())+" a month."+extra+(n>0?" On shift now: "+onShift(x.id)+" of "+n+".":""));
-    setC(r.row,"row");
+    setC(r.row,r.cls);
     var lim=roleLimit(x.id);
     if(n>=lim){setT(r.btn,S.team.length>=staffCap()?"Team full":"Max");r.btn.disabled=true;setC(r.btn,"buy owned")}
     else{setT(r.btn,"Hire");r.btn.disabled=false;setC(r.btn,"buy")}
@@ -301,7 +301,7 @@ function update(){
     setT(r.nm,e.name+" · "+STAFFM[e.role].n);
     setT(r.sub,LVLN[e.lvl]+". "+skillNames(e.role).map(function(sn,i){return sn.slice(0,4)+" "+e.sk[i]}).join(", ")+".");
     setT(r.tag,money0(wageOf(e)));
-    setC(r.row,"row pick"+(ref.ed.sel===e.id?" sel":""));
+    setC(r.row,r.cls+" pick"+(ref.ed.sel===e.id?" sel":""));
   });
   var ed=ref.ed,se=selEmp();
   if(!se&&nT){se=S.team[0];ed.sel=se.id}
@@ -370,17 +370,17 @@ function update(){
       setT(x.pend,"On the menu now: "+eur(act)+". New price from the next opening.");
       x.rst.style.display=manual?"":"none";
       setT(x.rst,hasCtl?"Back to auto":"Reset");
-      setC(x.row,"row");
+      setC(x.row,x.cls);
     }else if(!r.solo){
       var have=r.i.filter(has).length;
       if(S.known.indexOf(r.id)>=0){
         setT(x.nm,r.n);
         setT(x.sub,"A recipe you know. Missing: "+r.i.filter(function(i){return !has(i)}).map(function(i){return INGM[i].n}).join(", ")+".");
-        x.box.style.display="none";setC(x.row,"row known");
+        x.box.style.display="none";setC(x.row,x.cls+" known");
       }else{
         setT(x.nm,"???");
         setT(x.sub,r.f+", "+r.i.length+" ingredients. You have "+have+".");
-        x.box.style.display="none";setC(x.row,"row locked");
+        x.box.style.display="none";setC(x.row,x.cls+" locked");
       }
     }
   });
@@ -397,7 +397,7 @@ function update(){
   ACH.forEach(function(a){
     var r=B.ach[a.id];
     setT(r.val,S.ach[a.id]?"Done":"+"+a.r);
-    setC(r.row,S.ach[a.id]?"row":"row locked");
+    setC(r.row,S.ach[a.id]?r.cls:r.cls+" locked");
   });
   updateTree(ref.tr.rep);
 

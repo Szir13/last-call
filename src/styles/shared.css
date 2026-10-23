@@ -1,0 +1,22 @@
+/* Rules shared by several components: the pixel frame (borders, shadows), fonts (pixel font only for big short labels, the clean font for numbers and anything you read) and reduced motion. */
+@media (prefers-reduced-motion: reduce){
+  #toast,.satb i{transition:none}
+  .pb.rdy,.pxf,#pxnext,nav button.pxpulse{animation:none}
+}
+.ghost,.buy,.big,.chead button{border-radius:0}
+.ocard,.cand,.tdetail,.card,.tile,.cday,.pbox input,.hrow select{border-radius:0;border:3px solid var(--edge);background:var(--surface);color:var(--ink)}
+.ocard,.cand,.tdetail,.card{box-shadow:0 4px 0 var(--edge2)}
+.obar,.sbar{height:8px;border-radius:0;border:2px solid var(--edge);background:var(--surface)}
+.obar i,.sbar i{border-radius:0}
+@media (prefers-reduced-motion: reduce){
+  .pxcoin,.pxban,nav button.pxnew{animation:none}
+}
+.money,.h,.card h2,nav button,.buy,.big,.pxn,.pxf,.pxbt b,.pxtx b,.pxnext .tn,.pxdlg .pxn{font-family:var(--px)}
+.ghost,.tog,.link,.skip,#pxskip,.pxform button,.pxform input,.pxstrip,.pxwarn,#pxnm{font-family:var(--sans);font-weight:600}
+.row .name,.row.ing .name,.row.rec .name,.pxtile .pxtx b,.stats .v,.pxnext .tn{font-family:var(--sans);font-weight:700}
+.pxdlg .pxt,.pxban span,.pxtx span{font-family:var(--sans)}
+.top,.clock,.sat,.satl,.ips,.today,.news,.note,.gnote,.row .sub,.row .sub *,.stats .l,.pxbl,.pxown,.pxnext .ts{font-size:14px;line-height:1.35}
+.pbox small,.pxnext .br{font-size:13px}
+.clock,.ips,.satl,.stats .v,.money{font-variant-numeric:tabular-nums}
+.hudr .ghost,.pxstrip .ghost,.pxbar .ghost{font-size:15px}
+.buy,.big,.card h2,.pxf,.pxnext .tn,.h.pxsec{font-family:var(--sans);font-weight:700;letter-spacing:0}

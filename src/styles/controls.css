@@ -1,0 +1,23 @@
+/* Buttons, links and inputs used everywhere. */
+.skip{background:none;border:0;text-decoration:underline;padding:0}
+.tog{background:none;border:0;padding:0;margin-top:6px;text-decoration:underline;text-align:left}
+.pbox{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pbox input{font:inherit;font-variant-numeric:tabular-nums}
+.pbox small{color:var(--muted);text-align:right;max-width:100%;overflow-wrap:anywhere}
+.buy{min-width:96px;padding:10px 12px;font-variant-numeric:tabular-nums}
+.buy:disabled{cursor:default}
+.big{width:100%;margin-top:18px;padding:15px}
+.big:disabled{cursor:default}
+.link{background:none;border:0;text-decoration:underline;margin-top:34px;padding:0}
+.pbox input:disabled{opacity:.55}
+.ghost{font-variant-numeric:tabular-nums;border:3px solid var(--edge);background:var(--surface);color:var(--ink);font-size:15px;padding:8px 14px;min-height:42px;box-shadow:0 3px 0 var(--edge2)}
+.ghost:active{transform:translateY(3px);box-shadow:none}
+.ghost.on{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
+.ghost:disabled{cursor:default;background:var(--line);color:var(--muted);box-shadow:none}
+.buy:active,.big:active{transform:translateY(3px);box-shadow:none}
+.buy:disabled,.big:disabled{background:var(--line);color:var(--muted);border-color:var(--edge);box-shadow:none}
+.buy.owned{background:transparent;border-color:transparent;box-shadow:none;color:var(--accent)}
+.buy.sm{min-width:0;padding:7px 12px;min-height:36px;font-size:15px}
+.link,.skip,.tog{color:var(--muted);font-size:15px}
+.pbox input{font-weight:600;box-shadow:inset 2px 2px 0 rgba(59,36,20,.2)}
+.buy,.big{background:var(--accent);color:var(--on-accent);border:3px solid var(--edge2);box-shadow:0 3px 0 var(--edge2);min-height:44px;font-size:16px}

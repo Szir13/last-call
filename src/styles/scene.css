@@ -1,12 +1,7 @@
-/* ---------- pixel scene ---------- */
-.pxwrap{margin-top:12px}
-.pxstage{position:relative;margin:0 auto;border:2px solid var(--ink);background:#000;line-height:0;overflow:hidden;--z:2.2}
+/* Pixel scene: stage, order bubbles, floating text, tutorial dialog, reactions and their animations. */
 .pxstage canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:manipulation}
-#pxov{position:absolute;inset:0;pointer-events:none;line-height:1.1;font-family:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif}
+#pxov{position:absolute;inset:0;pointer-events:none;line-height:1.1}
 #pxov canvas{image-rendering:pixelated;image-rendering:crisp-edges}
-.pb{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);margin-top:-9px;width:calc(var(--z) * 27px);
-  background:#fffaf0;color:#3b2414;border:2px solid #3b2414;box-shadow:0 2px 0 #3b2414;padding:4px 2px 3px;text-align:center;
-  cursor:pointer;font-size:max(9px,calc(var(--z) * 4px));font-weight:600;touch-action:manipulation}
 .pbn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .pbi{display:flex;justify-content:center;gap:3px;align-items:flex-end}
 .pbg{flex:0 1 auto;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;max-width:32%}
@@ -18,37 +13,57 @@
 .pbg.out canvas{filter:grayscale(1) opacity(.6)}
 .pbr{align-items:center;justify-content:center;gap:4px;padding:2px 0}
 .pbr canvas{display:block}
-.pbv{font-size:max(10px,calc(var(--z) * 4.6px));color:#7a4a00}
 .pbp{height:4px;background:#d8c8a0;margin-top:3px}
 .pbp i{display:block;height:100%;width:100%;background:#4f9a3a}
-.pbx{position:absolute;top:-10px;right:-8px;width:20px;height:20px;padding:0;line-height:16px;font-size:14px;background:#fffaf0;
-  border:2px solid #3b2414;color:#3b2414;font-family:inherit}
+.pbx{position:absolute;top:-10px;right:-8px;width:20px;height:20px;padding:0;line-height:16px;font-size:14px;background:#fffaf0;border:2px solid #3b2414;color:#3b2414;font-family:inherit}
 .pbt{position:absolute;left:50%;bottom:-11px;width:14px;height:9px;margin-left:-7px;background:#3b2414;clip-path:polygon(0 0,100% 0,50% 100%)}
 .pbt::after{content:"";position:absolute;left:3px;right:3px;top:0;bottom:3px;background:#fffaf0;clip-path:polygon(0 0,100% 0,50% 100%)}
 .pb.rdy{background:#fff0bd;border-color:#7a4a00;box-shadow:0 2px 0 #7a4a00;animation:pbj .8s steps(2) infinite}
-.pb.rdy .pbt{background:#7a4a00}.pb.rdy .pbt::after{background:#fff0bd}
-@keyframes pbj{50%{margin-top:-13px}}
-.pxf{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:15px;color:#fff;white-space:nowrap;pointer-events:none;
-  text-shadow:2px 0 #3b2414,-2px 0 #3b2414,0 2px #3b2414,0 -2px #3b2414;animation:pxf 1.2s steps(8) forwards}
-.pxf.gold{color:#ffe27a;font-size:17px}.pxf.red{color:#ff9a86}
-@keyframes pxf{to{transform:translate(-50%,-50%) translateY(-40px);opacity:0}}
-.pxdlg{display:flex;gap:10px;margin-top:10px;background:#f6e7c1;color:#3b2414;border:3px solid #6a4020;box-shadow:0 3px 0 #3b2414;padding:10px;cursor:pointer;
-  font-family:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif}
+.pb.rdy .pbt{background:#7a4a00}
+.pb.rdy .pbt::after{background:#fff0bd}
+.pxf{position:absolute;transform:translate(-50%,-50%);font-weight:700;font-size:15px;color:#fff;white-space:nowrap;pointer-events:none;text-shadow:2px 0 #3b2414,-2px 0 #3b2414,0 2px #3b2414,0 -2px #3b2414;animation:pxf 1.2s steps(8) forwards}
+.pxf.gold{color:#ffe27a;font-size:17px}
+.pxf.red{color:#ff9a86}
 .pxdlg[hidden]{display:none}
-.pxpor{flex:none;width:60px;height:84px;background:#b9824a;border:3px solid #3b2414;display:flex;align-items:center;justify-content:center}
-.pxpor canvas{width:48px;height:72px;image-rendering:pixelated;image-rendering:crisp-edges}
 .pxb{flex:1;min-width:0}
-.pxn{font-weight:700;font-size:17px}
-.pxt{font-size:16px;line-height:1.3;min-height:5.2em;margin-top:2px}
 .pxf2{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
 #pxnext{width:14px;height:10px;background:#3b2414;clip-path:polygon(0 0,100% 0,50% 100%);animation:pxblink 1s steps(2) infinite}
-@keyframes pxblink{50%{opacity:.2}}
-#pxskip{background:transparent;border:2px solid #6a4020;color:#7a5834;padding:4px 10px;font-size:14px;min-height:32px;font-family:inherit}
-.pxbar{display:flex;gap:8px;margin-top:10px}
+#pxskip{background:transparent;border:2px solid #6a4020;color:#7a5834;padding:4px 10px;font-size:14px;min-height:32px}
 .pxhide{display:none}
-nav button.pxpulse{animation:pxnav .9s steps(2) infinite}
+.pxdlg{display:flex;background:#f6e7c1;color:#3b2414;border:3px solid #6a4020;box-shadow:0 3px 0 #3b2414;cursor:pointer;font-family:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif;margin-top:8px;padding:8px;gap:8px}
+.pxpor{flex:none;background:#b9824a;border:3px solid #3b2414;display:flex;align-items:center;justify-content:center;width:50px;height:70px}
+.pxpor canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:40px;height:60px}
+.pxt{margin-top:2px;min-height:4em}
+.pxn{font-weight:700;font-size:16px}
+.pxbar{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.pxform{display:flex;gap:8px;margin-top:8px}
+.pxform[hidden]{display:none}
+.pxform input{flex:1;min-width:0;padding:8px 10px;border:3px solid #6a4020;background:#fffaf0;color:#3b2414;font:inherit;font-size:16px;border-radius:0}
+.pxform button{flex:none;padding:6px 12px;min-height:44px;border:3px solid #3b2414;background:#3f7a2e;color:#fff;font:inherit;font-size:15px;box-shadow:0 3px 0 #3b2414;border-radius:0}
+.pxform button:active{transform:translateY(3px);box-shadow:none}
+.pxcoin{position:absolute;width:6px;height:6px;background:#f2c14a;box-shadow:0 0 0 2px #3b2414;pointer-events:none;animation:pxcoin .8s steps(8) forwards}
+.pxban{position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:92%;background:#fff0bd;color:#3b2414;border:3px solid #7a4a00;box-shadow:0 3px 0 #7a4a00;padding:6px 10px;animation:pxban .35s steps(5);line-height:1.1;pointer-events:none}
+.pxban canvas{width:28px;height:auto}
+.pxbt{display:flex;flex-direction:column;gap:2px}
+.pxbt b{font-size:16px}
+.pxbt span{font-size:13px}
+.pxstage{position:relative;margin:0 auto;background:#000;line-height:0;overflow:hidden;--z:2.2;border:3px solid var(--edge2);box-shadow:0 4px 0 var(--edge2)}
+.pxbar .ghost{min-height:40px}
+#pxov,.pb{font-family:var(--sans)}
+.pb{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);margin-top:-9px;width:calc(var(--z) * 27px);background:#fffaf0;color:#3b2414;border:2px solid #3b2414;box-shadow:0 2px 0 #3b2414;text-align:center;cursor:pointer;touch-action:manipulation;font-weight:700;font-size:max(10px,calc(var(--z) * 4.4px))}
+.pb.sm{font-size:max(9px,calc(var(--z) * 3.8px))}
+.pbv{font-size:max(10px,calc(var(--z) * 4.6px));color:#7a4a00;font-weight:700}
+.pxdlg .pxt{font-size:16px;line-height:1.35}
+.pxbar #hh{font-size:15px}
+.pxstage.dense .pb{padding:2px 1px 3px}
+.pxstage.dense .pb .pbn{display:none}
+.pb.rowdy{background:#ffe3dc;border-color:#c0402a;box-shadow:0 2px 0 #c0402a;animation:pbj .6s steps(2) infinite}
+.pb.rowdy .pbt{background:#c0402a}
+.pb.rowdy .pbt::after{background:#ffe3dc}
+.pb.rowdy::before{content:"!";position:absolute;top:-12px;left:-3px;background:#c0402a;color:#fff;font-size:12px;line-height:1;padding:2px 5px;border:2px solid #3b2414}
+@keyframes pbj{50%{margin-top:-13px}}
+@keyframes pxf{to{transform:translate(-50%,-50%) translateY(-40px);opacity:0}}
+@keyframes pxblink{50%{opacity:.2}}
 @keyframes pxnav{50%{color:var(--accent);transform:translateY(-3px)}}
-@media (prefers-reduced-motion: reduce){
-  .pb.rdy,.pxf,#pxnext,nav button.pxpulse{animation:none}
-}
-
+@keyframes pxcoin{to{transform:translate(var(--dx),var(--dy));opacity:0}}
+@keyframes pxban{from{transform:translateX(-50%) translateY(-40px)}}

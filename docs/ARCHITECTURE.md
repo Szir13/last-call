@@ -52,7 +52,7 @@ The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock ac
 
 ## UI layers
 1. **Engine UI** (original): panels `#p-stock #p-staff #p-upg #p-book #p-brand #p-cal`, built in `build()`, refreshed in `update()` using `setT/setC` and `ref.*`.
-2. **Skin**: CSS only, later blocks win. Cards and grids are applied with CSS to the same DOM (`#p-stock>.row` becomes a card).
+2. **Skin**: CSS only, one file per component (`src/styles/`). Cards and grids are applied with CSS to the same DOM: an ingredient row (`.row.ing`) becomes a card inside the `.cards` grid panels. Rows get their kind class from `mkRow(name, withBtn, kind)`, and every `setC` on a row starts from `r.cls`, so the kind survives updates.
 3. **Scene module** adds: dock and strip, scene canvas, bubbles over the canvas (DOM, positioned by logical coordinates times `Z`), tutorial dialog, tab visibility, row decorations (`decorate()`), team dashboard, next-node cards for the upgrade tree, stock grouping (`groupStock()`), fold sections, and the Venue, Missions and Bank windows.
 4. Layer 3 has no timers. `scene/ui/refresh.js` runs its updates on events: `menu` (recipe banner, stock groups), `stage` (expansion preview), structural changes inside the panels (a `MutationObserver`: row icons, folds; its own edits are discarded), and the `render` event from `loop()`, where values that change all the time refresh every 500 ms (dashboard and trees only while their tab is open). The only timers left are `loop()` (100 ms) and the scene's `requestAnimationFrame`.
 

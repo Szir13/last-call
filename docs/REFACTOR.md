@@ -52,6 +52,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - Wire into CI.
 
 ## 10. CSS hygiene
+**Done.** 611 lines in 6 override layers became one file per component (see CLAUDE.md); 290 declarations that never applied and the CSS of removed features (`.kit`, `.ohd`, `#dockSp`, `#dock.compact`, `.pxon`) are gone; rows are styled by kind classes instead of `#p-stock>.row`. `tools/styles.py` proved every step: the computed style of every element in 84 UI states is identical before and after. Still possible: merging the remaining same-selector rules that compete with something in between (the tool's `pairs` lists them).
 - 630 lines in layers where later blocks override earlier ones (`pixel skin`, `compact layout`, `pixel UI layer`, `app layout`); several rules are dead after later overrides; selectors depend on engine-generated structure (`#p-stock>.row`).
 - **Step**: merge into one ordered stylesheet by component, delete overridden rules, give the engine's rows stable class names instead of structure selectors, and keep `data-*` for state.
 

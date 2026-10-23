@@ -1,0 +1,36 @@
+/* Upgrade and training trees, the next-node cards and the expansion preview. */
+.tgrid{position:relative;display:grid;column-gap:10px;row-gap:30px;margin-top:10px}
+.tlines{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+.tile.locked{color:var(--muted)}
+.tile.part{border-color:var(--accent)}
+.tile.owned .ts{color:var(--accent)}
+.tile.sel{box-shadow:0 0 0 2px var(--accent)}
+.tdetail{padding:14px;margin-top:18px}
+.tdn{font-weight:600;font-size:16px}
+.tdd{color:var(--muted);font-size:14px;margin-top:4px}
+.tdm{font-size:14px;margin-top:8px;font-variant-numeric:tabular-nums}
+.tdetail .big{margin-top:12px;padding:12px}
+.tile{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;box-shadow:0 3px 0 var(--edge2)}
+.tile .tn{line-height:1.2;font-size:14px;font-weight:700}
+.tile .ts{color:var(--muted);font-variant-numeric:tabular-nums;font-size:13px}
+.tile.locked{border-style:dashed;box-shadow:none;background:transparent}
+.tile.can{border-color:var(--gold)}
+.tile.owned{background:var(--accent-soft);border-color:var(--accent)}
+.tlines path{fill:none;stroke:var(--edge);stroke-width:3;stroke-linecap:square}
+.tlines path.on{stroke:var(--accent)}
+.tgrid>*,.tlabels>*{min-width:0}
+.tile{min-width:0;padding:6px 2px;overflow-wrap:break-word}
+.tgrid.c4 .tile .tn{font-size:10px;line-height:1.15;letter-spacing:-.01em}
+.tgrid.c4 .tile .ts{font-size:11px}
+.tlabels{display:grid;column-gap:10px;margin-top:10px;color:var(--muted);text-align:center;font-size:13px}
+.pxprev{flex:0 0 100%;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid var(--edge2);display:block}
+.tile{min-height:64px}
+.pxnext{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.pxnext button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-height:68px;padding:8px 10px;border:3px solid var(--edge);background:var(--surface);color:var(--ink);box-shadow:0 3px 0 var(--edge2);border-radius:0}
+.pxnext button:active{transform:translateY(3px);box-shadow:none}
+.pxnext .br{color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.pxnext .tn{font-size:15px;line-height:1.15}
+.pxnext .ts{color:var(--muted)}
+.pxnext button.can{border-color:var(--gold)}
+.pxnext button.sel{background:var(--accent-soft);border-color:var(--accent)}
+.pxown{color:var(--muted);margin-top:10px}

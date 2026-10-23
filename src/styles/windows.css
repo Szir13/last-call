@@ -1,0 +1,36 @@
+/* Toast, the overlay and its cards: hire, bank, missions, venue, incidents, order details. */
+.ocard{padding:12px 14px;margin-top:10px}
+.oh{display:flex;justify-content:space-between;gap:10px;font-weight:500}
+.orew{font-variant-numeric:tabular-nums;color:var(--accent);text-align:right}
+.oline{display:flex;justify-content:space-between;gap:10px;font-size:15px;margin-top:6px}
+.oline .ost{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.oline .ost.bad{color:var(--warn)}
+.oline .ost.ok{color:var(--accent)}
+.obar{margin-top:10px;overflow:hidden}
+.obar i{display:block;height:100%;background:var(--ink);width:100%}
+.ocard.ready .obar i{background:var(--accent)}
+.ofoot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;min-height:20px}
+.ofoot .onote{color:var(--muted);font-size:12px;flex:1;text-align:right}
+.cand{padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:4px}
+.cand span{color:var(--muted);font-size:14px}
+.cand .buy{align-self:flex-start;margin-top:6px}
+.erow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:15px}
+.eacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.eacts .ghost{padding:7px 12px;font-size:13px}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#ov.on{display:flex}
+.card{padding:24px;max-width:420px;width:100%;margin:auto}
+.ocard.empty{color:var(--muted);text-align:center;padding:20px 14px;font-size:14px;background:transparent;border-style:dashed;box-shadow:none}
+.ocard.ready{border-color:var(--gold)}
+#toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);padding:10px 16px;max-width:88vw;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;text-align:center;border-radius:0;background:var(--surface);color:var(--ink);border:3px solid var(--edge);box-shadow:0 4px 0 var(--edge2);font-size:15px;font-weight:600}
+#ov{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:30;overflow:auto;background:rgba(20,12,6,.6)}
+.card p{margin:0 0 16px;color:var(--muted);font-size:15px}
+.card h2{margin:0 0 6px;font-size:22px;line-height:1.2}
+.card .cand b,.card .cand strong{font-family:var(--sans)}
+.vtabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.vtabs .ghost{min-height:36px;padding:3px 10px;font-size:14px}
+.vstars{font-size:34px;color:#e0a020;letter-spacing:4px;line-height:1.1;text-shadow:2px 2px 0 var(--edge2);margin:4px 0}
+.vbar{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+.vrow{display:flex;flex-wrap:wrap;gap:6px}
+.vpage .cand{margin-top:8px}
+#ov .card{max-height:92vh;overflow-y:auto}

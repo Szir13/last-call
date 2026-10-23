@@ -1,10 +1,11 @@
 /* ---------- UI: build ---------- */
 var ref={ord:[],tr:{},grp:{},ing:{},staff:{},rec:{},exp:null,br:{},mk:{},cal:{},fin:[],ed:{sel:0},mood:{},emps:{},empSig:""};
-function mkRow(name,withBtn){
-  var row=el("div","row"),info=el("div","info"),nm=el("div","name",name),sub=el("div","sub");
+/* kind is a stable class for styling (ing, tier, rec, role, emp, exp, ach); setC on a row always starts from r.cls */
+function mkRow(name,withBtn,kind){
+  var cls="row"+(kind?" "+kind:""),row=el("div",cls),info=el("div","info"),nm=el("div","name",name),sub=el("div","sub");
   info.append(nm,sub);row.appendChild(info);
   var btn=null;if(withBtn){btn=el("button","buy");row.appendChild(btn)}
-  return{row:row,nm:nm,sub:sub,btn:btn,info:info};
+  return{row:row,nm:nm,sub:sub,btn:btn,info:info,cls:cls};
 }
 /* ---------- UI: skill trees ---------- */
 function setA(e,k,v){if(e["_"+k]!==v){e["_"+k]=v;e.setAttribute(k,v)}}
@@ -132,8 +133,8 @@ function rebuildEmps(){
   var box=ref.empBox;clear(box);ref.emps={};
   var order=ROLES.map(function(r){return r.id});
   S.team.slice().sort(function(a,b){return order.indexOf(a.role)-order.indexOf(b.role)||a.id-b.id}).forEach(function(e){
-    var r=mkRow("",false);
-    r.row.className="row pick";
+    var r=mkRow("",false,"emp");
+    r.row.className=r.cls+" pick";
     var tag=el("div","val");r.row.appendChild(tag);r.tag=tag;
     r.row.onclick=function(){ref.ed.sel=e.id;ref.ed.sig=""};
     ref.emps[e.id]=r;box.appendChild(r.row);
@@ -148,10 +149,9 @@ var SKE={
 };
 function skillEffect(role,i){return (SKE[role]||SKE.apprentice)[i]}
 function stockRow(x,t,p){
-  var r=mkRow(t?"":x.n,true);
+  var r=mkRow(t?"":x.n,true,t?"tier":"ing");
   r.barWrap=el("div","sbar");r.bar=el("i");r.barWrap.appendChild(r.bar);r.info.appendChild(r.barWrap);
   r.tog=el("button","tog");r.info.appendChild(r.tog);
-  if(t){r.row.className="row cl"}
   p.appendChild(r.row);
   return r;
 }
@@ -200,7 +200,7 @@ function build(){
   M.drv=el("div","gnote");M.drv.style.marginTop="8px";s.appendChild(M.drv);
   s.appendChild(el("div","h","Hire"));
   ROLES.forEach(function(x){
-    var r=mkRow(x.n,true);r.cnt=el("span","cnt");r.nm.appendChild(r.cnt);
+    var r=mkRow(x.n,true,"role");r.cnt=el("span","cnt");r.nm.appendChild(r.cnt);
     r.btn.onclick=function(){openHire(x.id)};
     ref.staff[x.id]=r;s.appendChild(r.row);
   });
@@ -212,7 +212,7 @@ function build(){
 
   var u=$("#p-upg");clear(u);
   u.appendChild(el("div","h","Expansion"));
-  ref.exp=mkRow("",true);ref.exp.btn.onclick=buyExp;u.appendChild(ref.exp.row);
+  ref.exp=mkRow("",true,"exp");ref.exp.btn.onclick=buyExp;u.appendChild(ref.exp.row);
   u.appendChild(el("div","h","Bar upgrades"));
   u.appendChild(el("p","gnote","Tap a node to see what it does. Each branch unlocks from the top down. Roles are hired in the Team tab once unlocked."));
   ref.tr.bar=mkTree(u,UT,["Team","Service","Stock","Customers"],4);
@@ -225,7 +225,7 @@ function build(){
   [["soft","Soft drinks"],["cocktail","Cocktails"],["solo","Neat, beer and wine"]].forEach(function(sec){
     b.appendChild(el("div","h",sec[1]));
     ITEMS.filter(function(r){return (r.solo?"solo":r.f==="Soft"?"soft":"cocktail")===sec[0]}).sort(function(a,c){return a.p-c.p}).forEach(function(r){
-      var row=mkRow("",false);
+      var row=mkRow("",false,"rec");
       var box=el("div","pbox"),inp=el("input"),fair=el("small"),rst=el("button","tog");
       inp.type="number";inp.step="any";inp.min="0";inp.setAttribute("inputmode","decimal");
       inp.setAttribute("aria-label","Price of "+r.n);
@@ -313,7 +313,7 @@ function build(){
   br.appendChild(el("div","h","Achievements"));
   B.ach={};
   ACH.forEach(function(a){
-    var r=mkRow(a.n,false);var v=el("div","val");r.row.appendChild(v);r.val=v;
+    var r=mkRow(a.n,false,"ach");var v=el("div","val");r.row.appendChild(v);r.val=v;
     B.ach[a.id]=r;br.appendChild(r.row);
   });
   var reset=el("button","link","Erase all progress");var rc=false,rt;

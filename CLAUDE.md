@@ -22,6 +22,8 @@ npm run test:unit                            # Node unit tests (tests/unit/*.tes
 python tools/reference.py --check            # economy gate: medians of 10 seeded runs within 50-57% margin, 1.3-2.6 month payback
 python tools/reference.py --golden check     # exact seed-1 numbers vs tests/golden/reference.txt (--golden update after an intended change)
 npm run test:fast                            # build check + unit tests + golden, ~10 s
+python tools/styles.py snapshot BASE.json     # computed style of every element in 84 UI states (~25 min); then after a CSS change:
+python tools/styles.py check BASE.json        # must print "identical in every state" unless the change was meant to be visible
 npm test                                     # everything, ~2 min: the same gate CI runs (.github/workflows/test.yml); activate .venv first
 ```
 The tools build `tools/.build/index.hooked.html` (a copy with `window.__lc` exposing engine internals) and drive it with Playwright.
@@ -34,7 +36,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | File(s) | What lives there |
 |---|---|
 | `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
-| `styles/` | `base`, `scene`, `skin`, `compact`, `ui-layer`, `app` (later files override earlier ones) |
+| `styles/` | one file per component, in this order: `tokens`, `base`, `layout`, `controls`, `panels`, `team`, `trees`, `calendar`, `windows`, `scene`, `shared` (rules that span components: pixel frame, fonts, reduced motion) |
 | `js/data/` | `balance` (every economy number, with its design target), `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()` (every field), `MIGRATIONS`, `fromSave()`, `migrate()` |
 | `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
@@ -46,7 +48,7 @@ The table below is the same map by section comment (search for it in `src/js`).
 
 | Area | What lives there |
 |---|---|
-| `<style>` | CSS in layers, later layers override earlier ones: base tokens, `pixel scene`, `pixel skin`, `compact layout`, `pixel UI layer`, `app layout`, then small appended blocks |
+| `<style>` | CSS by component (see `src/styles/`); each rule lives once, in the file of its leftmost selector |
 | `/* data */` ... `/* state */` | Static data: ingredients, recipes, staff roles, venue stages (`EXPS`), customers (`CUST`), calendar events, skill trees (`UT`, `TT`, `PT`), achievements |
 | `/* state */` | `def()`, `load()`, `save()`, global state `S` |
 | `calendar engine`, `who is on shift` | Dates, hours, `fxFor(day)` (all demand modifiers), `shiftCounts()` |
@@ -76,6 +78,8 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 - Colors are tokens on `:root` with dark overrides (`--bg --surface --ink --muted --line --accent --edge --edge2 --gold`). The scene art uses fixed palettes.
 - App layout: fixed `#dock` on top, `<nav>` fixed at the bottom, only `#main` scrolls. Do not reintroduce body scroll.
 - Minimum tap target 44 px for primary actions. Respect `prefers-reduced-motion`.
+- CSS: put a rule in the component file of its context, never append an override block at the end. Style engine rows by their kind class (`.row.ing`, `.row.tier`, `.row.rec`, `.row.role`, `.row.emp`, `.row.exp`, `.row.ach`; set by `mkRow` and kept by `setC(r.row, r.cls + ...)`), not by structure (`#p-stock>.row`). State goes in `data-*` or a state class next to the kind.
+- After any CSS change: `python tools/styles.py check BASE.json` against a snapshot taken before the change (`python tools/styles.py snapshot BASE.json`) proves nothing else moved; it compares the computed style of every element in 84 UI states.
 - Build DOM with `el(tag, cls, content)` (`ui/dom.js`): content is text, or an array of nodes and strings for rich lines (`["Points: ", el("b",null,n)]`). Never use `innerHTML`; `clear(node)` empties a container. Names and saves are untrusted text.
 
 ## Definition of done for a change
