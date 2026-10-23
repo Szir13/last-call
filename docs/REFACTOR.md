@@ -72,6 +72,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: `// @ts-check` with JSDoc typedefs for `State`, `Employee`, `Order`, `Item`, then rename gradually.
 
 ## 14. Mobile packaging prerequisites
+**Done.** Fonts bundled in `fonts/` (OFL, pixel-identical to Google's), no network at all; storage behind `storeGet`/`storeSet` with a pluggable `window.lastCallStore`; export and import of the save (Brand tab, *Your game*); iOS sound unlock and sleep, `audioSession` ambient; the smoke test also runs WebKit with an iPhone profile. See `docs/MOBILE.md` for the shell, and what is left (manifest, service worker, Capacitor config, a real-device sound check).
 - Fonts load from Google Fonts: bundle the two font files locally.
 - `localStorage` only: add export/import of the save and a storage abstraction so Capacitor Preferences or cloud save can replace it.
 - Audio is created on first tap; test on iOS.

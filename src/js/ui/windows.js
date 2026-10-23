@@ -55,3 +55,45 @@ function showIncident(){
   });
   showOv(card);
 }
+/* export: the game as text to copy or a file to keep; import: paste or pick that text on another device */
+function openExport(){
+  var text=exportSave(JSON.parse(prefsText()||"null")),card=el("div","card");
+  card.appendChild(el("h2",null,"Export your game"));
+  card.appendChild(el("p",null,"Keep this as a backup, or import it on another device. It holds your whole bar."));
+  var ta=el("textarea","savebox");ta.readOnly=true;ta.value=text;ta.setAttribute("aria-label","Your saved game");card.appendChild(ta);
+  var row=el("div","eacts"),cp=el("button","ghost","Copy"),dl=el("button","ghost","Download file");
+  cp.onclick=function(){
+    var done=function(){toast("Saved game copied.")};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done,function(){ta.select();document.execCommand("copy");done()});
+    else{ta.select();document.execCommand("copy");done()}
+  };
+  dl.onclick=function(){
+    var a=document.createElement("a"),d=new Date(now());
+    a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+    a.download="last-call-"+d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+".json";
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+  };
+  row.append(cp,dl);card.appendChild(row);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  showOv(card);
+}
+function openImport(){
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Import a game"));
+  card.appendChild(el("p",null,"Paste an exported game or choose its file. It replaces the game on this device."));
+  var ta=el("textarea","savebox");ta.setAttribute("aria-label","Exported game to import");card.appendChild(ta);
+  var file=el("input");file.type="file";file.accept=".json,.txt,application/json,text/plain";file.setAttribute("aria-label","Choose an exported game file");
+  file.onchange=function(){var f=file.files&&file.files[0];if(!f)return;var r=new FileReader();r.onload=function(){ta.value=String(r.result)};r.readAsText(f)};
+  card.appendChild(file);
+  var msg=el("p","gnote up");msg.setAttribute("role","alert");card.appendChild(msg);
+  var go=el("button","buy","Replace my game"),armed=false;
+  go.onclick=function(){
+    var d;
+    try{d=parseSave(ta.value)}catch(e){msg.textContent=e.message;armed=false;go.textContent="Replace my game";return}
+    if(!armed){armed=true;msg.textContent="";go.textContent="Tap again: your current game will be gone";return}
+    replaceGame(d);
+  };
+  card.appendChild(go);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  showOv(card);
+}

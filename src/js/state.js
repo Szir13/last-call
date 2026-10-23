@@ -34,6 +34,18 @@ function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed
   inc:null,calmed:0,br:[],leg:{pts:0,perks:{}},legacy:0}}
 /** @type {State} */
 var S=def();
+/* a game as text, to move it to another device or keep a backup; prefs are the scene's settings */
+function exportSave(prefs){return JSON.stringify({game:"last-call",v:S.v,exported:now(),state:S,prefs:prefs||null})}
+/* read an exported game (or a raw saved state); throws an Error with a message for the player */
+function parseSave(text){
+  var d=null;
+  try{d=JSON.parse(String(text).trim())}catch(e){}
+  if(d&&!d.game&&Array.isArray(d.team)&&typeof d.money==="number")d={game:"last-call",state:d,prefs:null};
+  if(!d||d.game!=="last-call"||!d.state||typeof d.state!=="object"||!Array.isArray(d.state.team)||typeof d.state.money!=="number")
+    throw new Error("This is not a Last Call save.");
+  if((d.state.v||0)>MIGRATIONS.length)throw new Error("This save comes from a newer version of the game. Update the game first.");
+  return d;
+}
 /* load a saved object: defaults first, then the save, then the migration steps it has not had yet */
 function fromSave(raw){S=Object.assign(def(),raw);S.v=raw.v||0;migrate(raw)}
 function migrate(raw){

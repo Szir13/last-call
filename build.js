@@ -11,7 +11,7 @@
 "use strict";
 var fs = require("fs"), path = require("path"), vm = require("vm");
 
-var STYLES = ["tokens", "base", "layout", "controls", "panels", "team", "trees", "calendar", "windows", "scene", "shared"];
+var STYLES = ["fonts", "tokens", "base", "layout", "controls", "panels", "team", "trees", "calendar", "windows", "scene", "shared"];
 var SCRIPTS = [
   "main-open",
   /* engine: no DOM, no storage. Talks to the UI only through emit() (engine/events.js) */

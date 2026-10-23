@@ -316,11 +316,14 @@ function build(){
     var r=mkRow(a.n,false,"ach");var v=el("div","val");r.row.appendChild(v);r.val=v;
     B.ach[a.id]=r;br.appendChild(r.row);
   });
+  br.appendChild(el("div","h","Your game"));   /* its own section: not folded away under Achievements */
   var reset=el("button","link","Erase all progress");var rc=false,rt;
   reset.onclick=function(){
     if(!rc){rc=true;reset.textContent="Tap again to erase everything";clearTimeout(rt);rt=setTimeout(function(){rc=false;reset.textContent="Erase all progress"},4000)}
     else{newGame();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
   };
-  br.appendChild(reset);
+  var ex=el("button","link","Export save"),im=el("button","link","Import save");
+  ex.onclick=openExport;im.onclick=openImport;
+  var row=el("div","eacts");row.append(ex,im,reset);br.appendChild(row);
 }
 

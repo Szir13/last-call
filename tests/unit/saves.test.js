@@ -37,3 +37,28 @@ fs.readdirSync(DIR).filter(function (f) { return f.endsWith(".json"); }).sort().
     assert.ok(Object.keys(S.stock).every(function (k) { return isFinite(S.stock[k]); }), "stock stays finite");
   });
 });
+
+var h = require("./game.js");
+
+test("export and import: a game survives the round trip as text", function () {
+  var g = h.game(41, "S.money=12345;S.exp=2;S.barName='Round trip';S.team.push({id:7,name:'Ana',role:'cashier',lvl:1,xp:20,sk:[3,4],wage:1300,cl:1});syncStaff()");
+  var text = g.fn("exportSave")({done: 1});
+  var before = JSON.stringify(g.S());
+  var g2 = h.game(42);
+  var d = g2.fn("parseSave")(text);
+  assert.strictEqual(d.prefs.done, 1);
+  g2.run("fromSave(" + JSON.stringify(d.state) + ")");
+  assert.strictEqual(JSON.stringify(g2.S()), before);
+});
+
+test("import: a raw saved state is accepted, anything else is refused with a message", function () {
+  var g = h.game(43);
+  var raw = JSON.stringify(g.S());
+  assert.strictEqual(g.fn("parseSave")(raw).state.money, 300);
+  ["", "hello", "{}", "[1,2]", JSON.stringify({game: "other", state: {}})].forEach(function (t) {
+    assert.throws(function () { g.fn("parseSave")(t); }, /not a Last Call save/, JSON.stringify(t));
+  });
+  var newer = JSON.parse(g.fn("exportSave")(null));
+  newer.state.v = 999;
+  assert.throws(function () { g.fn("parseSave")(JSON.stringify(newer)); }, /newer version/);
+});

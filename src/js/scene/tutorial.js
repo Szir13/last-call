@@ -20,8 +20,8 @@ function submitName(){
 }
 
 var tutOn=false,tutI=0,tutFull="",tutN=0,tutT=0,tutSnap=0;
-function pget(){try{return JSON.parse(localStorage.getItem(PK)||"{}")||{}}catch(e){return {}}}
-function pset(k,v){try{var o=pget();o[k]=v;localStorage.setItem(PK,JSON.stringify(o))}catch(e){}}
+function pget(){try{return JSON.parse(storeGet(PK)||"{}")||{}}catch(e){return {}}}
+function pset(k,v){try{var o=pget();o[k]=v;storeSet(PK,JSON.stringify(o))}catch(e){}}
 function pdone(){return !!pget().done}
 function updHelp(){var b=document.getElementById("pxhelp");if(b)b.style.display=pdone()?"none":""}
 function setDone(){pset("done",true);updHelp()}

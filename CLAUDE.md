@@ -13,7 +13,7 @@ Source of truth: `src/` (styles, HTML shell, 39 script slices). `node build.js` 
 ```
 node build.js                                # src/ -> index.html (also syntax-checks the script)
 node build.js --check                        # fail if index.html is stale
-open index.html                              # play
+open index.html                              # play (needs fonts/ next to it; no network)
 pip install -r tools/requirements.txt && playwright install chromium
 python tools/reference.py [--sweep] [--node] # economy check, one equipped team per stage, ~20 s (~4 s with --node)
 python tools/run_bots.py [styles] --months 30 --seeds 5 [--node]   # five bot play styles, ~3 min
@@ -44,7 +44,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | `js/state.js` | `def()` (every field), `MIGRATIONS`, `fromSave()`, `migrate()` |
 | `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
 | `js/ui/` | `dom` (`$`, `el`, `clear`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |
-| `js/app/` | `storage` (`load`, `save`, localStorage), `loop` (the 100 ms heartbeat), `start` (boot) |
+| `js/app/` | `storage` (`load`, `save`, `storeGet`/`storeSet` over localStorage or a native store, `replaceGame` for imports), `loop` (the 100 ms heartbeat), `start` (boot) |
 | `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `expansion`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
 
 The table below is the same map by section comment (search for it in `src/js`).
@@ -63,7 +63,7 @@ The table below is the same map by section comment (search for it in `src/js`).
 | `start` | Boot sequence |
 | `pixel scene` (inner IIFE) | Canvas scene, NPCs, bubbles, tutorial, and a UI layer: icons, cards, dock, venue window, bank and mission windows |
 
-Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md`. Numbers and calibration: `docs/ECONOMY.md`. What to improve: `docs/REFACTOR.md` and `docs/BACKLOG.md`.
+Details: `docs/ARCHITECTURE.md`. Mobile app shell, storage and iOS sound: `docs/MOBILE.md`. Features and where they live: `docs/FEATURES.md`. Numbers and calibration: `docs/ECONOMY.md`. What to improve: `docs/REFACTOR.md` and `docs/BACKLOG.md`.
 
 ## Rules that will bite you
 1. **`S` is reassigned** by `load()` and `retire()` (`S=Object.assign(def(),...)`). Never cache `S` or its sub-objects across ticks. The test hook uses `getS()`.
@@ -71,7 +71,7 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 3. **`setC(el,cls)` and `setT(el,text)` overwrite className and textContent** and cache the last value. Do not add classes to engine-managed nodes; use `data-*` attributes (done for `data-open`, `data-exp`).
 4. **Caches to invalidate**: `menuChanged()` after the menu changes (ingredients; it clears `MI` and tells the UI); `FXC.day=-1` after changing anything `fxFor` reads (nights, `S.mods`); `TV++` when the team changes.
 5. **One global overlay** (`showOv`, `hideOv`), a modal dialog: focus moves in and returns to the opener on `hideOv`. Notices (`S.notice`) and incidents (`S.inc`) are shown from `loop()` when the overlay is free.
-6. **Old saves must keep loading.** Every field lives in `def()` with the value it has before the feature is used; a save is merged over `def()` by `fromSave()`. To change the save format, append a step to `MIGRATIONS` in `state.js` (never edit an old step) and add a fixture to `tests/saves/`; `tests/unit/saves.test.js` loads every fixture, migrates it and plays a week. Save keys: engine `last-call-orders-v5`, scene prefs `last-call-pixel-v1`.
+6. **Old saves must keep loading.** Every field lives in `def()` with the value it has before the feature is used; a save is merged over `def()` by `fromSave()`. To change the save format, append a step to `MIGRATIONS` in `state.js` (never edit an old step) and add a fixture to `tests/saves/`; `tests/unit/saves.test.js` loads every fixture, migrates it and plays a week. Save keys: engine `last-call-orders-v5`, scene prefs `last-call-pixel-v1`. Read and write them only through `storeGet`/`storeSet` (never `localStorage` directly), so an app shell can swap the store (`docs/MOBILE.md`).
 7. **Randomness is seeded.** The engine's `random()` is mulberry32 with its state in `S.rng` (`S.seed` records the start), so a save replays the same dice. New games get a random seed: compare balance with medians over many seeds (`--node` makes 20+ runs cheap), and use `--seed N` to reproduce a run exactly or to diff two builds. Cosmetic randomness in the scene still uses `Math.random`.
 8. Money is shown in dollars. Month = 28 days, year = 12 months. One game minute is about one real second while open, and time runs 12x faster while closed.
 9. Offline progress calls `simulate()`; orders are only collected automatically by cashiers.

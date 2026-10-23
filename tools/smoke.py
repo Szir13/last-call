@@ -3,6 +3,7 @@
     python tools/smoke.py                  # tests index.html
     python tools/smoke.py path/to/page.html
 
+Also runs a fresh game and the late save in WebKit with an iPhone 13 profile (touch, Safari's engine).
 Fails on any console error or page error. Screenshots of every tab go to
 tools/.build/shots/ (fresh-light-stock.png, save-dark-cal.png, ...).
 Old saves live in tests/saves/*.json as {localStorage key: value}.
@@ -21,9 +22,9 @@ if(k==='last-call-orders-v5'){const s=JSON.parse(v);s.last=Date.now()-60e3;v=JSO
 localStorage.setItem(k,v)}}"""
 
 
-def visit(browser, url, scheme, label, save=None):
+def visit(browser, url, scheme, label, save=None, device=None):
     errors = []
-    ctx = browser.new_context(viewport={"width": 390, "height": 780}, color_scheme=scheme)
+    ctx = browser.new_context(**device, color_scheme=scheme) if device else browser.new_context(viewport={"width": 390, "height": 780}, color_scheme=scheme)
     if save:
         ctx.add_init_script("(%s)(%s)" % (SEED, json.dumps(save)))
     page = ctx.new_page()
@@ -46,7 +47,7 @@ def visit(browser, url, scheme, label, save=None):
         tab = page.locator('nav [data-tab="%s"]' % t)
         if not tab.is_visible():
             continue  # locked tabs are hidden early in the game
-        tab.click()
+        tab.tap() if device else tab.click()
         page.evaluate("t=>{var p=document.getElementById('p-'+t);if(p)p.scrollIntoView()}", t)
         page.wait_for_timeout(350)
         page.screenshot(path=str(SHOTS / ("%s-%s-%s.png" % (label, scheme, t))))
@@ -71,6 +72,15 @@ def main():
                 for e in errs:
                     print("    " + e)
         browser.close()
+        # WebKit on an iPhone profile: the engine of iOS Safari and of an iOS app shell
+        webkit = pw.webkit.launch()
+        for label, save in [("fresh", None)] + [(f.stem, json.loads(f.read_text())) for f in saves if f.stem == "v0-late"]:
+            errs = visit(webkit, src.as_uri(), "light", "iphone-" + label, save, device=pw.devices["iPhone 13"])
+            failed += len(errs)
+            print("%-6s %-24s %s" % ("webkit", label, "ok" if not errs else "FAIL"))
+            for e in errs:
+                print("    " + e)
+        webkit.close()
     print("screenshots:", SHOTS)
     sys.exit(1 if failed else 0)
 

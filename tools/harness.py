@@ -25,6 +25,14 @@ INCS showIncident showNotice NIGHTS stylePts supMode unitCost regAfterServe pick
 branchIncome dateOf setEnv""".split()
 
 
+def copy_assets(dest_dir):
+    """Pages copied elsewhere still load their files by relative URL: bring fonts/ along."""
+    import shutil
+    src = ROOT / "fonts"
+    if src.exists():
+        shutil.copytree(src, pathlib.Path(dest_dir) / "fonts", dirs_exist_ok=True)
+
+
 def build_hook():
     html = SRC.read_text(encoding="utf-8")
     anchor = "setInterval(loop,100);"
@@ -33,6 +41,7 @@ def build_hook():
     lines += ["try{window.__lc.%s=%s}catch(e){}" % (n, n) for n in HOOK_NAMES]
     lines.append("window.__loopId=setInterval(loop,100);")
     BUILD.parent.mkdir(parents=True, exist_ok=True)
+    copy_assets(BUILD.parent)
     BUILD.write_text(html.replace(anchor, "\n".join(lines), 1), encoding="utf-8")
     return BUILD
 

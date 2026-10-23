@@ -5,11 +5,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Last Call</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* Fonts bundled with the game (fonts/, SIL Open Font License, see fonts/OFL-*.txt), so it works offline
+   and inside an app shell. Same files, weights and ranges Google Fonts served before. */
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:300;font-display:swap;src:url(fonts/hanken-grotesk-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hanken-grotesk-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hanken-grotesk-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hanken-grotesk-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:300;font-display:swap;src:url(fonts/hanken-grotesk-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/hanken-grotesk-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/hanken-grotesk-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Hanken Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/hanken-grotesk-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/pixelify-sans-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/pixelify-sans-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/pixelify-sans-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/pixelify-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/pixelify-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'Pixelify Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/pixelify-sans-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
 /* Colour and font tokens, light and dark. Colours are only ever used through these.
    Text colours (--ink, --muted, --accent-ink, --warn) reach WCAG AA 4.5:1 on --bg, --surface and --accent-soft.
    --accent is for fills and borders; green text uses --accent-ink.
@@ -302,6 +314,9 @@ nav{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5;backgr
 .vrow{display:flex;flex-wrap:wrap;gap:6px}
 .vpage .cand{margin-top:8px}
 #ov .card{max-height:92vh;overflow-y:auto}
+.savebox{display:block;width:100%;min-height:120px;margin:4px 0 10px;padding:8px;border:3px solid var(--edge);background:var(--bg);color:var(--ink);font:12px/1.35 ui-monospace,Menlo,monospace;resize:vertical;overflow-wrap:anywhere}
+.card input[type=file]{display:block;width:100%;min-height:44px;margin:0 0 8px;color:var(--ink);font:inherit}
+#ov .eacts .ghost{min-height:44px}
 /* Pixel scene: stage, order bubbles, floating text, tutorial dialog, reactions and their animations. */
 .pxstage canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:manipulation}
 #pxov{position:absolute;inset:0;pointer-events:none;line-height:1.1}
@@ -1115,6 +1130,18 @@ function def(){var seed=ENV.seed();return{v:MIGRATIONS.length,seed:seed,rng:seed
   inc:null,calmed:0,br:[],leg:{pts:0,perks:{}},legacy:0}}
 /** @type {State} */
 var S=def();
+/* a game as text, to move it to another device or keep a backup; prefs are the scene's settings */
+function exportSave(prefs){return JSON.stringify({game:"last-call",v:S.v,exported:now(),state:S,prefs:prefs||null})}
+/* read an exported game (or a raw saved state); throws an Error with a message for the player */
+function parseSave(text){
+  var d=null;
+  try{d=JSON.parse(String(text).trim())}catch(e){}
+  if(d&&!d.game&&Array.isArray(d.team)&&typeof d.money==="number")d={game:"last-call",state:d,prefs:null};
+  if(!d||d.game!=="last-call"||!d.state||typeof d.state!=="object"||!Array.isArray(d.state.team)||typeof d.state.money!=="number")
+    throw new Error("This is not a Last Call save.");
+  if((d.state.v||0)>MIGRATIONS.length)throw new Error("This save comes from a newer version of the game. Update the game first.");
+  return d;
+}
 /* load a saved object: defaults first, then the save, then the migration steps it has not had yet */
 function fromSave(raw){S=Object.assign(def(),raw);S.v=raw.v||0;migrate(raw)}
 function migrate(raw){
@@ -2552,6 +2579,48 @@ function showIncident(){
   });
   showOv(card);
 }
+/* export: the game as text to copy or a file to keep; import: paste or pick that text on another device */
+function openExport(){
+  var text=exportSave(JSON.parse(prefsText()||"null")),card=el("div","card");
+  card.appendChild(el("h2",null,"Export your game"));
+  card.appendChild(el("p",null,"Keep this as a backup, or import it on another device. It holds your whole bar."));
+  var ta=el("textarea","savebox");ta.readOnly=true;ta.value=text;ta.setAttribute("aria-label","Your saved game");card.appendChild(ta);
+  var row=el("div","eacts"),cp=el("button","ghost","Copy"),dl=el("button","ghost","Download file");
+  cp.onclick=function(){
+    var done=function(){toast("Saved game copied.")};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done,function(){ta.select();document.execCommand("copy");done()});
+    else{ta.select();document.execCommand("copy");done()}
+  };
+  dl.onclick=function(){
+    var a=document.createElement("a"),d=new Date(now());
+    a.href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+    a.download="last-call-"+d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+".json";
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},1000);
+  };
+  row.append(cp,dl);card.appendChild(row);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  showOv(card);
+}
+function openImport(){
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Import a game"));
+  card.appendChild(el("p",null,"Paste an exported game or choose its file. It replaces the game on this device."));
+  var ta=el("textarea","savebox");ta.setAttribute("aria-label","Exported game to import");card.appendChild(ta);
+  var file=el("input");file.type="file";file.accept=".json,.txt,application/json,text/plain";file.setAttribute("aria-label","Choose an exported game file");
+  file.onchange=function(){var f=file.files&&file.files[0];if(!f)return;var r=new FileReader();r.onload=function(){ta.value=String(r.result)};r.readAsText(f)};
+  card.appendChild(file);
+  var msg=el("p","gnote up");msg.setAttribute("role","alert");card.appendChild(msg);
+  var go=el("button","buy","Replace my game"),armed=false;
+  go.onclick=function(){
+    var d;
+    try{d=parseSave(ta.value)}catch(e){msg.textContent=e.message;armed=false;go.textContent="Replace my game";return}
+    if(!armed){armed=true;msg.textContent="";go.textContent="Tap again: your current game will be gone";return}
+    replaceGame(d);
+  };
+  card.appendChild(go);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  showOv(card);
+}
 /* ---------- UI: build ---------- */
 var ref={ord:[],tr:{},grp:{},ing:{},staff:{},rec:{},exp:null,br:{},mk:{},cal:{},fin:[],ed:{sel:0},mood:{},emps:{},empSig:""};
 /* kind is a stable class for styling (ing, tier, rec, role, emp, exp, ach); setC on a row always starts from r.cls */
@@ -2870,12 +2939,15 @@ function build(){
     var r=mkRow(a.n,false,"ach");var v=el("div","val");r.row.appendChild(v);r.val=v;
     B.ach[a.id]=r;br.appendChild(r.row);
   });
+  br.appendChild(el("div","h","Your game"));   /* its own section: not folded away under Achievements */
   var reset=el("button","link","Erase all progress");var rc=false,rt;
   reset.onclick=function(){
     if(!rc){rc=true;reset.textContent="Tap again to erase everything";clearTimeout(rt);rt=setTimeout(function(){rc=false;reset.textContent="Erase all progress"},4000)}
     else{newGame();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
   };
-  br.appendChild(reset);
+  var ex=el("button","link","Export save"),im=el("button","link","Import save");
+  ex.onclick=openExport;im.onclick=openImport;
+  var row=el("div","eacts");row.append(ex,im,reset);br.appendChild(row);
 }
 
 /* ---------- UI: update ---------- */
@@ -3301,15 +3373,35 @@ document.querySelectorAll("nav button").forEach(function(b){b.onclick=function()
 
 $("#hh").onclick=startHappyHour;
 
-/* ---------- saving: only the app touches localStorage; the engine asks with emit("save") ---------- */
+/* ---------- saving: only the app touches storage; the engine asks with emit("save") ----------
+   Everything persistent goes through storeGet/storeSet. The backend is localStorage unless a native shell
+   (Capacitor Preferences, a cloud save) sets window.lastCallStore = {get(k), set(k,v), remove(k)} before this
+   script runs; get must answer at once, so an async store is read into memory first (docs/MOBILE.md). */
 var KEY="last-call-orders-v5";
+var STORE=window.lastCallStore||{
+  get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},
+  set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}},
+  remove:function(k){try{localStorage.removeItem(k)}catch(e){}}
+};
+function storeGet(k){try{return STORE.get(k)}catch(e){return null}}
+function storeSet(k,v){try{STORE.set(k,v)}catch(e){}}
+var saving=true;   /* off while another game is being loaded in its place */
 function load(){
   var raw=null;
-  try{var r=localStorage.getItem(KEY);if(r)raw=JSON.parse(r)}catch(e){}
+  try{var r=storeGet(KEY);if(r)raw=JSON.parse(r)}catch(e){}
   if(raw)fromSave(raw);else migrate();
 }
-function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){if(!saving)return;S.last=Date.now();storeSet(KEY,JSON.stringify(S))}
 onEv("save",save);
+/* replace the game on this device with an imported one, then start again from it */
+function replaceGame(d){
+  saving=false;
+  storeSet(KEY,JSON.stringify(d.state));
+  if(d.prefs)storeSet(PREFS_KEY,JSON.stringify(d.prefs));
+  location.reload();
+}
+var PREFS_KEY="last-call-pixel-v1";
+function prefsText(){return storeGet(PREFS_KEY)}
 /* ---------- loop ---------- */
 var lastT=Date.now(),lastSave=Date.now();
 function loop(){
@@ -3807,8 +3899,8 @@ function submitName(){
 }
 
 var tutOn=false,tutI=0,tutFull="",tutN=0,tutT=0,tutSnap=0;
-function pget(){try{return JSON.parse(localStorage.getItem(PK)||"{}")||{}}catch(e){return {}}}
-function pset(k,v){try{var o=pget();o[k]=v;localStorage.setItem(PK,JSON.stringify(o))}catch(e){}}
+function pget(){try{return JSON.parse(storeGet(PK)||"{}")||{}}catch(e){return {}}}
+function pset(k,v){try{var o=pget();o[k]=v;storeSet(PK,JSON.stringify(o))}catch(e){}}
 function pdone(){return !!pget().done}
 function updHelp(){var b=document.getElementById("pxhelp");if(b)b.style.display=pdone()?"none":""}
 function setDone(){pset("done",true);updHelp()}
@@ -3961,22 +4053,32 @@ function faceEl(mood,sc){
   return pxCv(c,9,9,sc||3);
 }
 
-/* ---- sound ---- */
+/* ---- sound ----
+   iOS rules: the audio context can only start inside a tap (touchend or click, not pointerdown), and a
+   suspended context may refuse to resume outside one. So every gesture creates or wakes the context, each
+   sound waits for it to run, and the context sleeps 1.5 s after the last sound (an idle running context
+   keeps the phone's audio hardware awake). "ambient" lets the player's own music keep playing. */
 var AC=null,acSleep=0,muted=!!pget().mute;
 function audio(){if(AC===null){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AC=false}}return AC||null}
+try{if(navigator.audioSession)navigator.audioSession.type="ambient"}catch(e){}
+function wake(){var a=audio();if(a&&a.state!=="running"&&a.state!=="closed"){try{var r=a.resume();if(r&&r.catch)r.catch(function(){})}catch(e){}}return a}
+["touchend","click","keydown"].forEach(function(ev){document.addEventListener(ev,function(){if(!muted&&(AC===null||(AC&&AC.state!=="running")))wake()},true)});
 function sfx(kind){
-  if(muted)return;var a=audio();if(!a)return;if(a.state==="suspended"){try{a.resume()}catch(e){}}
-  var now=a.currentTime;
-  function n(f,s,d){var o=a.createOscillator(),gg=a.createGain();o.type="square";o.frequency.value=f;
-    gg.gain.setValueAtTime(0.0001,now+s);gg.gain.exponentialRampToValueAtTime(0.045,now+s+0.01);gg.gain.exponentialRampToValueAtTime(0.0001,now+s+d);
-    o.connect(gg);gg.connect(a.destination);o.start(now+s);o.stop(now+s+d+0.03)}
-  clearTimeout(acSleep);acSleep=setTimeout(function(){if(AC&&AC.state==="running")AC.suspend()},1500);
-  if(kind==="coin"){n(988,0,0.06);n(1319,0.06,0.14)}
-  else if(kind==="new"){n(659,0,0.09);n(784,0.09,0.09);n(988,0.18,0.09);n(1319,0.27,0.22)}
-  else if(kind==="tab"){n(523,0,0.07);n(784,0.07,0.1)}
-  else if(kind==="tap"){n(440,0,0.04)}
+  if(muted)return;var a=wake();if(!a)return;
+  function play(){
+    var now=a.currentTime;
+    function n(f,s,d){var o=a.createOscillator(),gg=a.createGain();o.type="square";o.frequency.value=f;
+      gg.gain.setValueAtTime(0.0001,now+s);gg.gain.exponentialRampToValueAtTime(0.045,now+s+0.01);gg.gain.exponentialRampToValueAtTime(0.0001,now+s+d);
+      o.connect(gg);gg.connect(a.destination);o.start(now+s);o.stop(now+s+d+0.03)}
+    clearTimeout(acSleep);acSleep=setTimeout(function(){if(AC&&AC.state==="running")AC.suspend()},1500);
+    if(kind==="coin"){n(988,0,0.06);n(1319,0.06,0.14)}
+    else if(kind==="new"){n(659,0,0.09);n(784,0.09,0.09);n(988,0.18,0.09);n(1319,0.27,0.22)}
+    else if(kind==="tab"){n(523,0,0.07);n(784,0.07,0.1)}
+    else if(kind==="tap"){n(440,0,0.04)}
+  }
+  if(a.state==="running")play();
+  else{try{var r=a.resume();if(r&&r.then)r.then(function(){if(a.state==="running")play()},function(){});}catch(e){}}   /* no gesture yet: stay quiet */
 }
-document.addEventListener("pointerdown",function(){audio()},{once:true});
 function syncSnd(){var b=document.getElementById("pxsnd");b.textContent=muted?"Sound off":"Sound on";b.setAttribute("aria-pressed",muted?"false":"true")}
 document.getElementById("pxsnd").addEventListener("click",function(){muted=!muted;pset("mute",muted);syncSnd();if(!muted)sfx("tap")});
 syncSnd();

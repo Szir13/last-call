@@ -34,3 +34,6 @@
 .vrow{display:flex;flex-wrap:wrap;gap:6px}
 .vpage .cand{margin-top:8px}
 #ov .card{max-height:92vh;overflow-y:auto}
+.savebox{display:block;width:100%;min-height:120px;margin:4px 0 10px;padding:8px;border:3px solid var(--edge);background:var(--bg);color:var(--ink);font:12px/1.35 ui-monospace,Menlo,monospace;resize:vertical;overflow-wrap:anywhere}
+.card input[type=file]{display:block;width:100%;min-height:44px;margin:0 0 8px;color:var(--ink);font:inherit}
+#ov .eacts .ghost{min-height:44px}

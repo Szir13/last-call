@@ -21,7 +21,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 BUILD = ROOT / "tools" / ".build"
 JS = (ROOT / "tools" / "js" / "styles.js").read_text()
 NOW = 1790000000000
-NAMES = "S update emit toast spawnOrder finishOrder showNotice showIncident openHire INCS unlockIng".split()
+NAMES = "S update emit toast spawnOrder finishOrder showNotice showIncident openHire INCS unlockIng openExport openImport".split()
 TABS = ["stock", "staff", "upg", "book", "brand", "cal"]
 
 
@@ -30,6 +30,8 @@ def hooked(page_html):
     inj = "window.__lc={getS:function(){return S}};" + "".join("try{window.__lc.%s=%s}catch(e){}" % (n, n) for n in NAMES) + "setInterval(loop,100);"
     out = BUILD / ("styles-" + pathlib.Path(page_html).stem + ".html")
     BUILD.mkdir(parents=True, exist_ok=True)
+    from harness import copy_assets
+    copy_assets(BUILD)
     out.write_text(html.replace("setInterval(loop,100);", inj, 1), encoding="utf-8")
     return out.as_uri()
 
@@ -81,6 +83,8 @@ def states():
     out.append(("incident", late, done, 0, [("eval", "S.inc={id:L.INCS[0].id}"), ("eval", "L.showIncident()")]))
     out.append(("notice", late, done, 0, [("eval", "S.notice={type:'repo',from:'Hotel bar',to:'Neighborhood bar',sale:1,toDebt:1,cash:0,debtLeft:5,fired:1}"), ("eval", "L.showNotice()")]))
     out.append(("welcome-back", late, done, 3600, []))
+    out.append(("export", late, done, 0, [("eval", "L.openExport()")]))
+    out.append(("import", late, done, 0, [("eval", "L.openImport()")]))
     out.append(("bubbles", late, done, 0, [("eval", "S.orders=[];S.hold=[];for(let i=0;i<6;i++)L.spawnOrder();L.finishOrder(S.orders[0]);if(S.orders[1])S.orders[1].rowdy=true"),
                                            ("frames",), ("eval", "L.toast('Hello')")]))
     out.append(("compact-dock", late, done, 0, [("tab", "stock"), ("scroll",)]))
