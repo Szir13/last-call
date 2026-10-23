@@ -60,7 +60,12 @@ The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock ac
 Canvas is 160x140 logical pixels scaled by `Z` (fractional, snapped to device pixels). Layers: sky (dynamic) -> `LA` back (cached per stage and shelf contents) -> weather -> crew behind counter -> `LB` counter (cached) -> decor -> customers sorted by y -> weather in front -> day/night tint. Customers are NPCs derived each frame from `S.orders` and `S.hold` (`sync()`), never stored. Seats: up to 15 in three rows (`SLOTX/SLOTY`).
 
 ## Persistence
-`localStorage`: engine state under `last-call-orders-v5` (every 5 s and on hide), scene preferences under `last-call-pixel-v1` (`done`, `hide`, `tabs`, `fold`, `mute`). `load()` calls `fromSave()`: the saved JSON is merged over `def()`, then every `MIGRATIONS` step from the save's `v` (0 when missing) to the current version runs, then small repairs and `syncStaff()`. Fixtures for each past version live in `tests/saves/` and are checked by `tools/test_saves.js` (Node) and `tools/smoke.py` (browser). `retire()` rebuilds `S` and the page reloads.
+`localStorage`: engine state under `last-call-orders-v5` (every 5 s and on hide), scene preferences under `last-call-pixel-v1` (`done`, `hide`, `tabs`, `fold`, `mute`). `load()` calls `fromSave()`: the saved JSON is merged over `def()`, then every `MIGRATIONS` step from the save's `v` (0 when missing) to the current version runs, then small repairs and `syncStaff()`. Fixtures for each past version live in `tests/saves/` and are checked by `tests/unit/saves.test.js` (Node) and `tools/smoke.py` (browser). `retire()` rebuilds `S` and the page reloads.
 
 ## Test hook
 `tools/harness.py` injects `window.__lc` before `setInterval(loop,100)`. Inner-IIFE functions are not reachable from the hook; test them through the DOM. With `node=True` the same scripts run against `tools/engine.js`, where `window.__lc` resolves any engine name.
+
+## Tests
+- `tests/unit/*.test.js` (`node:test`): each test builds a fresh headless engine with a fixed seed (`tests/unit/game.js`) and checks one rule. Engine objects come from another `vm` realm, so compare them through `JSON`.
+- `tools/reference.py --check`: the design targets as a gate, on medians of 10 seeded runs (deterministic). `--golden`: the exact seed-1 numbers, plus short seeded `reckless` and `idle` bot runs for the loan and repossession paths, so any change to the economy is a deliberate, reviewed update of `tests/golden/reference.txt`.
+- `tools/smoke.py`: the browser, for what Node cannot see (DOM, CSS, both color schemes, old saves on screen).

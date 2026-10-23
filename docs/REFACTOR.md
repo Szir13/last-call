@@ -35,7 +35,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: standardise on `el(tag, attrs, children)` with `textContent`; keep `innerHTML` only for static icons.
 
 ## 7. State schema and migrations
-**Done.** `S.v`, every field in `def()`, numbered `MIGRATIONS` (0→1 wage scaling, 1→2 schedules removed), `fromSave()`. Fixtures: `tests/saves/v0-*.json`; test: `node tools/test_saves.js`. The defensive `S.x||default` reads are still in place and can go gradually.
+**Done.** `S.v`, every field in `def()`, numbered `MIGRATIONS` (0→1 wage scaling, 1→2 schedules removed), `fromSave()`. Fixtures: `tests/saves/v0-*.json`; test: `tests/unit/saves.test.js`. The defensive `S.x||default` reads are still in place and can go gradually.
 - `def()` plus ad hoc `if(!S.x)S.x=...` and lazily created fields (`S.ms`, `S.reg`, `S.deco`, `S.sup`, `S.nights`, `S.mods`, `S.hold`, `S.guide`, `S.leg`, `S.br`...).
 - **Step**: add `S.v`, move every field into `def()`, write `migrate(S)` with numbered steps, test loading saves from each past version (keep fixture JSONs in `tests/saves/`).
 
@@ -45,6 +45,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: `data/balance.js` (or JSON) with every tunable and a comment of its design target; engine reads from it; `tools/reference.py` reads the same file so numbers cannot drift (today `WK` and `EXPANSION_COST` are duplicated in Python).
 
 ## 9. Automated tests and a regression gate
+**Done.** `tests/unit/` (node:test, no dependencies): order engine, month end, bank and repossession, missions, suppliers, `fxFor`, every save fixture. `reference.py --check` gates medians of 10 seeded runs; `--golden` pins the exact seed-1 numbers. `npm test` runs it all plus the smoke test; `.github/workflows/test.yml` runs `npm test` on push (needs a GitHub remote).
 - Unit tests (Node): `spawnOrder` weights, `finishOrder` reward, `monthEnd`, `repossess`, `reorderChance`, missions, supplier pricing, `fxFor`.
 - Golden economy test: `tools/reference.py` margins within 50-57% and paybacks within 1.3-2.6 months.
 - Smoke test: fresh game and old save load with zero console errors at 390x780 in both color schemes.
@@ -73,7 +74,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 
 ## Quick bug watch-list
 - `S.hold` entries survive reload; verify scene recreates seated guests and that stale `rid` entries cannot block seats.
-- `repossess()` clears many fields by hand: add a test that asserts every field it should reset.
+- `repossess()` clears many fields by hand: covered by `tests/unit/money.test.js` (every field it should reset).
 - `showNotice` and `showIncident` wait for a free overlay; make sure a long-running overlay (Venue) cannot starve them.
 - Offline `simulate()` auto-resolves incidents with the first free option; decide if that is the intended experience.
 - Branch income uses a constant `HQP`, not the player's real profit; income can exceed what the chain actually makes.

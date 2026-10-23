@@ -18,8 +18,11 @@ pip install -r tools/requirements.txt && playwright install chromium
 python tools/reference.py [--sweep] [--node] # economy check, one equipped team per stage, ~20 s (~4 s with --node)
 python tools/run_bots.py [styles] --months 30 --seeds 5 [--node]   # five bot play styles, ~3 min
 python tools/smoke.py                        # fresh game + tests/saves/*.json, 390x780, light and dark, fails on console errors
-node tools/test_saves.js                     # every fixture in tests/saves/ loads, migrates and plays a week (Node, seconds)
-npm test                                     # check + smoke + reference (activate .venv first)
+npm run test:unit                            # Node unit tests (tests/unit/*.test.js), under a second; includes every save in tests/saves/
+python tools/reference.py --check            # economy gate: medians of 10 seeded runs within 50-57% margin, 1.3-2.6 month payback
+python tools/reference.py --golden check     # exact seed-1 numbers vs tests/golden/reference.txt (--golden update after an intended change)
+npm run test:fast                            # build check + unit tests + golden, ~10 s
+npm test                                     # everything, ~2 min: the same gate CI runs (.github/workflows/test.yml); activate .venv first
 ```
 The tools build `tools/.build/index.hooked.html` (a copy with `window.__lc` exposing engine internals) and drive it with Playwright.
 **Economy numbers live only in `src/js/data/balance.js`. After changing any of them, run both tools and compare with `docs/ECONOMY.md`.** With `--seed N` the same build always prints the same numbers, so a refactor that should not touch the economy must keep `reference.py --node --seed N` identical.
@@ -63,7 +66,7 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 3. **`setC(el,cls)` and `setT(el,text)` overwrite className and textContent** and cache the last value. Do not add classes to engine-managed nodes; use `data-*` attributes (done for `data-open`, `data-exp`).
 4. **Caches to invalidate**: `menuChanged()` after the menu changes (ingredients; it clears `MI` and tells the UI); `FXC.day=-1` after changing anything `fxFor` reads (nights, `S.mods`); `TV++` when the team changes.
 5. **One global overlay** (`showOv`, `hideOv`). Notices (`S.notice`) and incidents (`S.inc`) are shown from `loop()` when the overlay is free.
-6. **Old saves must keep loading.** Every field lives in `def()` with the value it has before the feature is used; a save is merged over `def()` by `fromSave()`. To change the save format, append a step to `MIGRATIONS` in `state.js` (never edit an old step) and add a fixture to `tests/saves/`; `node tools/test_saves.js` loads every fixture, migrates it and plays a week. Save keys: engine `last-call-orders-v5`, scene prefs `last-call-pixel-v1`.
+6. **Old saves must keep loading.** Every field lives in `def()` with the value it has before the feature is used; a save is merged over `def()` by `fromSave()`. To change the save format, append a step to `MIGRATIONS` in `state.js` (never edit an old step) and add a fixture to `tests/saves/`; `tests/unit/saves.test.js` loads every fixture, migrates it and plays a week. Save keys: engine `last-call-orders-v5`, scene prefs `last-call-pixel-v1`.
 7. **Randomness is seeded.** The engine's `random()` is mulberry32 with its state in `S.rng` (`S.seed` records the start), so a save replays the same dice. New games get a random seed: compare balance with medians over many seeds (`--node` makes 20+ runs cheap), and use `--seed N` to reproduce a run exactly or to diff two builds. Cosmetic randomness in the scene still uses `Math.random`.
 8. Money is shown in dollars. Month = 28 days, year = 12 months. One game minute is about one real second while open, and time runs 12x faster while closed.
 9. Offline progress calls `simulate()`; orders are only collected automatically by cashiers.
@@ -76,4 +79,4 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 - Build DOM with `el(tag, cls, content)` (`ui/dom.js`): content is text, or an array of nodes and strings for rich lines (`["Points: ", el("b",null,n)]`). Never use `innerHTML`; `clear(node)` empties a container. Names and saves are untrusted text.
 
 ## Definition of done for a change
-`node build.js` (it syntax-checks the script) and `index.html` committed with `src/`, no console errors on a fresh game and on an old save, `tools/reference.py` margins still 50-57% if economy was touched, screenshots in dark and light if UI was touched.
+`node build.js` and `index.html` committed with `src/`; `npm test` passes (unit tests, economy gate, golden numbers, smoke test on a fresh game and every old save). If you changed the economy on purpose, the golden fails: check the new numbers against `docs/ECONOMY.md`, then `python tools/reference.py --golden update` and commit it. New engine behaviour gets a unit test in `tests/unit/`; a save format change gets a `MIGRATIONS` step and a fixture. Look at the screenshots in `tools/.build/shots/` if UI was touched.

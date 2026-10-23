@@ -1,0 +1,12 @@
+scenario         staff  menu    revenue     cogs  rent+util   payroll     profit  margin  walk  sat
+S0 limit 2           1     6     14,378    2,005      1,050     1,000     10,322     72%     0   97
+S1 limit 5           5    20     85,619    8,912     19,700     8,580     48,426     57%     1   95
+S2 limit 8           8    33    296,336   18,771     83,000    24,480    170,085     57%     0   93
+S3 limit 12         12    60    614,937   28,424    176,000    62,750    347,762     57%     0   95
+S4 limit 18         17    64    981,935   48,067    270,000   128,800    535,067     54%    41   97
+
+payback of the next expansion (months of profit): [1.0, 1.5, 1.5, 2.2]
+daily revenue (feeds MS_DAYREV in src/js/data/balance.js): [514, 3058, 10583, 21962, 35069]
+
+reckless: stage 2, net worth -864, debt 864, repossessed 0, late 1
+idle: stage 0, net worth -2514, debt 2814, repossessed 1, late 0

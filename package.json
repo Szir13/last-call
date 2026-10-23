@@ -5,7 +5,8 @@
   "scripts": {
     "build": "node build.js",
     "check": "node build.js --check",
-    "test": "node build.js --check && node tools/test_saves.js && python3 tools/smoke.py && python3 tools/reference.py",
-    "test:fast": "node build.js --check && node tools/test_saves.js && python3 tools/reference.py --node"
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:fast": "node build.js --check && node --test tests/unit/*.test.js && python3 tools/reference.py --golden check",
+    "test": "node build.js --check && node --test tests/unit/*.test.js && python3 tools/reference.py --check --golden check && python3 tools/smoke.py"
   }
 }
