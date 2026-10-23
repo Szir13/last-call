@@ -39,7 +39,14 @@ Everything persistent goes through `storeGet(key)` and `storeSet(key, value)` in
 - `navigator.audioSession.type = "ambient"` (Safari 16.4+): game sounds mix with the player's music and follow the silent switch.
 - Verified in WebKit with an iPhone 13 profile (Playwright). Not yet on a real iPhone: check on a device that sounds play after the first tap, after the app comes back from the background, and with music playing.
 
+## Installable web app (PWA)
+- `node build.js` also writes `www/`: the page, `fonts/`, `audio/`, `icons/`, `manifest.webmanifest` (from `src/pwa/`) and `sw.js`, whose version is a hash of everything else so each release replaces the old cache. `www/` is generated, not committed.
+- The service worker (`src/pwa/sw.js`): the page comes from the network when there is one and from the cache offline; fonts and icons are cached at install, the music when it first plays (served in byte ranges, which Safari asks for). It only registers over http(s), so opening `index.html` from disk is unchanged.
+- Icons: `python tools/icons.py` draws them (32x32 pixel art scaled by whole pixels) into `icons/`.
+- Check: `npm run pwa` serves `www/` locally and verifies, in Chromium, that it is installable, starts offline with fonts and icons, and plays the music from the cache.
+- Publish: on every push to `main`, `.github/workflows/test.yml` runs the tests and then deploys `www/` to GitHub Pages (repository Settings, Pages, Source: GitHub Actions).
+- On a phone: open the Pages link, then Share, Add to Home Screen (iOS) or Install app (Android).
+
 ## Still to do for a store build
-- PWA: web app manifest, icons, a service worker that caches `index.html`, `fonts/` and `audio/`.
 - Capacitor: `capacitor.config`, the native store above, status bar colour per theme, `viewport-fit=cover` is already set and the layout pads for the safe areas.
 - Lifecycle: the game saves on `visibilitychange` and `pagehide`; check that a Capacitor `appStateChange` to background triggers them, and that offline progress (`simulate()`) runs when it returns.

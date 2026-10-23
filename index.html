@@ -4,7 +4,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Last Call</title>
+<title>Last Call - Bar Simulation</title>
+<meta name="description" content="Run a lemonade stand, grow it into a global chain of bars, and keep your guests happy.">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/favicon-64.png" sizes="64x64">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#e3cb98" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c120b" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Last Call">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 /* Fonts bundled with the game (fonts/, SIL Open Font License, see fonts/OFL-*.txt), so it works offline
    and inside an app shell. Same files, weights and ranges Google Fonts served before. */
@@ -3440,6 +3450,10 @@ build();
   if(!S.kits)beginRun();
 })();
 update();
+/* ---------- installable app: the service worker keeps the game playable offline (only over http/https) ---------- */
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol)){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+}
 /* ---------- pixel scene: a window onto the same orders, team and clock ---------- */
 (function(){
 "use strict";

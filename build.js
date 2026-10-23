@@ -2,7 +2,7 @@
 /* Build index.html from src/: concatenate the styles and scripts in the order below.
    No transpiling, no minifying: the output is the same single file the game always was.
 
-     node build.js           write index.html
+     node build.js           write index.html and www/ (the folder to publish)
      node build.js --check   fail if index.html is out of date with src/
 
    Both syntax-check the script. Order matters: the scripts are slices of one
@@ -22,7 +22,7 @@ var SCRIPTS = [
   /* engine UI: panels built once and refreshed every tick */
   "ui/dom", "ui/overlay", "ui/windows", "ui/build", "ui/update",
   /* the browser app: storage, the 100 ms loop, boot */
-  "app/storage", "app/loop", "app/start",
+  "app/storage", "app/loop", "app/start", "app/pwa",
   "scene/scene-open",
   "scene/sprites", "scene/stages", "scene/customers", "scene/render", "scene/tutorial", "scene/layout",
   "scene/ui/icons", "scene/ui/effects", "scene/ui/tabs", "scene/ui/rows", "scene/ui/expansion", "scene/ui/trees",
@@ -69,6 +69,9 @@ var tpl = read("index.html");
 });
 var html = tpl.replace("@@styles\n", function () { return css; }).replace("@@script\n", function () { return js; });
 html = html.replace(/^(<!DOCTYPE html>\n)/, "$1" + BANNER);
+var MANIFEST = "<!--@@manifest-->";   /* only the published page (www/) has a manifest; index.html opened from disk does not */
+var wwwHtml = html.replace(MANIFEST, '<link rel="manifest" href="manifest.webmanifest">');
+html = html.replace(MANIFEST + "\n", "");
 
 module.exports = { ENGINE: ENGINE, engineSource: function () { return cat("js", ENGINE, ".js"); } };
 if (require.main !== module) return;
@@ -80,4 +83,24 @@ if (process.argv.indexOf("--check") >= 0) {
 } else {
   fs.writeFileSync(OUT, html);
   console.log("index.html written: " + html.split("\n").length + " lines, " + SCRIPTS.length + " scripts, " + STYLES.length + " stylesheets");
+  buildWww(wwwHtml);
+}
+
+/* www/: what gets published (GitHub Pages, or an app shell's web folder): the page, its assets, the manifest
+   and a service worker whose version is a hash of everything else, so every release refreshes the cache */
+function buildWww(page) {
+  var crypto = require("crypto"), WWW = path.join(ROOT, "www"), ASSETS = ["fonts", "audio", "icons"];
+  fs.rmSync(WWW, { recursive: true, force: true });
+  fs.mkdirSync(WWW);
+  fs.writeFileSync(path.join(WWW, "index.html"), page);
+  ASSETS.forEach(function (d) { fs.cpSync(path.join(ROOT, d), path.join(WWW, d), { recursive: true }); });
+  fs.copyFileSync(path.join(SRC, "pwa", "manifest.webmanifest"), path.join(WWW, "manifest.webmanifest"));
+  var files = ["index.html", "manifest.webmanifest"];
+  ASSETS.forEach(function (d) { fs.readdirSync(path.join(WWW, d)).sort().forEach(function (f) { files.push(d + "/" + f); }); });
+  var hash = crypto.createHash("sha256");
+  files.forEach(function (f) { hash.update(f); hash.update(fs.readFileSync(path.join(WWW, f))); });
+  var shell = ["./"].concat(files.filter(function (f) { return !/^audio\/|\.txt$/.test(f); }));   /* music is cached when it first plays */
+  var sw = read("pwa/sw.js").replace("__VERSION__", hash.digest("hex").slice(0, 12)).replace("__SHELL__", JSON.stringify(shell));
+  fs.writeFileSync(path.join(WWW, "sw.js"), sw);
+  console.log("www/ written: " + files.length + " files + sw.js");
 }

@@ -23,6 +23,7 @@ python tools/reference.py --check            # economy gate: medians of 10 seede
 python tools/reference.py --golden check     # exact seed-1 numbers vs tests/golden/reference.txt (--golden update after an intended change)
 npm run typecheck                            # TypeScript over the engine's JSDoc types (src/js/data/types.js), no build output
 npm run test:fast                            # build check + unit tests + golden, ~10 s
+npm run pwa                                  # build www/ (what gets published) and check it installs and runs offline
 python tools/a11y.py                         # accessibility audit (names, 44 px targets, contrast, keyboard, dialogs, reduced motion); part of npm test
 python tools/perf.py                         # CPU cost per second while playing (scene on/off screen, hidden, other tab)
 python tools/styles.py snapshot BASE.json     # computed style of every element in 84 UI states (~25 min); then after a CSS change:
@@ -39,6 +40,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | File(s) | What lives there |
 |---|---|
 | `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
+| `src/pwa/` | `manifest.webmanifest` and `sw.js`, copied into `www/` by the build |
 | `styles/` | one file per component, in this order: `tokens`, `base`, `layout`, `controls`, `panels`, `team`, `trees`, `calendar`, `windows`, `scene`, `shared` (rules that span components: pixel frame, fonts, reduced motion) |
 | `js/data/` | `types` (JSDoc typedefs: State, Employee, Order, Item, Venue...), `balance` (every economy number, with its design target), `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()` (every field), `MIGRATIONS`, `fromSave()`, `migrate()` |

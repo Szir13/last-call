@@ -7,9 +7,10 @@
     "check": "node build.js --check",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:fast": "node build.js --check && node tools/typecheck.js && node --test tests/unit/*.test.js && python3 tools/reference.py --golden check",
-    "test": "node build.js --check && node tools/typecheck.js && node --test tests/unit/*.test.js && python3 tools/reference.py --check --golden check && python3 tools/smoke.py && python3 tools/a11y.py",
+    "test": "node build.js --check && node tools/typecheck.js && node --test tests/unit/*.test.js && python3 tools/reference.py --check --golden check && python3 tools/smoke.py && python3 tools/a11y.py && node build.js && python3 tools/pwa.py",
     "a11y": "python3 tools/a11y.py",
-    "typecheck": "node tools/typecheck.js"
+    "typecheck": "node tools/typecheck.js",
+    "pwa": "node build.js && python3 tools/pwa.py"
   },
   "devDependencies": {
     "typescript": "5.6.3"
