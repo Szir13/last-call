@@ -3,6 +3,7 @@
 Every item has the symptom, why it matters, and a suggested first step. Do them in this order; each step should leave the game playable and `tools/reference.py` unchanged.
 
 ## 1. Split the file into modules with a tiny build (highest value)
+**Done (first cut).** `src/` + `build.js` (concat, no dependencies) + `npm run build|check|test`. The files are slices of the existing IIFEs, not real modules yet: scope is unchanged. Turning them into ES modules belongs with step 2, once the engine no longer reaches into the DOM.
 - **Symptom**: 4,450 lines in one closure plus an inner closure. Engine code cannot reach scene functions, tests need a hook injected by string replace, and every feature added a new block at the end.
 - **Why**: reading, reviewing and testing are slow; mobile packaging wants real assets and modules.
 - **Step**: `src/` with `data/*.js` (ING, REC, STAFF, EXPS, CUST, calendar, trees), `state.js`, `engine/*.js` (orders, money, people, calendar, missions, longterm), `ui/*.js` (build, update, skin, venue, bank), `scene/*.js` (sprites, stages, customers, render, tutorial), `styles/*.css`. Build to a single `index.html` with esbuild or a 30-line Node concat script. Keep `npm run build` and `npm test` working. Keep ES5-compatible syntax or confirm the target browsers first.

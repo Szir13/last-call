@@ -1,0 +1,10 @@
+{
+  "name": "last-call",
+  "private": true,
+  "description": "Idle bar-management game. index.html is built from src/ by build.js.",
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check",
+    "test": "node build.js --check && python3 tools/smoke.py && python3 tools/reference.py"
+  }
+}

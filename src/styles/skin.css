@@ -1,0 +1,108 @@
+/* ---------- pixel skin: menus, panels and controls match the scene ---------- */
+:root{
+  --bg:#e3cb98; --surface:#f6e7c1; --ink:#3b2414; --muted:#7a5834; --line:#c9a96e;
+  --accent:#3f7a2e; --accent-soft:rgba(63,122,46,.18); --on-accent:#ffffff; --warn:#a8402a;
+  --edge:#6a4020; --edge2:#3b2414; --gold:#e0a020;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c120b; --surface:#2e2014; --ink:#f3e2b9; --muted:#c2a275; --line:#5a3d22;
+    --accent:#7fc062; --accent-soft:rgba(127,192,98,.2); --on-accent:#1c120b; --warn:#e8896f;
+    --edge:#8a5a30; --edge2:#0f0904; --gold:#f2c14a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c120b; --surface:#2e2014; --ink:#f3e2b9; --muted:#c2a275; --line:#5a3d22;
+  --accent:#7fc062; --accent-soft:rgba(127,192,98,.2); --on-accent:#1c120b; --warn:#e8896f;
+  --edge:#8a5a30; --edge2:#0f0904; --gold:#f2c14a;
+}
+body,button,input,select{font-family:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif}
+body{
+  font-size:17px;
+  background:var(--bg) repeating-linear-gradient(0deg,transparent 0 46px,rgba(59,36,20,.07) 46px 48px);
+}
+.top{font-size:16px;color:var(--muted)}
+.money{font-size:54px;font-weight:700;letter-spacing:0;color:var(--ink);text-shadow:3px 3px 0 var(--line);display:flex;align-items:center;gap:12px}
+.money::before{content:"";flex:none;width:36px;height:36px;image-rendering:pixelated;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath fill='%233b2414' d='M2 0h4v1h1v1h1v4h-1v1h-1v1H2V7H1V6H0V2h1V1h1z'/%3E%3Cpath fill='%23f2c14a' d='M2 1h4v1h1v4H6v1H2V6H1V2h1z'/%3E%3Cpath fill='%23fff3b0' d='M2 2h2v1H3v1H2z'/%3E%3C/svg%3E") center/contain no-repeat}
+.ips{font-size:17px;color:var(--muted)}
+.clock{font-size:16px}
+.today,.news,.note,.gnote{font-size:15px}
+.satl{font-size:15px}
+.satb{height:14px;border-radius:0;border:3px solid var(--edge);background:var(--surface)}
+.satb i{border-radius:0;background-image:repeating-linear-gradient(90deg,transparent 0 6px,rgba(0,0,0,.28) 6px 8px)}
+.ohd h2{font-size:21px;font-weight:700}
+.h{font-size:18px;font-weight:700;color:var(--ink);margin:26px 0 4px;padding-bottom:4px;border-bottom:3px solid var(--edge)}
+
+/* buttons */
+.ghost,.buy,.big,.chead button,.kit{border-radius:0}
+.ghost{border:3px solid var(--edge);background:var(--surface);color:var(--ink);font-size:15px;font-weight:600;padding:8px 14px;min-height:42px;box-shadow:0 3px 0 var(--edge2)}
+.ghost:active{transform:translateY(3px);box-shadow:none}
+.ghost.on{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
+.ghost:disabled{background:var(--line);color:var(--muted);box-shadow:none}
+.buy,.big{background:var(--accent);color:var(--on-accent);border:3px solid var(--edge2);box-shadow:0 3px 0 var(--edge2);font-weight:700;font-size:16px;min-height:44px}
+.buy:active,.big:active{transform:translateY(3px);box-shadow:none}
+.buy:disabled,.big:disabled{background:var(--line);color:var(--muted);border-color:var(--edge);box-shadow:none}
+.buy.owned{background:transparent;border-color:transparent;box-shadow:none;color:var(--accent)}
+.buy.sm{min-height:36px;font-size:15px}
+.link,.skip,.tog{color:var(--muted);font-size:15px}
+.chead button{background:var(--surface);border:3px solid var(--edge);box-shadow:0 3px 0 var(--edge2);min-height:40px}
+
+/* panels */
+.ocard,.cand,.tdetail,.card,.tile,.cday,.kit,.pbox input,.hrow select{border-radius:0;border:3px solid var(--edge);background:var(--surface);color:var(--ink)}
+.ocard,.cand,.tdetail,.card{box-shadow:0 4px 0 var(--edge2)}
+.ocard.empty{background:transparent;border-style:dashed;box-shadow:none}
+.ocard.ready{border-color:var(--gold)}
+.obar,.sbar{height:8px;border-radius:0;border:2px solid var(--edge);background:var(--surface)}
+.obar i,.sbar i{border-radius:0}
+.row{border-bottom:2px dashed var(--line)}
+.row .name{font-weight:600;font-size:17px}
+.row .sub,.row .sub *{font-size:15px}
+.row.sel{border-radius:0;background:var(--accent-soft)}
+.row.cl{border-left:3px solid var(--edge)}
+.stats{border-top:3px dashed var(--line);border-bottom:3px dashed var(--line)}
+.stats .l{font-size:15px}.stats .v{font-size:19px;font-weight:700}
+.pbox input{width:100px;font-weight:600;font-size:17px;box-shadow:inset 2px 2px 0 rgba(59,36,20,.2)}
+.pbox small{font-size:13px}
+.summary b{font-weight:700}
+
+/* calendar */
+.cday{min-height:50px;box-shadow:0 2px 0 var(--edge2)}
+.cday.today{background:var(--accent-soft);border-color:var(--gold)}
+.cday.sel{box-shadow:0 0 0 3px var(--ink)}
+.hstrip i{border-radius:0}
+.hrow select{padding:8px;font-size:16px}
+
+/* skill trees */
+.tile{min-height:76px;box-shadow:0 3px 0 var(--edge2)}
+.tile .tn{font-size:14px;font-weight:700}.tile .ts{font-size:13px}
+.tgrid.c4 .tile .tn{font-size:13px}.tgrid.c4 .tile .ts{font-size:12px}
+.tile.locked{border-style:dashed;box-shadow:none;background:transparent}
+.tile.can{border-color:var(--gold)}
+.tile.owned{background:var(--accent-soft);border-color:var(--accent)}
+.tlines path{stroke:var(--edge);stroke-width:3;stroke-linecap:square}
+.tlines path.on{stroke:var(--accent)}
+
+/* bottom navigation: a wooden shelf */
+nav{background:#3b2414;border-top:3px solid #6a4020}
+nav button{color:#e6cf9f;font-size:14px;font-weight:600}
+nav button.on{color:#ffd36a}
+nav button.on::after{left:22%;right:22%;bottom:2px;height:3px;border-radius:0;background:#ffd36a}
+nav .dot{border-radius:0;width:8px;height:8px;background:#e0405a;border:2px solid #1c120b}
+
+/* toast and dialogs */
+#toast{border-radius:0;background:var(--surface);color:var(--ink);border:3px solid var(--edge);box-shadow:0 4px 0 var(--edge2);font-size:15px;font-weight:600}
+#ov{background:rgba(20,12,6,.6)}
+.card h2{font-size:23px;font-weight:700;letter-spacing:0}
+.card p,.kit span{font-size:15px}
+.kit b{font-weight:700;font-size:16px}
+.kit.sel{background:var(--accent-soft);border-color:var(--accent)}
+
+
+.tgrid>*,.tlabels>*{min-width:0}
+.tile{min-width:0;padding:6px 2px;overflow-wrap:break-word}
+.tgrid.c4 .tile .tn{font-size:10px;line-height:1.15;letter-spacing:-.01em}
+.tgrid.c4 .tile .ts{font-size:11px}
+.tlabels{font-size:13px}
+
+

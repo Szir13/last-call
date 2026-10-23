@@ -1,0 +1,27 @@
+/* ---------- state ---------- */
+function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
+function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,ot:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
+function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
+  ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
+  price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,
+  orders:[],jobs:[],arrive:2,nextId:1,sat:60,
+  mkt:{drift:{},ev:[],next:80,t20:20},ctlT:15,chefB:0,
+  rep:0,pts:0,perm:{},ach:{},sold:{p:false,u:false},paidDebt:false,
+  debt:0,late:0,mcount:0,month:newMonth(),lastMonth:null,
+  gt:600,curDay:0,hours:defHours(),dayE:0,dayN:0,prev:{e:0,n:0},
+  picks:{},known:[],kits:false,
+  team:[],cands:{},mood:60,moodB:0,nextEmp:1,maxStaff:{},
+  hhUntil:0,hhReady:0,last:Date.now(),newRec:false}}
+var S=def();
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){S=Object.assign(def(),JSON.parse(r))}}catch(e){}
+  if(!Array.isArray(S.hours)||S.hours.length!==7)S.hours=defHours();
+  if(!S.prev)S.prev={e:0,n:0};
+  if(!S.month)S.month=newMonth();
+  if(S.month.ot===undefined)S.month.ot=0;
+  if(!Array.isArray(S.team))S.team=[];
+  S.team.forEach(function(e){if(!e.sch)e.sch=autoSched(e.role,0)});
+  syncStaff();
+}
+function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+

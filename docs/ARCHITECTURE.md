@@ -3,6 +3,8 @@
 ## Shape of the file
 `index.html` = head + CSS + HTML skeleton + one `<script>`. Inside the script there is **one IIFE** holding everything, and near the end an **inner IIFE** (`pixel scene`) that owns the canvas, the NPCs, the tutorial and a second UI layer. There is no module system, so ordering and scoping are load-bearing.
 
+`index.html` is generated: `build.js` concatenates `src/styles/*.css` into the `<style>` and `src/js/**/*.js` into the `<script>` of `src/index.html`, in the order listed in `build.js`. The script files are plain slices of the IIFE, not modules: `js/main-open.js` and `js/main-close.js` open and close the main IIFE, `js/scene/scene-open.js` and `js/scene/scene-close.js` the scene IIFE. Everything between shares one scope, exactly as before the split. The build compiles the result with `vm.Script` to catch syntax errors, and `node build.js --check` fails when `index.html` is stale.
+
 ```
 main IIFE
   data (ING, REC, STAFF, EXPS, CUST, calendar events, trees, achievements)

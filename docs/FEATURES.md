@@ -1,6 +1,6 @@
 # Features and where they live
 
-Search the function names in `index.html`.
+Search the function names in `src/js/`.
 
 ## Core loop
 - Orders, jobs, satisfaction, tips: `spawnOrder finishOrder collect tick`.

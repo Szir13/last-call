@@ -7,7 +7,7 @@
 - Engaged play (decor, themed nights, volume supplier, missions) earns roughly **+3% to +10% revenue** over plain play. It must never double income.
 - A new venue must be survivable before it is fully equipped: lease ramp 40/65/85/100%.
 
-## The knobs (all in `index.html`)
+## The knobs (all in `src/js/`, mostly `data/`)
 | Constant | Meaning | Current |
 |---|---|---|
 | `EXPS[]` | name, expansion price `c`, seconds between arrivals `int`, items per order `k`, `rent`, `util` per month | stand 0 / 9.6 s / 900+150; bar 10,000 / 7.8 s / 17,000+2,700; hotel 75,000 / 6.9 s / 71,000+12,000; rooftop 260,000 / 5.9 s / 150,000+26,000; chain 780,000 / 4.5 s / 232,000+38,000 |

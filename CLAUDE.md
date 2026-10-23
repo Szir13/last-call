@@ -1,7 +1,7 @@
 # Last Call: project guide for Claude Code
 
 Single-file idle bar-management game, pixel-art styled, built to run in a phone browser and later be wrapped as a mobile app.
-Source of truth: `index.html` (about 4,450 lines, no build step, no dependencies). Open it in a browser to play.
+Source of truth: `src/` (styles, HTML shell, 39 script slices). `node build.js` concatenates them into a single `index.html` (no dependencies, no transpiling); open that in a browser to play. **Never edit `index.html` by hand**: edit `src/`, then rebuild.
 
 ## Working with the owner
 - The owner writes in Portuguese (PT-PT). **Reply in Portuguese. Game UI text and code comments stay in English.**
@@ -11,16 +11,35 @@ Source of truth: `index.html` (about 4,450 lines, no build step, no dependencies
 
 ## Run and test
 ```
+node build.js                                # src/ -> index.html (also syntax-checks the script)
+node build.js --check                        # fail if index.html is stale
 open index.html                              # play
 pip install -r tools/requirements.txt && playwright install chromium
 python tools/reference.py [--sweep]          # economy check, one equipped team per stage, ~20 s
 python tools/run_bots.py [styles] --months 30 --seeds 5   # five bot play styles, ~3 min
+python tools/smoke.py                        # fresh game + tests/saves/*.json, 390x780, light and dark, fails on console errors
+npm test                                     # check + smoke + reference (activate .venv first)
 ```
 The tools build `tools/.build/index.hooked.html` (a copy with `window.__lc` exposing engine internals) and drive it with Playwright.
 **After any change to numbers in the economy, run both tools and compare with `docs/ECONOMY.md`.**
 For anything visual, take Playwright screenshots at 390x780 in both color schemes before calling it done.
 
-## Map of index.html (search for the section comment)
+## Map of src/ (order is fixed in `build.js`)
+All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` opens it, `js/main-close.js` closes it, and `js/scene/scene-open.js` ... `scene-close.js` is the inner scene IIFE. A file is not a module: moving code between files changes nothing, moving it across the scene boundary changes scope.
+
+| File(s) | What lives there |
+|---|---|
+| `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
+| `styles/` | `base`, `scene`, `skin`, `compact`, `ui-layer`, `app` (later files override earlier ones) |
+| `js/data/` | `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
+| `js/state.js` | `def()`, `load()`, `save()`, migrations |
+| `js/engine/` | `helpers` (menu, market, prices, caps), `calendar`, `shifts`, `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`...), `actions`, `loop`, `missions`, `longterm` |
+| `js/ui/` | `overlay` (toast, `showOv`), `build`, `update` |
+| `js/start.js` | Boot sequence |
+| `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `team`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
+
+The table below is the same map by section comment (search for it in `src/js`).
+
 | Area | What lives there |
 |---|---|
 | `<style>` | CSS in layers, later layers override earlier ones: base tokens, `pixel scene`, `pixel skin`, `compact layout`, `pixel UI layer`, `app layout`, then small appended blocks |
@@ -55,4 +74,4 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 - Minimum tap target 44 px for primary actions. Respect `prefers-reduced-motion`.
 
 ## Definition of done for a change
-Syntax check (`node --check` on the extracted script), no console errors on a fresh game and on an old save, `tools/reference.py` margins still 50-57% if economy was touched, screenshots in dark and light if UI was touched.
+`node build.js` (it syntax-checks the script) and `index.html` committed with `src/`, no console errors on a fresh game and on an old save, `tools/reference.py` margins still 50-57% if economy was touched, screenshots in dark and light if UI was touched.

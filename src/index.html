@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Last Call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@@styles
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="dock">
+    <div class="hud2">
+      <div class="money" id="money">$150</div>
+      <div class="hudr">
+        <div class="ips" id="ips">$0 / min</div>
+        <div class="pxstrip" id="pxstrip"><span id="pxsum"></span><button class="ghost" id="pxcol" type="button">Collect</button></div>
+      </div>
+    </div>
+    <div class="clock"><span id="clockT"></span><span id="clockS"></span></div>
+    <div class="sat">
+      <div class="satl"><span>Guests</span><span id="satv">60%</span></div>
+      <div class="satb"><i id="satfill"></i></div>
+    </div>
+  </div>
+  <main id="main">
+  <div class="pxwrap">
+    <div class="pxstage" id="pxstage">
+      <canvas id="pxcv" width="160" height="140" aria-label="Your bar, with customers waiting for their drinks"></canvas>
+      <div id="pxov"></div>
+    </div>
+    <div class="pxdlg" id="pxdlg" hidden>
+      <div class="pxpor"><canvas id="pxpor" width="12" height="18"></canvas></div>
+      <div class="pxb">
+        <div class="pxn">Joe</div>
+        <div class="pxt" id="pxtxt"></div>
+        <div class="pxform" id="pxform" hidden><input id="pxin" maxlength="18" autocomplete="off" placeholder="Bar name" aria-label="Bar name"><button id="pxok" type="button">Open the bar</button></div>
+        <div class="pxf2"><span id="pxnext"></span><button id="pxskip" type="button">Skip tutorial</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="pxbar"><button class="ghost" id="hh">Happy hour ×2</button><button class="ghost" id="pxmis" type="button" hidden>Missions</button><button class="ghost" id="pxbank" type="button" hidden>Bank</button><button class="ghost" id="pxven" type="button" hidden>Venue</button><button class="ghost" id="pxdet" type="button" aria-expanded="false">Order details</button><button class="ghost" id="pxhide" type="button">Hide scene</button><button class="ghost" id="pxsnd" type="button" aria-pressed="true">Sound on</button><button class="ghost" id="pxhelp" type="button">Tutorial</button></div>
+  <div class="top"><span class="tl"><b id="pxnm" role="button" tabindex="0" title="Rename your bar"></b><span id="pxsep"></span><span id="stage"></span></span><span id="starsTop"></span></div>
+  <div class="today" id="today"></div>
+  <div class="news" id="news">Markets are calm.</div>
+  <div id="orders" class="pxhide"></div>
+
+  <div class="stats">
+    <div><span class="l">Menu</span><span class="v" id="sMenu">0</span></div>
+    <div><span class="l">Team</span><span class="v" id="sTeam">1</span></div>
+    <div><span class="l">Style</span><span class="v" id="sStyle">—</span></div>
+  </div>
+
+  <section class="panel on" id="p-stock"></section>
+  <section class="panel" id="p-staff"></section>
+  <section class="panel" id="p-upg"></section>
+  <section class="panel" id="p-book"></section>
+  <section class="panel" id="p-brand"></section>
+  <section class="panel" id="p-cal"></section>
+  </main>
+</div>
+
+<nav><div class="in">
+  <button data-tab="stock" class="on">Stock<i class="dot" id="dotStock"></i></button>
+  <button data-tab="staff">Team</button>
+  <button data-tab="upg">Upgrades</button>
+  <button data-tab="book">Menu<i class="dot" id="dotBook"></i></button>
+  <button data-tab="brand">Brand<i class="dot" id="dotBrand"></i></button>
+  <button data-tab="cal">Calendar</button>
+</div></nav>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="ov"></div>
+
+<script>
+@@script
+</script>
+</body>
+</html>

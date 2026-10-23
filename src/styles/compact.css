@@ -1,0 +1,63 @@
+/* ---------- compact layout: fixed dock, short notes ---------- */
+#app{padding-bottom:84px}
+#dockSp{margin-top:-18px;height:130px}
+#dock.compact .clock,#dock.compact .sat,#dock.compact .hudr .ghost{display:none}
+#dock.compact .hud2 .money{font-size:30px}
+#dock.compact .hud2 .money::before{width:22px;height:22px}
+#dock.compact{padding-top:8px;padding-bottom:8px}
+#dock{position:fixed;top:env(safe-area-inset-top,0px);left:50%;width:100%;max-width:520px;transform:translateX(-50%);z-index:6;padding:10px 20px 10px;
+  background:var(--bg) repeating-linear-gradient(0deg,transparent 0 46px,rgba(59,36,20,.07) 46px 48px);
+  border-bottom:3px solid var(--edge);box-shadow:0 3px 0 var(--edge2)}
+.top{font-size:14px;min-height:0}
+.hud2{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.hud2 .money{margin-top:0;font-size:38px;gap:8px;text-shadow:2px 2px 0 var(--line)}
+.hud2 .money::before{width:28px;height:28px}
+.hudr{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hudr .ips{font-size:14px;margin:0;text-align:right}
+.hudr .ghost{min-height:34px;padding:4px 10px;font-size:14px}
+#dock .clock{margin-top:2px;font-size:14px}
+#dock .sat{margin-top:6px;display:flex;align-items:center;gap:8px}
+#dock .satl{display:contents;font-size:14px}
+#dock .satl span:first-child{order:1;color:var(--muted)}
+#dock .satb{order:2;flex:1;margin:0;height:12px}
+#dock .satl span:last-child{order:3;white-space:nowrap}
+#dock .pxstrip{margin-top:8px}
+.pxwrap{margin-top:12px}
+.top{margin-top:10px}
+.pxstrip{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 10px;background:var(--surface);border:3px solid var(--edge);font-size:16px;font-weight:600}
+.pxstrip{flex-wrap:wrap}
+.pxstrip .ghost{min-height:36px;padding:4px 12px}
+.pxstrip [hidden]{display:none}
+.pxstrip[hidden]{display:none}
+.pxdlg{margin-top:8px;padding:8px;gap:8px}
+.pxpor{width:50px;height:70px}.pxpor canvas{width:40px;height:60px}
+.pxt{font-size:15px;min-height:4em}
+.pxn{font-size:16px}
+.pxbar{margin-top:12px;flex-wrap:wrap}
+.today,.news{margin-top:8px;font-size:14px}
+.stats{margin:12px 0 4px;padding:8px 0}
+.stats .v{font-size:17px}
+.row{padding:10px 0}
+.h{margin:18px 0 2px}
+.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;position:relative;padding-right:18px}
+.clamp::after{content:"\25BE";position:absolute;right:0;top:0;color:var(--accent)}
+.clamp.open{display:block;-webkit-line-clamp:unset}
+.clamp.open::after{content:"\25B4"}
+
+
+.fh{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fh::after{content:"\25BE";color:var(--accent);font-size:16px}
+.fh.folded::after{content:"\25B8"}
+.fold{display:none!important}
+
+
+#p-book .row.locked{display:none}
+#pxnm{font-weight:700;color:var(--ink);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+#pxnm.dim{color:var(--muted);font-weight:600}
+.pxform{display:flex;gap:8px;margin-top:8px}
+.pxform[hidden]{display:none}
+.pxform input{flex:1;min-width:0;padding:8px 10px;border:3px solid #6a4020;background:#fffaf0;color:#3b2414;font:inherit;font-size:16px;font-weight:600;border-radius:0}
+.pxform button{flex:none;padding:6px 12px;min-height:44px;border:3px solid #3b2414;background:#3f7a2e;color:#fff;font:inherit;font-weight:700;font-size:15px;box-shadow:0 3px 0 #3b2414;border-radius:0}
+.pxform button:active{transform:translateY(3px);box-shadow:none}
+
+
