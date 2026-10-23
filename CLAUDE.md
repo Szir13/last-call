@@ -22,7 +22,7 @@ node tools/test_saves.js                     # every fixture in tests/saves/ loa
 npm test                                     # check + smoke + reference (activate .venv first)
 ```
 The tools build `tools/.build/index.hooked.html` (a copy with `window.__lc` exposing engine internals) and drive it with Playwright.
-**After any change to numbers in the economy, run both tools and compare with `docs/ECONOMY.md`.**
+**Economy numbers live only in `src/js/data/balance.js`. After changing any of them, run both tools and compare with `docs/ECONOMY.md`.** With `--seed N` the same build always prints the same numbers, so a refactor that should not touch the economy must keep `reference.py --node --seed N` identical.
 For anything visual, take Playwright screenshots at 390x780 in both color schemes before calling it done.
 
 ## Map of src/ (order is fixed in `build.js`)
@@ -32,7 +32,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 |---|---|
 | `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
 | `styles/` | `base`, `scene`, `skin`, `compact`, `ui-layer`, `app` (later files override earlier ones) |
-| `js/data/` | `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
+| `js/data/` | `balance` (every economy number, with its design target), `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()` (every field), `MIGRATIONS`, `fromSave()`, `migrate()` |
 | `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
 | `js/ui/` | `dom` (`$`, `el`, `clear`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |

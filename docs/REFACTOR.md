@@ -40,6 +40,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: add `S.v`, move every field into `def()`, write `migrate(S)` with numbered steps, test loading saves from each past version (keep fixture JSONs in `tests/saves/`).
 
 ## 8. Separate data from rules; one balance file
+**Done.** `src/js/data/balance.js` holds 34 tunables with their design targets, including the bank, lease ramp and branch factors that used to be literals inside functions; `node tools/balance.js` prints them and `reference.py` reads `WAGEK` and `EXPS` from it. Smaller literals inside formulas (reward and satisfaction factors) are still in the engine.
 - Numbers are spread across 20 places (`EXPS`, `WAGEK`, `STAFFCAP`, `LINGER`, `MS_DAYREV`, `MENUREF`, reward factors inside functions...).
 - **Step**: `data/balance.js` (or JSON) with every tunable and a comment of its design target; engine reads from it; `tools/reference.py` reads the same file so numbers cannot drift (today `WK` and `EXPANSION_COST` are duplicated in Python).
 

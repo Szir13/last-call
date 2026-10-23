@@ -8,8 +8,11 @@
 Look at: margin % (target 50-56), payback of the next expansion (target 1.5-2.5 months),
 and whether the team at the limit still earns more than a smaller one.
 """
-import argparse
+import argparse, json, pathlib, subprocess
 from harness import run_scenarios
+
+# game numbers come from src/js/data/balance.js through the engine, never copied here
+BAL = json.loads(subprocess.check_output(["node", str(pathlib.Path(__file__).with_name("balance.js")), "WAGEK", "EXPS"]))
 
 BASE = ["lemonjuice", "syrup", "soda", "orangejuice", "mint", "cranberry"]
 G1 = ["limejuice", "tonic", "cola", "gin", "rum", "vodka", "cachaca", "beer"]
@@ -17,7 +20,7 @@ G2 = ["cucumber", "coffee", "gingerbeer", "pineapple", "coconut", "angostura", "
 G3 = ["pisco", "cognac", "vermouth", "campari", "aperol"]
 G4 = ["elderflower", "mezcal", "chartreuse"]
 SPIRITS = ["gin", "rum", "vodka", "cachaca", "whiskey", "tequila", "beer", "wine"]
-WK = [1, 1.3, 1.8, 2.5, 2.8]                      # keep in sync with WAGEK in index.html
+WK = BAL["WAGEK"]
 INGS = [BASE, BASE + G1, BASE + G1 + G2[:8], BASE + G1 + G2 + G3, BASE + G1 + G2 + G3 + G4]
 UP = [{}, {"cashier": 1, "clerk": 1, "counter4": 1}]
 UP.append(dict(UP[1], counter5=1, seats=1, table=1, kitchen=1))
@@ -49,7 +52,7 @@ SWEEP = [
     ("S3 8 staff", scenario(3, {"head": 1, "mixologist": 2, "cashier": 2, "clerk": 2, "prepchef": 1}, {"head": 1, "mixologist": 1})),
     ("S3 18 staff", scenario(3, {"bartender": 3, "head": 3, "mixologist": 3, "manager": 1, "cashier": 3, "clerk": 3}, {"head": 2, "mixologist": 2, "manager": 1})),
 ]
-EXPANSION_COST = [10000, 75000, 260000, 780000]    # to the next stage; keep in sync with EXPS[].c
+EXPANSION_COST = [e["c"] for e in BAL["EXPS"][1:]]   # price of the next stage
 
 
 def show(rows):
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     show(rows)
     prof = [r["profit"] for r in rows]
     print("\npayback of the next expansion (months of profit):", [round(EXPANSION_COST[i] / max(1, prof[i]), 1) for i in range(4)])
-    print("daily revenue (feeds MS_DAYREV in index.html):", [round(r["rev"] / 28) for r in rows])
+    print("daily revenue (feeds MS_DAYREV in src/js/data/balance.js):", [round(r["rev"] / 28) for r in rows])
     if a.sweep:
         print()
         show(run_scenarios(SWEEP, a.node, a.seed))

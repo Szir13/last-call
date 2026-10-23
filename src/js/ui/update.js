@@ -242,7 +242,7 @@ function update(){
   /* finances and team */
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
   var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);
-  if(S.mcount===0)est*=0.5;
+  if(S.mcount===0)est*=OPENING;
   setT(ref.fin[0],"Month ends in "+left+" day"+(left>1?"s":"")+". Fixed costs expected: "+money0(est)+(S.mcount===0?" (half price in your opening month)":"")+". Full month: payroll "+money0(payroll())+", rent "+money0(EXPS[S.exp].rent)+", utilities "+money0(EXPS[S.exp].util)+").");
   setT(ref.fin[1],"This month so far: revenue "+money0(mo.rev)+", stock bought "+money0(mo.cogs)+", spoiled "+money0(mo.waste)+".");
   var lm=S.lastMonth;

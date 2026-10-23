@@ -118,7 +118,6 @@ ING.forEach(function(x){
 var ITEMS=REC.concat(SOLOS),ITM={};
 ITEMS.forEach(function(i){ITM[i.id]=i});
 var QV=[1,1.3,1.9];          /* how much a better brand adds to a cocktail's worth */
-var QFEE=[0,150,500];        /* brand unlock fee, times the standard serving cost */
 var QREP=[0,2,5];            /* reputation level needed for premium and ultra */
 var WTP=[0.85,1,1.3,1.7];    /* how much more a richer customer accepts */
 var CLASSN=["budget","regular","affluent","wealthy"];

@@ -7,25 +7,29 @@
 - Engaged play (decor, themed nights, volume supplier, missions) earns roughly **+3% to +10% revenue** over plain play. It must never double income.
 - A new venue must be survivable before it is fully equipped: lease ramp 40/65/85/100%.
 
-## The knobs (all in `src/js/`, mostly `data/`)
+## The knobs (all in `src/js/data/balance.js`)
+Every tunable lives in one file, with its meaning and design target in a comment. Tools read the values from the engine (`node tools/balance.js`), so nothing is copied into Python.
+
 | Constant | Meaning | Current |
 |---|---|---|
 | `EXPS[]` | name, expansion price `c`, seconds between arrivals `int`, items per order `k`, `rent`, `util` per month | stand 0 / 9.6 s / 900+150; bar 10,000 / 7.8 s / 17,000+2,700; hotel 75,000 / 6.9 s / 71,000+12,000; rooftop 260,000 / 5.9 s / 150,000+26,000; chain 780,000 / 4.5 s / 232,000+38,000 |
 | `STAFFCAP` | max team size per stage | 2, 5, 8, 12, 18 |
 | `WAGEK` | wage level per stage (new hires, market rate; expanding raises everyone) | 1, 1.3, 1.8, 2.5, 2.8 |
-| `STAFF[].w`, `SUPPORT[].w` | base monthly wage | apprentice 1000, bartender 1800, head 2800, mixologist 3800, manager 4800, ambassador 6500, cashier 1000, clerk 1000, prep chef 2400, controller 3500, security 2200 |
+| `WAGE` | base monthly wage per role | apprentice 1000, bartender 1800, head 2800, mixologist 3800, manager 4800, ambassador 6500, cashier 1000, clerk 1000, prep chef 2400, controller 3500, security 2200 |
 | `SLOTBASE`, `SEATINC` | seats before upgrades, seats per seat upgrade | base 3,4,5,7,9; +1,+1,+2,+2,+3 each (max 5, 6, 9, 11, 15) |
 | `LINGER` | seconds a served guest stays seated | 8, 12, 16, 18, 20 |
 | `MAXRE` | repeat rounds per guest | 3 |
 | `MS_DAYREV` | typical daily revenue per stage, scales mission rewards, incident costs, decor and night prices (`ic()`) | 505, 3000, 10400, 22300, 34000 |
 | `MS_MAX` | missions held at once | 2 |
-| `LATE_MAX`, `bankLimit()` | months behind before repossession; loan limit | 3; 2 x last month's profit (min 2,000) |
-| `rampK()` | lease ramp after expansion | 0.4, 0.65, 0.85, 1 |
+| `LATE_MAX`, `INTEREST`, `LOAN_K`, `LOAN_MIN` | months behind before repossession; monthly interest; loan limit | 3; 4%; 2 x last month's profit (min 2,000) |
+| `REPO_SALE`, `REPO_KEEP`, `RESTRUCTURE` | repossession: sale price share, debt kept in months of fixed costs; debt cut at the stand | 0.5; 2; 0.5 |
+| `RAMP`, `OPENING` | lease ramp after expansion; share paid in the very first month | 0.4, 0.65, 0.85, 1; 0.5 |
 | `TIERS`, `FREEP`, `TRAIN_COST` | ingredient picks from training, free picks, training price in months of wage | see source |
-| `HQP`, `CITIES[].cost` | branches: share of a chain's profit, opening prices | 455,000; 2.7M to 13.5M |
+| `HQP`, `BRANCH_SHARE`, `CITIES[].cost` | branches: a chain's typical profit, the share a branch pays, opening prices | 455,000; 0.3; 2.7M to 13.5M |
+| `GROWTH`, `HIRE`, `CLERK_UP`, `LVLM`, `LVLXP`, `PROMXP`, `OWN`, `QFEE`, `MENUREF` | hiring fee growth and size, clerk upgrades, level wage multipliers and days, your own skills, brand fees, Bar Guide menu sizes | see source |
 
 ## Recalibrating (in this order)
-1. Change rent/util or arrival `int` in `EXPS`.
+1. Change rent/util or arrival `int` in `EXPS` (`src/js/data/balance.js`), then `node build.js`.
 2. `python tools/reference.py`. Check margin, payback and `daily revenue`.
 3. Copy the printed daily revenue into `MS_DAYREV`.
 4. If you changed `LINGER`, seats or `int`, run `python tools/reference.py --sweep` to see whether larger teams still lose money.

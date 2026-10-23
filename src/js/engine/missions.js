@@ -1,6 +1,4 @@
 /* ---------- special missions: finish a task before it runs out for a cash bonus ---------- */
-var MS_DAYREV=[505,3000,10400,22300,34000];
-var MS_MAX=2;     /* missions you can hold at once */     /* typical revenue of one day in each venue; rewards are a share of it */
 function msInit(){if(!S.ms)S.ms={offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true};return S.ms}
 function msExpected(list){
   /* how many drinks a day the bar sells, and each drink's share of them */

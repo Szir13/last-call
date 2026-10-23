@@ -165,8 +165,6 @@ function arrivalMult(){return clamp(0.5+0.5*S.sat/70,0.5,1.4)*repArrival()*(1+0.
 function expCost(nx){return Math.round(nx.c*(1-0.15*lvl("expand")-0.08*legLvl("estate")))}
 function wageOf(e){return e.wage*(1-0.05*lvl("wage"))}
 function trainCost(s,l){return Math.round(s.w*TRAIN_COST[l])}
-var SLOTBASE=[3,4,5,7,9];   /* customers that can wait at once in each venue, before seat upgrades */
-var SEATINC=[1,1,2,2,3];    /* seats added by each seat upgrade: bigger venues have more room to add */
 function maxSlots(){return (SLOTBASE[S.exp]||3)+(SEATINC[S.exp]||1)*((S.upg.counter4?1:0)+(S.upg.counter5?1:0))}
 function interval(){return EXPS[S.exp].int*(S.upg.lights?0.8:1)}
 function prepTime(it){return it.solo?3:2+2*it.i.length}

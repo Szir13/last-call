@@ -87,7 +87,7 @@ function vLegacy(pg){
   CITIES.forEach(function(c){
     var box=el("div","cand"),open=(S.br||[]).indexOf(c.id)>=0;
     box.appendChild(el("b",null,c.n+(open?" \u2713":"")));
-    box.appendChild(el("span",null,open?"Open. Pays about "+money0(0.3*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
+    box.appendChild(el("span",null,open?"Open. Pays about "+money0(BRANCH_SHARE*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
     if(!open){var b=el("button","buy sm","Open branch");b.disabled=S.exp<4||S.money<c.cost;b.onclick=function(){if(openBranch(c.id)){sfx("new");openVenue("legacy")}};box.appendChild(b)}
     pg.appendChild(box);
   });

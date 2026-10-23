@@ -8,7 +8,7 @@ function syncStaff(){
 }
 function refWage(e){var r=STAFFM[e.role].w*wk()*LVLM[e.lvl];return e.starter?r/2:r}
 function payroll(){var t=0;S.team.forEach(function(e){t+=wageOf(e)});return t}
-function rampK(){var m=S.mcount-(S.expAt||0);return m<=0?0.4:(m===1?0.65:(m===2?0.85:1))}   /* a new venue's lease builds up over three months */
+function rampK(){var m=S.mcount-(S.expAt||0);return RAMP[Math.max(0,Math.min(m,RAMP.length-1))]}   /* a new venue's lease builds up over three months */
 function dailyCost(){var st=EXPS[S.exp],k=rampK();return{rent:st.rent*k/28,util:st.util*k/28,pay:payroll()/28}}
 function trimAssign(){while(assignedCount()>clerkCap()){for(var k in S.auto){if(S.auto[k]){delete S.auto[k];break}}}}
 function fireEmp(e){
@@ -37,9 +37,8 @@ function repayDebt(){
   S.money-=a;S.debt-=a;
   if(S.debt<0.01){S.debt=0;S.paidDebt=true;S.late=0}
 }
-var LATE_MAX=3;   /* months in a row without paying the bills before the bank repossesses the bar */
 function monthlyFixed(){var dc=dailyCost();return 28*(dc.rent+dc.util+dc.pay)}
-function bankLimit(){var lp=S.lastMonth?Math.max(0,S.lastMonth.profit||0):0;return Math.max(2000,Math.round(2*lp/100)*100)}
+function bankLimit(){var lp=S.lastMonth?Math.max(0,S.lastMonth.profit||0):0;return Math.max(LOAN_MIN,Math.round(LOAN_K*lp/100)*100)}
 function bankBorrow(a){
   a=Math.round(a);
   if(a<=0||S.debt+a>bankLimit())return false;
@@ -52,10 +51,10 @@ function repossess(quiet){
   if(S.exp<=0){
     /* nothing smaller to fall back to: the bank restructures the debt instead */
     S.notice={type:"restructure",debtBefore:Math.round(S.debt)};
-    S.debt=Math.round(S.debt*0.5);S.late=1;
+    S.debt=Math.round(S.debt*RESTRUCTURE);S.late=1;
     return;
   }
-  var sale=Math.round(from.c*0.5),paid=Math.min(sale,S.debt);
+  var sale=Math.round(from.c*REPO_SALE),paid=Math.min(sale,S.debt);
   S.debt-=paid;var extra=sale-paid;S.money+=extra;if(S.debt<0.5)S.debt=0;
   S.exp--;S.expAt=S.mcount;var ratio=wk()/k0;
   var cap=staffCap(),fired=0;
@@ -71,7 +70,7 @@ function repossess(quiet){
   S.orders=[];S.jobs=[];S.hold=[];S.arrive=2;S.cands={};
   S.nights={};S.sup={mode:"spot"};S.inc=null;S.br=[];S.deco={items:{},theme:null};
   syncStaff();menuChanged();
-  S.debt=Math.min(S.debt,Math.round(monthlyFixed()*2));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
+  S.debt=Math.min(S.debt,Math.round(monthlyFixed()*REPO_KEEP));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
   addRep(-Math.round(S.rep*0.4),true);S.mood=Math.max(20,S.mood-15);S.late=0;
   if(S.ms){S.ms.active=[];S.ms.day=-1}
   emit("stage");
@@ -80,12 +79,12 @@ function repossess(quiet){
 }
 function monthEnd(quiet){
   var m=S.month;
-  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
+  if(S.mcount===0){m.rent*=OPENING;m.util*=OPENING;m.pay*=OPENING}   /* the opening month is cheaper */
   S.mcount++;
   S.team.forEach(function(e2){if(e2.starter){e2.starter--;if(e2.starter<=0){e2.wage=e2.wage*2;delete e2.starter}}});
   if(supMode()==="volume"&&m.cogs<volCommit())m.util+=0.5*(volCommit()-m.cogs);
   var due=m.rent+m.util+m.pay;
-  var interest=S.debt*0.04;
+  var interest=S.debt*INTEREST;
   S.debt+=interest;m.interest=interest;
   var paid=Math.min(S.money,due);
   S.money-=paid;

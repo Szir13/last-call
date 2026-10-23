@@ -24,7 +24,6 @@ function bookNight(day,t){
 function addMod(days,dem,sat){(S.mods=S.mods||[]).push({from:gDay(),until:gDay()+days-1,dem:dem,sat:sat||0});FXC.day=-1}
 
 /* ---- Bar Guide: a monthly star rating ---- */
-var MENUREF=[3,12,25,45,60];
 function guideStars(){return S.guide?S.guide.stars:2}
 function guideCalc(){
   var m=S.month,gn=Math.max(1,m.gn||0),sat=(m.gs||0)/gn,pr=(m.gp||0)/gn;
@@ -203,15 +202,10 @@ function calmRowdy(o){
 function escortRowdy(o){o.rowdy=false;dropQuiet(o);toast("You showed them out politely. No harm done.")}
 
 /* ---- branches and legacy: what comes after the global chain ---- */
-var CITIES=[
-  {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
-  {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
-];
-var HQP=455000;   /* a global chain's typical monthly profit: branches pay a share of it */
 function branchActive(){return Math.min((S.br||[]).length,S.staff.ambassador||0)}
 function branchIncome(){
   var inc=0,act=branchActive();
-  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=0.3*HQP*c.k*(0.7+0.06*guideStars())})});
+  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=BRANCH_SHARE*HQP*c.k*(0.7+0.06*guideStars())})});
   return Math.round(inc);
 }
 function openBranch(id){

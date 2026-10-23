@@ -20,7 +20,6 @@ function workers(){
   w.sort(function(a,b){return b-a});
   return w.map(function(x){return x*mult});
 }
-var LINGER=[8,12,16,18,20];   /* seconds a served customer stays seated, by venue */
 function lingerTime(){return LINGER[S.exp]*(0.7+random()*0.6)}
 function freeSlot(){
   var used={};S.orders.forEach(function(o){used[o.slot]=1});
@@ -76,7 +75,6 @@ function finishOrder(o){
   o.reward=b*(1+tipMax()*frac*o.m)*(ce?1+0.02*ce.sk[1]:1)*(o.rid?1+bondOf(o.rid)/300:1)*(1+0.04*legLvl("fame"));
   if(ce)collect(o);
 }
-var MAXRE=3;   /* a happy customer can ask for another round up to this many times */
 function reorderChance(o){
   var rc=o.re||0;if(rc>=MAXRE)return 0;
   var hosp=clamp((floorAvg(2)-1)/4,0,1),ce=cashierAt(o.slot),charm=ce?clamp((ce.sk[0]-1)/4,0,1):0;

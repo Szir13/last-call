@@ -692,6 +692,70 @@ nav{position:relative;flex:none;left:auto;right:auto;bottom:auto}
 (function(){
 "use strict";
 
+/* ---------- balance: every number that tunes the economy ----------
+   Design targets (docs/ECONOMY.md): a fully equipped, attentive player keeps a 50-57% margin at every
+   stage; the next expansion pays back in 1.5-2.5 months of profit; staff past the stage limit earn less
+   than they cost; engaged play (decor, nights, suppliers, missions) adds 3-10% revenue, never doubles it.
+   After changing anything here: python tools/reference.py (and --sweep), then python tools/run_bots.py.
+   tools/reference.py reads these values from the engine, so there is nothing to copy into Python. */
+
+/* venues. c = expansion price, int = seconds between arrivals, k = max drinks per order, rent and util monthly.
+   Target: margin 50-57% with the reference team; c / monthly profit of the stage before = 1.5-2.5 months. */
+var EXPS=[
+ {n:"Lemonade stand",c:0,int:9.6,k:1,rent:900,util:150},
+ {n:"Neighborhood bar",c:10000,int:7.8,k:2,rent:17000,util:2700},
+ {n:"Hotel bar",c:75000,int:6.9,k:3,rent:71000,util:12000},
+ {n:"Rooftop bar",c:260000,int:5.9,k:3,rent:150000,util:26000},
+ {n:"Global chain",c:780000,int:4.5,k:3,rent:232000,util:38000}
+];
+var RAMP=[0.4,0.65,0.85,1];      /* share of rent and utilities in the 1st, 2nd, 3rd and later months after expanding: a new venue must be survivable before it is fully equipped */
+var OPENING=0.5;                 /* the very first month costs this share of rent, utilities and wages */
+
+/* team. Target: at STAFFCAP an extra person earns less than their wage (reference.py --sweep). */
+var STAFFCAP=[2,5,8,12,18];      /* team size limit per venue */
+var WAGEK=[1,1.3,1.8,2.5,2.8];   /* wage level per venue: new hires ask this times the base wage; expanding raises everyone */
+var WAGE={apprentice:1000,bartender:1800,head:2800,mixologist:3800,manager:4800,ambassador:6500,
+  cashier:1000,clerk:1000,prepchef:2400,controller:3500,security:2200};   /* base monthly wage per role */
+var GROWTH=1.17,HIRE=0.15;       /* a hire costs 15% of a month's wage, and a bit more each time */
+var TRAIN_COST=[0.8,3,8];        /* training costs this many months of wage */
+var CLERK_UP=[600,3000];         /* price of letting a clerk watch a 2nd and a 3rd ingredient */
+var LVLM=[1,1.25,1.6];           /* wage multiplier for junior, mid-level and senior */
+var LVLXP=[0,14,42];             /* days worked needed to reach mid-level and senior */
+var PROMXP=70;                   /* days worked before a senior can move to the next role */
+var OWN=[2,3,3];                 /* your own skills at the counter */
+
+/* ingredients */
+var TIERS={"1":{staff:"apprentice",base:0,per:2},"2":{staff:"bartender",base:3,per:3},"3":{staff:"head",base:2,per:1}};   /* base = picks for the first hire, per = picks for each training level */
+var FREEP={"1":2};               /* founding picks, so the first cocktails do not need a payroll */
+var QFEE=[0,150,500];            /* brand unlock fee, times the standard serving cost */
+
+/* seats and guests. Target: seats, not staff, limit sales at the reference team (walkouts low). */
+var SLOTBASE=[3,4,5,7,9];        /* customers that can wait at once in each venue, before seat upgrades */
+var SEATINC=[1,1,2,2,3];         /* seats added by each seat upgrade: bigger venues have more room to add */
+var LINGER=[8,12,16,18,20];      /* seconds a served customer stays seated, by venue */
+var MAXRE=3;                     /* a happy customer can ask for another round up to this many times */
+
+/* missions, incidents, decor and nights are priced in days of revenue (ic()).
+   MS_DAYREV: copy the "daily revenue" line printed by tools/reference.py. */
+var MS_DAYREV=[505,3000,10400,22300,34000];   /* typical revenue of one day in each venue; rewards are a share of it */
+var MS_MAX=2;                    /* missions you can hold at once */
+var MENUREF=[3,12,25,45,60];     /* menu size the Bar Guide expects in each venue */
+
+/* the bank. Target: a bad month is recoverable; three in a row is not. */
+var LATE_MAX=3;                  /* months in a row without paying the bills before the bank repossesses the bar */
+var INTEREST=0.04;               /* monthly interest on debt */
+var LOAN_K=2,LOAN_MIN=2000;      /* you can borrow this many months of last month's profit, at least LOAN_MIN */
+var REPO_SALE=0.5;               /* a repossessed venue sells for this share of its price */
+var REPO_KEEP=2;                 /* after a repossession the bank writes off debt beyond this many months of fixed costs */
+var RESTRUCTURE=0.5;             /* at the stand there is nothing to sell: the debt is cut to this share */
+
+/* branches. Target: income from branches stays below what the chain itself earns. */
+var CITIES=[
+  {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
+  {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
+];
+var HQP=455000;                  /* a global chain's typical monthly profit: branches pay a share of it */
+var BRANCH_SHARE=0.3;            /* each branch pays this share of HQP, times its city factor */
 /* ---------- data ---------- */
 var SPIRITS=["gin","rum","vodka","cachaca","whiskey","tequila","pisco","cognac","mezcal"];
 var LIQUEURS=["campari","vermouth","aperol","amaretto","triple","elderflower","chartreuse","prosecco","angostura"];
@@ -812,7 +876,6 @@ ING.forEach(function(x){
 var ITEMS=REC.concat(SOLOS),ITM={};
 ITEMS.forEach(function(i){ITM[i.id]=i});
 var QV=[1,1.3,1.9];          /* how much a better brand adds to a cocktail's worth */
-var QFEE=[0,150,500];        /* brand unlock fee, times the standard serving cost */
 var QREP=[0,2,5];            /* reputation level needed for premium and ultra */
 var WTP=[0.85,1,1.3,1.7];    /* how much more a richer customer accepts */
 var CLASSN=["budget","regular","affluent","wealthy"];
@@ -836,52 +899,33 @@ var NEWS=[
  {h:"Supplier discount week: everything is cheaper",ids:"all",f:0.8,dur:120}
 ];
 
-/* workers: sp = how fast one person works (you work the counter yourself at speed 1). w = monthly wage. */
+/* workers: sp = how fast one person works (you work the counter yourself at speed 1). w = monthly wage (data/balance.js). */
 var STAFF=[
- {id:"apprentice",n:"Apprentice bartender",pl:"apprentices",w:1000,sp:0.5,d:"Slow, but learning fast."},
- {id:"bartender",n:"Bartender",pl:"bartenders",w:1800,sp:1,d:"Knows the drill."},
- {id:"head",n:"Head bartender",pl:"head bartenders",w:2800,sp:2,d:"Keeps the bar running."},
- {id:"mixologist",n:"Mixologist",pl:"mixologists",w:3800,sp:4,d:"Every glass is a small show."},
- {id:"manager",n:"Bar manager",pl:"bar managers",w:4800,sp:8,d:"Works the floor and the counter."},
- {id:"ambassador",n:"Brand ambassador",pl:"brand ambassadors",w:6500,sp:16,d:"Your bar, in every city."}
+ {id:"apprentice",n:"Apprentice bartender",pl:"apprentices",w:WAGE.apprentice,sp:0.5,d:"Slow, but learning fast."},
+ {id:"bartender",n:"Bartender",pl:"bartenders",w:WAGE.bartender,sp:1,d:"Knows the drill."},
+ {id:"head",n:"Head bartender",pl:"head bartenders",w:WAGE.head,sp:2,d:"Keeps the bar running."},
+ {id:"mixologist",n:"Mixologist",pl:"mixologists",w:WAGE.mixologist,sp:4,d:"Every glass is a small show."},
+ {id:"manager",n:"Bar manager",pl:"bar managers",w:WAGE.manager,sp:8,d:"Works the floor and the counter."},
+ {id:"ambassador",n:"Brand ambassador",pl:"brand ambassadors",w:WAGE.ambassador,sp:16,d:"Your bar, in every city."}
 ];
 var SUPPORT=[
- {id:"cashier",n:"Cashier",pl:"cashiers",w:1000,g:1.35,d:"Collects finished orders for one counter slot."},
- {id:"clerk",n:"Stock clerk",pl:"clerks",w:1000,g:1.35,d:"Keeps ingredients stocked. Starts with one and can be upgraded to watch up to 3."},
- {id:"prepchef",n:"Prep chef",pl:"prep chefs",w:2400,g:1.5,d:"Buys fresh produce in bulk and prepares syrup and juices. Prepared items spoil after a few days."},
- {id:"controller",n:"Cost controller",pl:"cost controllers",w:3500,g:1,d:"Watches the market. Reprices your drinks overnight and tells clerks how much stock to hold."},
- {id:"security",n:"Security guard",pl:"security guards",w:2200,g:1.4,d:"Calms rowdy guests before they cause trouble, so you do not have to."}
+ {id:"cashier",n:"Cashier",pl:"cashiers",w:WAGE.cashier,g:1.35,d:"Collects finished orders for one counter slot."},
+ {id:"clerk",n:"Stock clerk",pl:"clerks",w:WAGE.clerk,g:1.35,d:"Keeps ingredients stocked. Starts with one and can be upgraded to watch up to 3."},
+ {id:"prepchef",n:"Prep chef",pl:"prep chefs",w:WAGE.prepchef,g:1.5,d:"Buys fresh produce in bulk and prepares syrup and juices. Prepared items spoil after a few days."},
+ {id:"controller",n:"Cost controller",pl:"cost controllers",w:WAGE.controller,g:1,d:"Watches the market. Reprices your drinks overnight and tells clerks how much stock to hold."},
+ {id:"security",n:"Security guard",pl:"security guards",w:WAGE.security,g:1.4,d:"Calms rowdy guests before they cause trouble, so you do not have to."}
 ];
 var ROLES=STAFF.concat(SUPPORT);
 var STAFFM={};ROLES.forEach(function(s){STAFFM[s.id]=s});
-var TIERS={"1":{staff:"apprentice",base:0,per:2},"2":{staff:"bartender",base:3,per:3},"3":{staff:"head",base:2,per:1}};   /* base = picks for the first hire, per = picks for each training level */
-var FREEP={"1":2};            /* founding picks, so the first cocktails do not need a payroll */
-var GROWTH=1.17,HIRE=0.15;    /* a hire costs 15% of a month's wage, and a bit more each time */
-var TRAIN_COST=[0.8,3,8];     /* training costs this many months of wage */
-var CLERK_UP=[600,3000];
 
 /* ---------- people ---------- */
 var SKN=["Knowledge","Speed","Hospitality"];
 var SSK={cashier:["Charm","Upselling"],clerk:["Negotiation","Care"],prepchef:["Yield","Pace"],controller:["Negotiation","Analysis"],security:["Composure","Awareness"]};
 function skillNames(role){return SSK[role]||SKN}
-var LVLN=["Junior","Mid-level","Senior"],LVLM=[1,1.25,1.6];
-var LVLXP=[0,14,42];              /* days worked needed to reach mid-level and senior */
-var PROMXP=70;                    /* days worked before a senior can move to the next role */
+var LVLN=["Junior","Mid-level","Senior"];
 var LADDER=["apprentice","bartender","head","mixologist","manager","ambassador"];
 var NAMES=["Ana","Bruno","Carla","Diego","Elena","Felix","Gina","Hugo","Iris","Jonas","Karen","Luca","Maya","Nico","Olga","Pablo","Rita","Sam","Tina","Uri","Vera","Wes","Yara","Zane","Ada","Ben","Cleo","Dan","Eva","Finn"];
-var OWN=[2,3,3];                  /* your own skills at the counter */
 
-/* int = seconds between customers, k = max drinks per order. rent and util are monthly. */
-var EXPS=[
- {n:"Lemonade stand",c:0,int:9.6,k:1,rent:900,util:150},
- {n:"Neighborhood bar",c:10000,int:7.8,k:2,rent:17000,util:2700},
- {n:"Hotel bar",c:75000,int:6.9,k:3,rent:71000,util:12000},
- {n:"Rooftop bar",c:260000,int:5.9,k:3,rent:150000,util:26000},
- {n:"Global chain",c:780000,int:4.5,k:3,rent:232000,util:38000}
-];
-/* team size limit and wage level for each venue: past these sizes an extra person earns less than the wage */
-var STAFFCAP=[2,5,8,12,18];
-var WAGEK=[1,1.3,1.8,2.5,2.8];
 function staffCap(){return STAFFCAP[S.exp]||STAFFCAP[0]}
 function wk(){return (WAGEK[S.exp]||1)*(1-0.04*legLvl("crew"))}
 
@@ -1250,8 +1294,6 @@ function arrivalMult(){return clamp(0.5+0.5*S.sat/70,0.5,1.4)*repArrival()*(1+0.
 function expCost(nx){return Math.round(nx.c*(1-0.15*lvl("expand")-0.08*legLvl("estate")))}
 function wageOf(e){return e.wage*(1-0.05*lvl("wage"))}
 function trainCost(s,l){return Math.round(s.w*TRAIN_COST[l])}
-var SLOTBASE=[3,4,5,7,9];   /* customers that can wait at once in each venue, before seat upgrades */
-var SEATINC=[1,1,2,2,3];    /* seats added by each seat upgrade: bigger venues have more room to add */
 function maxSlots(){return (SLOTBASE[S.exp]||3)+(SEATINC[S.exp]||1)*((S.upg.counter4?1:0)+(S.upg.counter5?1:0))}
 function interval(){return EXPS[S.exp].int*(S.upg.lights?0.8:1)}
 function prepTime(it){return it.solo?3:2+2*it.i.length}
@@ -1423,7 +1465,7 @@ function syncStaff(){
 }
 function refWage(e){var r=STAFFM[e.role].w*wk()*LVLM[e.lvl];return e.starter?r/2:r}
 function payroll(){var t=0;S.team.forEach(function(e){t+=wageOf(e)});return t}
-function rampK(){var m=S.mcount-(S.expAt||0);return m<=0?0.4:(m===1?0.65:(m===2?0.85:1))}   /* a new venue's lease builds up over three months */
+function rampK(){var m=S.mcount-(S.expAt||0);return RAMP[Math.max(0,Math.min(m,RAMP.length-1))]}   /* a new venue's lease builds up over three months */
 function dailyCost(){var st=EXPS[S.exp],k=rampK();return{rent:st.rent*k/28,util:st.util*k/28,pay:payroll()/28}}
 function trimAssign(){while(assignedCount()>clerkCap()){for(var k in S.auto){if(S.auto[k]){delete S.auto[k];break}}}}
 function fireEmp(e){
@@ -1452,9 +1494,8 @@ function repayDebt(){
   S.money-=a;S.debt-=a;
   if(S.debt<0.01){S.debt=0;S.paidDebt=true;S.late=0}
 }
-var LATE_MAX=3;   /* months in a row without paying the bills before the bank repossesses the bar */
 function monthlyFixed(){var dc=dailyCost();return 28*(dc.rent+dc.util+dc.pay)}
-function bankLimit(){var lp=S.lastMonth?Math.max(0,S.lastMonth.profit||0):0;return Math.max(2000,Math.round(2*lp/100)*100)}
+function bankLimit(){var lp=S.lastMonth?Math.max(0,S.lastMonth.profit||0):0;return Math.max(LOAN_MIN,Math.round(LOAN_K*lp/100)*100)}
 function bankBorrow(a){
   a=Math.round(a);
   if(a<=0||S.debt+a>bankLimit())return false;
@@ -1467,10 +1508,10 @@ function repossess(quiet){
   if(S.exp<=0){
     /* nothing smaller to fall back to: the bank restructures the debt instead */
     S.notice={type:"restructure",debtBefore:Math.round(S.debt)};
-    S.debt=Math.round(S.debt*0.5);S.late=1;
+    S.debt=Math.round(S.debt*RESTRUCTURE);S.late=1;
     return;
   }
-  var sale=Math.round(from.c*0.5),paid=Math.min(sale,S.debt);
+  var sale=Math.round(from.c*REPO_SALE),paid=Math.min(sale,S.debt);
   S.debt-=paid;var extra=sale-paid;S.money+=extra;if(S.debt<0.5)S.debt=0;
   S.exp--;S.expAt=S.mcount;var ratio=wk()/k0;
   var cap=staffCap(),fired=0;
@@ -1486,7 +1527,7 @@ function repossess(quiet){
   S.orders=[];S.jobs=[];S.hold=[];S.arrive=2;S.cands={};
   S.nights={};S.sup={mode:"spot"};S.inc=null;S.br=[];S.deco={items:{},theme:null};
   syncStaff();menuChanged();
-  S.debt=Math.min(S.debt,Math.round(monthlyFixed()*2));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
+  S.debt=Math.min(S.debt,Math.round(monthlyFixed()*REPO_KEEP));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
   addRep(-Math.round(S.rep*0.4),true);S.mood=Math.max(20,S.mood-15);S.late=0;
   if(S.ms){S.ms.active=[];S.ms.day=-1}
   emit("stage");
@@ -1495,12 +1536,12 @@ function repossess(quiet){
 }
 function monthEnd(quiet){
   var m=S.month;
-  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
+  if(S.mcount===0){m.rent*=OPENING;m.util*=OPENING;m.pay*=OPENING}   /* the opening month is cheaper */
   S.mcount++;
   S.team.forEach(function(e2){if(e2.starter){e2.starter--;if(e2.starter<=0){e2.wage=e2.wage*2;delete e2.starter}}});
   if(supMode()==="volume"&&m.cogs<volCommit())m.util+=0.5*(volCommit()-m.cogs);
   var due=m.rent+m.util+m.pay;
-  var interest=S.debt*0.04;
+  var interest=S.debt*INTEREST;
   S.debt+=interest;m.interest=interest;
   var paid=Math.min(S.money,due);
   S.money-=paid;
@@ -1595,7 +1636,6 @@ function workers(){
   w.sort(function(a,b){return b-a});
   return w.map(function(x){return x*mult});
 }
-var LINGER=[8,12,16,18,20];   /* seconds a served customer stays seated, by venue */
 function lingerTime(){return LINGER[S.exp]*(0.7+random()*0.6)}
 function freeSlot(){
   var used={};S.orders.forEach(function(o){used[o.slot]=1});
@@ -1651,7 +1691,6 @@ function finishOrder(o){
   o.reward=b*(1+tipMax()*frac*o.m)*(ce?1+0.02*ce.sk[1]:1)*(o.rid?1+bondOf(o.rid)/300:1)*(1+0.04*legLvl("fame"));
   if(ce)collect(o);
 }
-var MAXRE=3;   /* a happy customer can ask for another round up to this many times */
 function reorderChance(o){
   var rc=o.re||0;if(rc>=MAXRE)return 0;
   var hosp=clamp((floorAvg(2)-1)/4,0,1),ce=cashierAt(o.slot),charm=ce?clamp((ce.sk[0]-1)/4,0,1):0;
@@ -2035,8 +2074,6 @@ function trainToast(role){
 
 
 /* ---------- special missions: finish a task before it runs out for a cash bonus ---------- */
-var MS_DAYREV=[505,3000,10400,22300,34000];
-var MS_MAX=2;     /* missions you can hold at once */     /* typical revenue of one day in each venue; rewards are a share of it */
 function msInit(){if(!S.ms)S.ms={offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true};return S.ms}
 function msExpected(list){
   /* how many drinks a day the bar sells, and each drink's share of them */
@@ -2141,7 +2178,6 @@ function bookNight(day,t){
 function addMod(days,dem,sat){(S.mods=S.mods||[]).push({from:gDay(),until:gDay()+days-1,dem:dem,sat:sat||0});FXC.day=-1}
 
 /* ---- Bar Guide: a monthly star rating ---- */
-var MENUREF=[3,12,25,45,60];
 function guideStars(){return S.guide?S.guide.stars:2}
 function guideCalc(){
   var m=S.month,gn=Math.max(1,m.gn||0),sat=(m.gs||0)/gn,pr=(m.gp||0)/gn;
@@ -2320,15 +2356,10 @@ function calmRowdy(o){
 function escortRowdy(o){o.rowdy=false;dropQuiet(o);toast("You showed them out politely. No harm done.")}
 
 /* ---- branches and legacy: what comes after the global chain ---- */
-var CITIES=[
-  {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
-  {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
-];
-var HQP=455000;   /* a global chain's typical monthly profit: branches pay a share of it */
 function branchActive(){return Math.min((S.br||[]).length,S.staff.ambassador||0)}
 function branchIncome(){
   var inc=0,act=branchActive();
-  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=0.3*HQP*c.k*(0.7+0.06*guideStars())})});
+  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=BRANCH_SHARE*HQP*c.k*(0.7+0.06*guideStars())})});
   return Math.round(inc);
 }
 function openBranch(id){
@@ -3023,7 +3054,7 @@ function update(){
   /* finances and team */
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
   var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);
-  if(S.mcount===0)est*=0.5;
+  if(S.mcount===0)est*=OPENING;
   setT(ref.fin[0],"Month ends in "+left+" day"+(left>1?"s":"")+". Fixed costs expected: "+money0(est)+(S.mcount===0?" (half price in your opening month)":"")+". Full month: payroll "+money0(payroll())+", rent "+money0(EXPS[S.exp].rent)+", utilities "+money0(EXPS[S.exp].util)+").");
   setT(ref.fin[1],"This month so far: revenue "+money0(mo.rev)+", stock bought "+money0(mo.cogs)+", spoiled "+money0(mo.waste)+".");
   var lm=S.lastMonth;
@@ -3957,7 +3988,7 @@ function buildDash(){
 function updDash(){
   if(!dash){buildDash();if(!dash)return}
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
-  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=0.5;
+  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=OPENING;
   dash.vTeam.textContent=S.team.length+" / "+staffCap();dash.vCash.textContent=money0(S.money);dash.vDue.textContent="~"+money0(est);
   dash.vMood.textContent=satTeam(S.mood)+" "+Math.round(S.mood)+"%";
   var mb=S.mood>=60?2:S.mood>=35?1:0;
@@ -4289,7 +4320,7 @@ function vLegacy(pg){
   CITIES.forEach(function(c){
     var box=el("div","cand"),open=(S.br||[]).indexOf(c.id)>=0;
     box.appendChild(el("b",null,c.n+(open?" \u2713":"")));
-    box.appendChild(el("span",null,open?"Open. Pays about "+money0(0.3*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
+    box.appendChild(el("span",null,open?"Open. Pays about "+money0(BRANCH_SHARE*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
     if(!open){var b=el("button","buy sm","Open branch");b.disabled=S.exp<4||S.money<c.cost;b.onclick=function(){if(openBranch(c.id)){sfx("new");openVenue("legacy")}};box.appendChild(b)}
     pg.appendChild(box);
   });

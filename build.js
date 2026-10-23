@@ -15,7 +15,7 @@ var STYLES = ["base", "scene", "skin", "compact", "ui-layer", "app"];
 var SCRIPTS = [
   "main-open",
   /* engine: no DOM, no storage. Talks to the UI only through emit() (engine/events.js) */
-  "data/catalog", "data/people", "data/calendar", "data/trees",
+  "data/balance", "data/catalog", "data/people", "data/calendar", "data/trees",
   "engine/events", "state",
   "engine/helpers", "engine/calendar", "engine/shifts", "engine/money", "engine/orders", "engine/actions",
   "engine/missions", "engine/longterm",
