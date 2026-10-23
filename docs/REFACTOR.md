@@ -35,6 +35,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: standardise on `el(tag, attrs, children)` with `textContent`; keep `innerHTML` only for static icons.
 
 ## 7. State schema and migrations
+**Done.** `S.v`, every field in `def()`, numbered `MIGRATIONS` (0→1 wage scaling, 1→2 schedules removed), `fromSave()`. Fixtures: `tests/saves/v0-*.json`; test: `node tools/test_saves.js`. The defensive `S.x||default` reads are still in place and can go gradually.
 - `def()` plus ad hoc `if(!S.x)S.x=...` and lazily created fields (`S.ms`, `S.reg`, `S.deco`, `S.sup`, `S.nights`, `S.mods`, `S.hold`, `S.guide`, `S.leg`, `S.br`...).
 - **Step**: add `S.v`, move every field into `def()`, write `migrate(S)` with numbered steps, test loading saves from each past version (keep fixture JSONs in `tests/saves/`).
 

@@ -42,7 +42,7 @@ S3 18 staff         16    60    615,303   37,017    176,000    90,000    312,287
 | 3 | 4, 4 | 6 / 7 / 10 | 0/2 | 988,782 | 98% |
 
 ## `python tools/smoke.py`
-Fresh game and `tests/saves/v5-pre-refactor.json` (careful bot after 5 months: Neighborhood bar, 5 staff, every employee has `sch`), light and dark at 390x780: no console errors.
+Fresh game and `tests/saves/v5-pre-refactor.json` (now `v0-midgame.json`) (careful bot after 5 months: Neighborhood bar, 5 staff, every employee has `sch`), light and dark at 390x780: no console errors.
 
 ## How to compare after a change
 ```
@@ -62,3 +62,4 @@ python tools/run_bots.py careful --months 12 --seeds 2
 Margins have a low tail in every build (S1 down to 44%, S4 down to 47% in 200 runs, usually with walkouts from stock-outs). Single runs below 50% are not a regression by themselves; compare medians over 20+ seeds.
 | 5. pollers replaced by events | ok | browser 5 runs: 72/57/57/56/55 | `--node --seed 11` reference and `--seed 5` five bots × 30 months: output identical (md5) to step 3; UI flows (icons, stock groups, recipe and mission banners, dashboard, bank and mission buttons, expansion preview, trees, note clamps) match step 3 side by side |
 | 6. one DOM helper | ok | browser 3 runs: 72/55/57/55/55 | engine untouched, seeded hash unchanged; serialized DOM of all tabs, the dock and the venue, bank, missions and hire windows identical to step 5 (13 views, frozen clock) |
+| 7. save versions | ok, 4 v0 fixtures | browser 3 runs: 72/56/57/57/55 | seeded hashes unchanged; loading each fixture gives the same state as before except the new default fields; `tools/test_saves.js` passes and fails when the wage step is broken on purpose |

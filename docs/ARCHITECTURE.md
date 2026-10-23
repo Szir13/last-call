@@ -35,13 +35,13 @@ main IIFE
 Customer identity across rounds is `o.cid || o.id`. Regulars carry `o.rid`.
 
 ## State `S`
-Created by `def()`; many later features create their field lazily. Important groups:
+Created by `def()`, which lists every field (`v` is the save version). Important groups:
 - Money and score: `money totalEarned served walkouts sat rep pts`.
 - Venue: `exp` (0 stand .. 4 global chain), `expAt` (month of last expansion, drives the lease ramp), `upg`, `ing ql brand stock`, `price act`, `hours`.
 - People: `team[] {id name role lvl xp sk[] wage cl starter?}`, `staff{role:n}` (derived by `syncStaff`), `maxStaff`, `train`, `picks`, `cands`.
 - Finance: `month` (`rev cogs rent util pay waste interest gs gn gp`), `lastMonth`, `debt`, `late`, `notice`.
 - Orders: `orders[] jobs[] hold[]`.
-- Long-term (lazy): `ms` missions, `reg` regulars, `guide`, `deco`, `sup`, `nights`, `mods`, `ban`, `inc`, `br`, `leg`, `legacy`.
+- Long-term: `ms` missions, `reg` regulars, `guide`, `deco`, `sup`, `nights`, `mods`, `ban`, `inc`, `br`, `leg`, `legacy`.
 
 ## Engine and UI
 The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock access:
@@ -60,7 +60,7 @@ The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock ac
 Canvas is 160x140 logical pixels scaled by `Z` (fractional, snapped to device pixels). Layers: sky (dynamic) -> `LA` back (cached per stage and shelf contents) -> weather -> crew behind counter -> `LB` counter (cached) -> decor -> customers sorted by y -> weather in front -> day/night tint. Customers are NPCs derived each frame from `S.orders` and `S.hold` (`sync()`), never stored. Seats: up to 15 in three rows (`SLOTX/SLOTY`).
 
 ## Persistence
-`localStorage`: engine state under `last-call-orders-v5` (every 5 s and on hide), scene preferences under `last-call-pixel-v1` (`done`, `hide`, `tabs`, `fold`, `mute`). `load()` merges the saved JSON over `def()`. `retire()` rebuilds `S` and the page reloads.
+`localStorage`: engine state under `last-call-orders-v5` (every 5 s and on hide), scene preferences under `last-call-pixel-v1` (`done`, `hide`, `tabs`, `fold`, `mute`). `load()` calls `fromSave()`: the saved JSON is merged over `def()`, then every `MIGRATIONS` step from the save's `v` (0 when missing) to the current version runs, then small repairs and `syncStaff()`. Fixtures for each past version live in `tests/saves/` and are checked by `tools/test_saves.js` (Node) and `tools/smoke.py` (browser). `retire()` rebuilds `S` and the page reloads.
 
 ## Test hook
 `tools/harness.py` injects `window.__lc` before `setInterval(loop,100)`. Inner-IIFE functions are not reachable from the hook; test them through the DOM. With `node=True` the same scripts run against `tools/engine.js`, where `window.__lc` resolves any engine name.

@@ -45,4 +45,5 @@ function main() {
   process.stdout.write(JSON.stringify(out));
 }
 
-main();
+module.exports = { makeEngine: makeEngine };
+if (require.main === module) main();
