@@ -159,7 +159,6 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .hstrip{display:grid;grid-template-columns:repeat(24,1fr);gap:2px;align-items:end;height:70px;margin-top:12px}
 .hstrip i{display:block;background:var(--line);border-radius:2px 2px 0 0;min-height:2px}
 .hstrip i.open{background:var(--accent)}
-.hstrip i.wk{background:var(--ink)}
 .hstrip i.now{outline:2px solid var(--ink)}
 .hlab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:4px 0 8px}
 .hrow{display:grid;grid-template-columns:44px 1fr 1fr 56px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -520,10 +519,6 @@ nav button.pxnew{animation:pxnav .9s steps(2) 5}
 
 
 /* team list and upgrades */
-.pxwk{display:flex;align-items:center;gap:3px;margin:4px 0 2px}
-.pxwk i{width:17px;height:17px;font-style:normal;font-size:10px;line-height:13px;text-align:center;border:2px solid var(--edge);color:var(--muted)}
-.pxwk i.w{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
-.pxwk i.t{box-shadow:0 0 0 2px var(--gold)}
 .pxon{margin-left:6px;font-size:13px;color:var(--muted);font-weight:600}
 .pxon.on{color:var(--accent)}
 #p-staff .row.pick .sub{display:none}
@@ -563,7 +558,7 @@ body,button,input,select{font-family:var(--sans)}
 .pbv{font-weight:700}
 nav button{font-size:15px;font-weight:600}
 body{font-size:16px}
-.top,.clock,.sat,.satl,.ips,.today,.news,.note,.gnote,.row .sub,.row .sub *,.stats .l,.pxwk i,.pxon,.pxbl,.pxown,.pxnext .ts{font-size:14px;line-height:1.35}
+.top,.clock,.sat,.satl,.ips,.today,.news,.note,.gnote,.row .sub,.row .sub *,.stats .l,.pxon,.pxbl,.pxown,.pxnext .ts{font-size:14px;line-height:1.35}
 .pbox small,.pxnext .br{font-size:13px}
 .pxdlg .pxt{font-size:16px;line-height:1.35}
 .clock,.ips,.satl,.stats .v,.money{font-variant-numeric:tabular-nums}
@@ -596,20 +591,6 @@ nav{position:relative;flex:none;left:auto;right:auto;bottom:auto}
 .card h2{font-size:22px;line-height:1.2}
 .card .cand b,.card .cand strong{font-family:var(--sans)}
 .buy,.big{font-size:16px}
-
-/* employee schedule */
-.pxwk{display:none;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 4px}
-.pxwk i{width:auto;height:36px;line-height:1;font-size:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  border:2px solid var(--edge);color:var(--muted);background:transparent;border-radius:0;box-shadow:none;font-style:normal}
-.pxwk i b{font-family:var(--sans);font-size:13px;line-height:1;font-weight:700}
-.pxwk i u{display:block;height:3px;background:currentColor;opacity:.3;text-decoration:none}
-.pxwk i.w{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
-.pxwk i.w u{opacity:.85}
-.pxwk i.t{box-shadow:0 0 0 2px var(--gold);position:relative;z-index:1}
-.pxmeta{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);margin-top:6px}
-.pxmeta .dot{width:9px;height:9px;flex:none;background:var(--muted);opacity:.6}
-.pxmeta.on{color:var(--accent)}
-.pxmeta.on .dot{background:var(--accent);opacity:1}
 
 /* premium and ultra premium tiers use the same cards as every other ingredient */
 #p-stock>.row.cl{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ico info" "act act";gap:6px 8px;align-items:center;margin-left:0;padding:8px;border:3px solid var(--edge);background:var(--surface);box-shadow:0 3px 0 var(--edge2);cursor:pointer;grid-column:auto}
@@ -888,7 +869,6 @@ var LVLN=["Junior","Mid-level","Senior"],LVLM=[1,1.25,1.6];
 var LVLXP=[0,14,42];              /* days worked needed to reach mid-level and senior */
 var PROMXP=70;                    /* days worked before a senior can move to the next role */
 var LADDER=["apprentice","bartender","head","mixologist","manager","ambassador"];
-var MAXLEN=10,MAXDAYS=6;          /* at most 10 hours a day, at least one day off */
 var NAMES=["Ana","Bruno","Carla","Diego","Elena","Felix","Gina","Hugo","Iris","Jonas","Karen","Luca","Maya","Nico","Olga","Pablo","Rita","Sam","Tina","Uri","Vera","Wes","Yara","Zane","Ada","Ben","Cleo","Dan","Eva","Finn"];
 var OWN=[2,3,3];                  /* your own skills at the counter */
 
@@ -1045,7 +1025,7 @@ var REPN=["Unknown","Known locally","Neighborhood favorite","Local star","City h
 
 /* ---------- state ---------- */
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
-function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,ot:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
+function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
 function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
   ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
   price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,
@@ -1063,9 +1043,10 @@ function load(){
   if(!Array.isArray(S.hours)||S.hours.length!==7)S.hours=defHours();
   if(!S.prev)S.prev={e:0,n:0};
   if(!S.month)S.month=newMonth();
-  if(S.month.ot===undefined)S.month.ot=0;
   if(!Array.isArray(S.team))S.team=[];
-  S.team.forEach(function(e){if(!e.sch)e.sch=autoSched(e.role,0)});
+  /* weekly schedules and overtime are gone: drop their fields, overtime already owed counts as payroll */
+  S.team.forEach(function(e){delete e.sch;delete e.ot});
+  [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
   syncStaff();
 }
 function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -1318,56 +1299,6 @@ function isOpenAt(day,h){
   return ph[0]>ph[1]&&h<ph[1];
 }
 function isOpenNow(){return isOpenAt(gDay(),gHour())}
-/* ---------- schedules: every employee has a weekly grid of start hour and length ---------- */
-var OFFSTART=[0,1,2,6,3,4,5];     /* default days off: Mon-Tue first, Fri-Sat last */
-var LEAD={prepchef:2,clerk:1};    /* back of house starts before opening */
-var HV=0,TV=0;                     /* HV: opening hours changed. TV: the team or a schedule changed */
-function autoSched(role,idx){
-  var out=[];
-  for(var wd=0;wd<7;wd++){
-    var hr=S.hours[wd],o=hr[0],c=hr[1],span=spanOf(o,c);
-    var os=OFFSTART[idx%7],off=wd===os||wd===(os+1)%7;
-    if(off||!span){out.push([0,0]);continue}
-    var L=Math.min(8,span),lead=LEAD[role]||0,early=(idx%2===0)||lead>0;
-    var start=early?o-lead:o+span-L;
-    out.push([((start%24)+24)%24,L]);
-  }
-  return out;
-}
-function empWorksAt(e,day,h){return true}   /* schedules are gone: the team works whenever the bar is open */
-function schedStats(e){return{days:5,hours:40,ot:0,last:-1}}
-function otHoursOn(e,wd){return 0}
-var SC={key:"",c:{}};
-function shiftCounts(){
-  var d=gDay(),hr=gHour();
-  var key=d+"|"+Math.floor(hr)+"|"+HV+"|"+TV;
-  if(SC.key===key)return SC.c;
-  var c={emps:[],cashiers:[]};
-  ROLES.forEach(function(r){c[r.id]=0;c[r.id+"_lv"]=0});
-  S.team.forEach(function(e){
-    if(empWorksAt(e,d,hr)){
-      c[e.role]++;c.emps.push(e);
-      if(e.role==="clerk")c.clerk_lv+=(e.cl||1);
-      if(e.role==="cashier")c.cashiers.push(e);
-    }
-  });
-  SC.key=key;SC.c=c;
-  return c;
-}
-function onShift(id){return shiftCounts()[id]||0}
-function roleSkill(role,idx){var l=0,n=0;shiftCounts().emps.forEach(function(e){if(e.role===role){l+=e.sk[idx];n++}});return n?l/n:0}
-function empAvg(role,idx){var l=0,n=0;S.team.forEach(function(e){if(e.role===role){l+=e.sk[idx];n++}});return n?l/n:0}
-function floorAvg(idx){
-  var sum=OWN[idx],n=1;
-  shiftCounts().emps.forEach(function(e){if(STAFFM[e.role].sp){sum+=e.sk[idx];n++}});
-  return sum/n;
-}
-function perfMult(){return S.team.length?clamp(0.75+0.5*S.mood/100,0.75,1.25):1}
-function cashierAt(slot){return shiftCounts().cashiers[slot]||null}
-function roleCountAt(role,day,h){var k=0;S.team.forEach(function(e){if(e.role===role&&empWorksAt(e,day,h))k++});return k}
-function staffAt(day,h){return isOpenAt(day,h)?S.team.length:0}
-function daysWorking(role,day){var k=0;S.team.forEach(function(e){if(e.role===role)k++});return k}
-
 function setHours(w,o,c){
   if(!isFinite(o)||!isFinite(c))return;
   if(spanOf(o,c)>MAXOPEN)c=(o+MAXOPEN)%24;
@@ -1444,7 +1375,32 @@ function nextChange(){
   NCM.k=key;NCM.v=res;
   return res;
 }
-
+/* ---------- who is on shift: everyone on the team works whenever the bar is open ---------- */
+var HV=0,TV=0;                     /* HV: opening hours changed. TV: the team changed */
+var SC={key:"",c:{}};
+function shiftCounts(){
+  var key=gDay()+"|"+Math.floor(gHour())+"|"+TV;
+  if(SC.key===key)return SC.c;
+  var c={emps:[],cashiers:[]};
+  ROLES.forEach(function(r){c[r.id]=0;c[r.id+"_lv"]=0});
+  S.team.forEach(function(e){
+    c[e.role]++;c.emps.push(e);
+    if(e.role==="clerk")c.clerk_lv+=(e.cl||1);
+    if(e.role==="cashier")c.cashiers.push(e);
+  });
+  SC.key=key;SC.c=c;
+  return c;
+}
+function onShift(id){return shiftCounts()[id]||0}
+function roleSkill(role,idx){var l=0,n=0;shiftCounts().emps.forEach(function(e){if(e.role===role){l+=e.sk[idx];n++}});return n?l/n:0}
+function empAvg(role,idx){var l=0,n=0;S.team.forEach(function(e){if(e.role===role){l+=e.sk[idx];n++}});return n?l/n:0}
+function floorAvg(idx){
+  var sum=OWN[idx],n=1;
+  shiftCounts().emps.forEach(function(e){if(STAFFM[e.role].sp){sum+=e.sk[idx];n++}});
+  return sum/n;
+}
+function perfMult(){return S.team.length?clamp(0.75+0.5*S.mood/100,0.75,1.25):1}
+function cashierAt(slot){return shiftCounts().cashiers[slot]||null}
 /* ---------- people, fixed costs, month end and day change ---------- */
 function syncStaff(){
   var c={};
@@ -1473,7 +1429,7 @@ function staffQuits(quiet){
 }
 function moodQuit(quiet){
   var worst=null,wr=9;
-  S.team.forEach(function(e){var r=e.wage/refWage(e)-0.02*e.ot;if(r<wr){wr=r;worst=e}});
+  S.team.forEach(function(e){var r=e.wage/refWage(e);if(r<wr){wr=r;worst=e}});
   if(!worst)return;
   fireEmp(worst);
   if(!quiet)toast(worst.name+" quit: the team is unhappy.");
@@ -1542,11 +1498,11 @@ function showNotice(){
 }
 function monthEnd(quiet){
   var m=S.month;
-  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5;m.ot*=0.5}   /* the opening month is half price */
+  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
   S.mcount++;
   S.team.forEach(function(e2){if(e2.starter){e2.starter--;if(e2.starter<=0){e2.wage=e2.wage*2;delete e2.starter}}});
   if(supMode()==="volume"&&m.cogs<volCommit())m.util+=0.5*(volCommit()-m.cogs);
-  var due=m.rent+m.util+m.pay+m.ot;
+  var due=m.rent+m.util+m.pay;
   var interest=S.debt*0.04;
   S.debt+=interest;m.interest=interest;
   var paid=Math.min(S.money,due);
@@ -1560,7 +1516,7 @@ function monthEnd(quiet){
   var profit=m.rev-m.cogs-due-interest;
   guideUpdate();
   var brInc=branchIncome();if(brInc>0){S.money+=brInc;S.totalEarned+=brInc}
-  S.lastMonth={rev:m.rev,cogs:m.cogs,rent:m.rent,util:m.util,pay:m.pay,ot:m.ot,waste:m.waste,interest:interest,profit:profit,unpaid:unpaid,branch:brInc};
+  S.lastMonth={rev:m.rev,cogs:m.cogs,rent:m.rent,util:m.util,pay:m.pay,waste:m.waste,interest:interest,profit:profit,unpaid:unpaid,branch:brInc};
   S.month=newMonth();
   if(unpaid>0.5){
     S.late++;addRep(-15,quiet);
@@ -1580,21 +1536,16 @@ function growSkill(e,quiet){
   e.sk[idx[0]]++;TV++;
   if(!quiet)toast(e.name+" improved "+skillNames(e.role)[idx[0]].toLowerCase()+".");
 }
-/* what yesterday meant for the team: experience, overtime pay, mood */
+/* what yesterday meant for the team: experience and mood */
 function staffDay(quiet){
-  var d=gDay(),wd=(((d-1)%7)+7)%7,n=S.team.length,sumR=0,sumOff=0,sumOt=0;
+  var n=S.team.length,sumR=0;
   S.team.forEach(function(e){
-    var len=1,st=schedStats(e),ot=0;
-    if(len>0){
-      e.xp++;
-      if(ot>0)S.month.ot+=ot*(wageOf(e)/160)*2;
-      if(e.xp%12===0)growSkill(e,quiet);
-    }
-    e.ot=e.ot*0.85+ot;
-    sumR+=e.wage/refWage(e);sumOff+=7-st.days;sumOt+=e.ot;
+    e.xp++;
+    if(e.xp%12===0)growSkill(e,quiet);
+    sumR+=e.wage/refWage(e);
   });
   if(n>0){
-    var target=55+clamp((sumR/n-1)*60,-15,20)+clamp((sumOff/n-2)*5,-10,6)-clamp(sumOt/n*3,0,30)+S.moodB;
+    var target=55+clamp((sumR/n-1)*60,-15,20)+S.moodB;
     S.mood=clamp(S.mood+(target-S.mood)*0.2,0,100);
   }else S.mood+=(60-S.mood)*0.2;
   S.moodB*=0.9;
@@ -2018,7 +1969,7 @@ function hireCand(role,i){
   if(S.money<cd.fee){toast("You need "+money0(cd.fee)+" to hire "+cd.name+".");return}
   S.money-=cd.fee;
   var before={};for(var tr in TIERS)before[tr]=picksTotal(tr);
-  var e={id:S.nextEmp++,name:cd.name,role:role,lvl:cd.lvl,xp:LVLXP[cd.lvl],sk:cd.sk.slice(),wage:cd.wage,cl:1,ot:0,sch:autoSched(role,S.staff[role]||0)};
+  var e={id:S.nextEmp++,name:cd.name,role:role,lvl:cd.lvl,xp:LVLXP[cd.lvl],sk:cd.sk.slice(),wage:cd.wage,cl:1};
   if(S.exp===0&&(role==="cashier"||role==="clerk")&&!(S.starter&&S.starter[role])){S.starter=S.starter||{};S.starter[role]=1;e.wage=Math.round(e.wage/2/10)*10;e.starter=99}
   S.team.push(e);c.list.splice(i,1);
   syncStaff();
@@ -2053,20 +2004,6 @@ function trainSkill(e,i){
   S.money-=c;e.sk[i]++;S.moodB+=1;TV++;
 }
 function raiseWage(e){e.wage=Math.round(e.wage*1.1/10)*10;S.moodB+=3;TV++}
-function setSched(e,wd,start,len){
-  if(!isFinite(start)||!isFinite(len))return false;
-  start=((start%24)+24)%24;len=clamp(len,0,MAXLEN);
-  var working=0;e.sch.forEach(function(s,i){if(i!==wd&&s[1]>0)working++});
-  if(len>0&&working>=MAXDAYS){toast("Everyone needs at least one day off a week.");return false}
-  e.sch[wd]=[start,len];TV++;
-  return true;
-}
-function autoSchedAll(){
-  var idx={};
-  S.team.forEach(function(e){var i=idx[e.role]||0;e.sch=autoSched(e.role,i);idx[e.role]=i+1});
-  TV++;
-}
-
 function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
 
 /* tree nodes */
@@ -2226,20 +2163,6 @@ function buildEmpDetail(parent){
   ed.bRaise=act("Raise 10%",raiseWage);
   ed.bFire=act("Let go",function(e){fireEmp(e)});
   ed.card.appendChild(ed.acts);
-  var schedBox=h("div");schedBox.style.display="none";ed.card.appendChild(schedBox);
-  ed.tot=h("div","gnote");schedBox.appendChild(ed.tot);
-  ed.sr=[];
-  for(var wd=0;wd<7;wd++){
-    (function(wd){
-      var row=h("div","hrow"),lab=h("b",null,DAYN[wd]),so=h("select"),sl=h("select"),info=h("span","sp");
-      so.setAttribute("aria-label",DAYN[wd]+" start hour");sl.setAttribute("aria-label",DAYN[wd]+" hours worked");
-      for(var hx=0;hx<24;hx++){var o1=h("option",null,pad2(hx)+":00");o1.value=String(hx);so.appendChild(o1)}
-      for(var lx=0;lx<=MAXLEN;lx++){var o2=h("option",null,lx===0?"Off":lx+" h");o2.value=String(lx);sl.appendChild(o2)}
-      var apply=function(){var e=selEmp();if(e)setSched(e,wd,parseInt(so.value,10),parseInt(sl.value,10))};
-      so.onchange=apply;sl.onchange=apply;
-      row.append(lab,so,sl,info);schedBox.appendChild(row);ed.sr.push({so:so,sl:sl,info:info});
-    })(wd);
-  }
   parent.appendChild(ed.card);
 }
 function rebuildEmps(){
@@ -2384,14 +2307,6 @@ function build(){
   var chl=h("div","hlab");
   ["0h","6h","12h","18h","24h"].forEach(function(x){chl.appendChild(h("span",null,x))});
   cdet.appendChild(chl);
-  C.stitle=h("div","tdd");cdet.appendChild(C.stitle);
-  C.sstrip=h("div","hstrip");C.sbars=[];
-  for(var csb=0;csb<24;csb++){var sbi=h("i");C.sstrip.appendChild(sbi);C.sbars.push(sbi)}
-  cdet.appendChild(C.sstrip);
-  var chl2=h("div","hlab");
-  ["0h","6h","12h","18h","24h"].forEach(function(x){chl2.appendChild(h("span",null,x))});
-  cdet.appendChild(chl2);
-  C.rota=h("div","tdd");cdet.appendChild(C.rota);
   C.mix=[];
   for(var cx=0;cx<6;cx++){var cmx=h("div","tdd");cdet.appendChild(cmx);C.mix.push(cmx)}
   C.sum=h("div","tdm");cdet.appendChild(C.sum);
@@ -2524,29 +2439,6 @@ function updateCal(){
     else if(k===0){el.style.display="";setT(el,"A regular day. Weekends are busier than Mondays.")}
     else el.style.display="none";
   }
-  /* who is working this day */
-  var sk=sel+"|"+HV+"|"+TV;
-  if(C.sk!==sk){
-    C.sk=sk;C.sa=[];C.smax=1;
-    for(var hh3=0;hh3<24;hh3++){var v3=staffAt(sel,hh3);C.sa.push(v3);if(v3>C.smax)C.smax=v3}
-    var wk=[],gaps=[];
-    ROLES.forEach(function(r){
-      var nn=S.staff[r.id]||0;if(!nn)return;
-      wk.push(r.pl+" "+daysWorking(r.id,sel)+"/"+nn);
-      if(r.id==="cashier"||r.id==="clerk"){
-        var g=0;for(var hh4=0;hh4<24;hh4++){if(isOpenAt(sel,hh4)&&roleCountAt(r.id,sel,hh4)===0)g++}
-        if(g>0)gaps.push(g+" open hour"+(g>1?"s":"")+" without a "+r.n.toLowerCase());
-      }
-    });
-    C.rtxt=(wk.length?"Working this day: "+wk.join(", ")+". ":"No staff hired yet: you work the counter alone. ")+(gaps.length?"Gaps: "+gaps.join(", ")+".":"");
-  }
-  setT(C.stitle,"Employees on duty, hour by hour");
-  for(var hh5=0;hh5<24;hh5++){
-    var sb=C.sbars[hh5],sp2=C.sa[hh5]>0?Math.max(6,Math.round(C.sa[hh5]/C.smax*100)):2;
-    if(sb._ph!==sp2){sb._ph=sp2;sb.style.height=sp2+"%"}
-    setC(sb,(C.sa[hh5]>0?"wk":"")+(sel===today&&Math.floor(gHour())===hh5?" now":""));
-  }
-  setT(C.rota,C.rtxt);
   var fx=fxFor(sel),dm=[],mx=0.01,h2;
   for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
   for(h2=0;h2<24;h2++){
@@ -2712,12 +2604,12 @@ function update(){
 
   /* finances and team */
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
-  var est=mo.rent+mo.util+mo.pay+mo.ot+left*(dc.rent+dc.util+dc.pay);
+  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);
   if(S.mcount===0)est*=0.5;
   setT(ref.fin[0],"Month ends in "+left+" day"+(left>1?"s":"")+". Fixed costs expected: "+money0(est)+(S.mcount===0?" (half price in your opening month)":"")+". Full month: payroll "+money0(payroll())+", rent "+money0(EXPS[S.exp].rent)+", utilities "+money0(EXPS[S.exp].util)+").");
   setT(ref.fin[1],"This month so far: revenue "+money0(mo.rev)+", stock bought "+money0(mo.cogs)+", spoiled "+money0(mo.waste)+".");
   var lm=S.lastMonth;
-  setT(ref.fin[2],lm?"Last month: revenue "+money0(lm.rev)+", stock "+money0(lm.cogs)+", fixed costs "+money0(lm.rent+lm.util+lm.pay+(lm.ot||0))+(lm.ot>0?" (overtime "+money0(lm.ot)+")":"")+(lm.interest>0?", interest "+money0(lm.interest):"")+". "+(lm.profit>=0?"Profit ":"Loss ")+money0(Math.abs(lm.profit))+".":"No month has closed yet.");
+  setT(ref.fin[2],lm?"Last month: revenue "+money0(lm.rev)+", stock "+money0(lm.cogs)+", fixed costs "+money0(lm.rent+lm.util+lm.pay)+(lm.interest>0?", interest "+money0(lm.interest):"")+". "+(lm.profit>=0?"Profit ":"Loss ")+money0(Math.abs(lm.profit))+".":"No month has closed yet.");
   ref.fin[3].style.display=S.debt>0?"":"none";
   setT(ref.fin[3],"Debt: "+money0(S.debt)+", with 4% interest a month. "+(S.late>0?S.late+" month"+(S.late>1?"s":"")+" overdue. Staff quit after 2.":""));
   setC(ref.fin[3],"gnote up");
@@ -2734,8 +2626,8 @@ function update(){
   ref.mood.fill.style.width=clamp(S.mood,0,100)+"%";
   setC(ref.mood.fill,mood>=65?"hi":mood<35?"lo":"");
   if(nT){
-    var sr=0,so=0,sot=0;
-    S.team.forEach(function(e){sr+=e.wage/refWage(e);so+=7-schedStats(e).days;sot+=e.ot});
+    var sr=0;
+    S.team.forEach(function(e){sr+=e.wage/refWage(e)});
     setT(ref.mood.drv,"Wages average "+Math.round(sr/nT*100)+"% of the market rate. Raises, promotions and training lift the mood; low pay sinks it.");
   }else setT(ref.mood.drv,"Wages, raises and promotions will move this bar once you hire.");
 
@@ -2767,10 +2659,8 @@ function update(){
   if(sig!==ref.empSig){ref.empSig=sig;rebuildEmps()}
   ref.empNote.style.display=nT?"none":"";
   setT(ref.empNote,"Nobody yet. Hire your first person above.");
-  var gd=gDay(),gh=gHour();
   S.team.forEach(function(e){
     var r=ref.emps[e.id];if(!r)return;
-    var st=schedStats(e);
     setT(r.nm,e.name+" · "+STAFFM[e.role].n);
     setT(r.sub,LVLN[e.lvl]+". "+skillNames(e.role).map(function(sn,i){return sn.slice(0,4)+" "+e.sk[i]}).join(", ")+".");
     setT(r.tag,money0(wageOf(e)));
@@ -2780,7 +2670,7 @@ function update(){
   if(!se&&nT){se=S.team[0];ed.sel=se.id}
   ed.card.style.display=se?"":"none";
   if(se){
-    var ns=skillNames(se.role).length,st2=schedStats(se),hourly=wageOf(se)/160;
+    var ns=skillNames(se.role).length;
     setT(ed.nm,se.name+", "+STAFFM[se.role].n.toLowerCase()+" ("+LVLN[se.lvl].toLowerCase()+")");
     setT(ed.sub,"Wage "+money0(wageOf(se))+" a month, "+Math.round(se.wage/refWage(se)*100)+"% of the market rate. "+se.xp+" days worked.");
     for(var si=0;si<3;si++){
@@ -2808,17 +2698,6 @@ function update(){
       else{var cc=CLERK_UP[(se.cl||1)-1];setT(ed.bClerk,"Watch "+((se.cl||1)+1)+" ingredients: "+money0(cc));ed.bClerk.disabled=S.money<cc}
     }else ed.bClerk.style.display="none";
     setT(ed.bRaise,"Raise 10%: "+money0(se.wage*1.1));
-    setT(ed.tot,"This week: "+st2.hours+" h over "+st2.days+" days. Overtime "+st2.ot+" h, paid at double, about "+money0(st2.ot*hourly*2)+" a week.");
-    for(var wd=0;wd<7;wd++){
-      var rw=ed.sr[wd],sc=se.sch[wd],key=se.id+"|"+sc[0]+"|"+sc[1];
-      if(rw.key!==key){
-        if(document.activeElement!==rw.so)rw.so.value=String(sc[0]);
-        if(document.activeElement!==rw.sl)rw.sl.value=String(sc[1]);
-        rw.key=key;
-      }
-      var oth=otHoursOn(se,wd);
-      setT(rw.info,sc[1]>0?(oth>0?"OT "+oth+" h":"ok"):"");
-    }
   }
 
   /* expansion and trees */
@@ -4015,7 +3894,7 @@ function buildDash(){
 function updDash(){
   if(!dash){buildDash();if(!dash)return}
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
-  var est=mo.rent+mo.util+mo.pay+(mo.ot||0)+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=0.5;
+  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=0.5;
   dash.vTeam.textContent=S.team.length+" / "+staffCap();dash.vCash.textContent=money0(S.money);dash.vDue.textContent="~"+money0(est);
   dash.vMood.textContent=satTeam(S.mood)+" "+Math.round(S.mood)+"%";
   var mb=S.mood>=60?2:S.mood>=35?1:0;
@@ -4035,44 +3914,7 @@ setInterval(updDash,500);
 
 /* ---- the long finance and mood paragraphs start folded ---- */
 
-/* ---- team list: week schedule and shift status; upgrades: expansion preview ---- */
-var DAYL=["M","T","W","T","F","S","S"];
-function pad2(n){return n<10?"0"+n:""+n}
-function hhmm(v){v=((v%24)+24)%24;var m=Math.round((v%1)*60),hh=Math.floor(v);if(m===60){m=0;hh=(hh+1)%24}return pad2(hh)+":"+pad2(m)}
-function weekStrip(){
-  var w=el("div","pxwkw"),st=el("div","pxwk"),i;
-  for(i=0;i<7;i++){var c=el("i"),bb=el("b",null,DAYL[i]),u=el("u");c.append(bb,u);st.appendChild(c)}
-  var meta=el("div","pxmeta"),dot=el("span","dot"),tx=el("span");meta.append(dot,tx);
-  w.append(st,meta);w._st=st;w._meta=meta;w._tx=tx;
-  return w;
-}
-function updTeamRows(){
-  return;
-  var td=gDay()%7,gd=gDay(),gh=gHour();
-  S.team.forEach(function(e){
-    var r=ref.emps&&ref.emps[e.id];if(!r||!r.row||!r.info)return;
-    var w=r.row._wk;
-    if(!w){w=r.row._wk=weekStrip();r.info.insertBefore(w,r.sub)}
-    var cells=w._st.children,i;
-    for(i=0;i<7;i++){
-      var len=e.sch[i][1],on=len>0,cn=(on?"w":"")+(i===td?" t":""),c=cells[i];
-      if(c._c!==cn){c._c=cn;c.className=cn}
-      var wd=on?Math.max(25,Math.min(100,Math.round(len/12*100))):35;
-      if(c._w!==wd){c._w=wd;c.lastChild.style.width=wd+"%"}
-    }
-    var live=empWorksAt(e,gd,gh),s0=e.sch[td],txt;
-    if(live){
-      var y=e.sch[(td+6)%7],endH=null;
-      if(s0[1]>0&&gh>=s0[0]&&gh<s0[0]+s0[1])endH=s0[0]+s0[1];
-      else if(y[1]>0&&y[0]+y[1]>24)endH=y[0]+y[1]-24;
-      txt="On shift"+(endH==null?"":" until "+hhmm(endH));
-    }else if(s0[1]>0&&gh<s0[0])txt="Starts at "+hhmm(s0[0]);
-    else if(s0[1]>0)txt="Finished for today";
-    else txt="Day off today";
-    var key=txt+(live?"1":"0");
-    if(w._m!==key){w._m=key;w._tx.textContent=txt;w._meta.className=live?"pxmeta on":"pxmeta"}
-  });
-}
+/* ---- upgrades: expansion preview ---- */
 function buildPrev(st){
   var c=mk(PW,PH),a=c.getContext("2d"),r=SKYR[st];
   a.fillStyle="#8fd0f0";a.fillRect(r[0],r[1],r[2],r[3]);
@@ -4087,7 +3929,7 @@ function updExpPrev(){
     row._pv=st;row._pc=buildPrev(st);row.insertBefore(row._pc,row.firstChild);row.setAttribute("data-exp","1");
   }
 }
-setInterval(function(){try{updTeamRows();updExpPrev()}catch(e){}},700);
+setInterval(function(){try{updExpPrev()}catch(e){}},700);
 
 /* ---- upgrade trees show only the next nodes; the rest is tucked into one line ---- */
 var NXT={};

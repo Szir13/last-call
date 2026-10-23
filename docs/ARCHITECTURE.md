@@ -39,7 +39,7 @@ Created by `def()`; many later features create their field lazily. Important gro
 - Money and score: `money totalEarned served walkouts sat rep pts`.
 - Venue: `exp` (0 stand .. 4 global chain), `expAt` (month of last expansion, drives the lease ramp), `upg`, `ing ql brand stock`, `price act`, `hours`.
 - People: `team[] {id name role lvl xp sk[] wage cl starter?}`, `staff{role:n}` (derived by `syncStaff`), `maxStaff`, `train`, `picks`, `cands`.
-- Finance: `month` (`rev cogs rent util pay ot gs gn gp`), `lastMonth`, `debt`, `late`, `notice`.
+- Finance: `month` (`rev cogs rent util pay waste interest gs gn gp`), `lastMonth`, `debt`, `late`, `notice`.
 - Orders: `orders[] jobs[] hold[]`.
 - Long-term (lazy): `ms` missions, `reg` regulars, `guide`, `deco`, `sup`, `nights`, `mods`, `ban`, `inc`, `br`, `leg`, `legacy`.
 

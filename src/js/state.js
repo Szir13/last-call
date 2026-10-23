@@ -1,6 +1,6 @@
 /* ---------- state ---------- */
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
-function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,ot:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
+function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
 function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
   ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
   price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,
@@ -18,9 +18,10 @@ function load(){
   if(!Array.isArray(S.hours)||S.hours.length!==7)S.hours=defHours();
   if(!S.prev)S.prev={e:0,n:0};
   if(!S.month)S.month=newMonth();
-  if(S.month.ot===undefined)S.month.ot=0;
   if(!Array.isArray(S.team))S.team=[];
-  S.team.forEach(function(e){if(!e.sch)e.sch=autoSched(e.role,0)});
+  /* weekly schedules and overtime are gone: drop their fields, overtime already owed counts as payroll */
+  S.team.forEach(function(e){delete e.sch;delete e.ot});
+  [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
   syncStaff();
 }
 function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}

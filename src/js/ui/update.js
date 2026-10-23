@@ -76,29 +76,6 @@ function updateCal(){
     else if(k===0){el.style.display="";setT(el,"A regular day. Weekends are busier than Mondays.")}
     else el.style.display="none";
   }
-  /* who is working this day */
-  var sk=sel+"|"+HV+"|"+TV;
-  if(C.sk!==sk){
-    C.sk=sk;C.sa=[];C.smax=1;
-    for(var hh3=0;hh3<24;hh3++){var v3=staffAt(sel,hh3);C.sa.push(v3);if(v3>C.smax)C.smax=v3}
-    var wk=[],gaps=[];
-    ROLES.forEach(function(r){
-      var nn=S.staff[r.id]||0;if(!nn)return;
-      wk.push(r.pl+" "+daysWorking(r.id,sel)+"/"+nn);
-      if(r.id==="cashier"||r.id==="clerk"){
-        var g=0;for(var hh4=0;hh4<24;hh4++){if(isOpenAt(sel,hh4)&&roleCountAt(r.id,sel,hh4)===0)g++}
-        if(g>0)gaps.push(g+" open hour"+(g>1?"s":"")+" without a "+r.n.toLowerCase());
-      }
-    });
-    C.rtxt=(wk.length?"Working this day: "+wk.join(", ")+". ":"No staff hired yet: you work the counter alone. ")+(gaps.length?"Gaps: "+gaps.join(", ")+".":"");
-  }
-  setT(C.stitle,"Employees on duty, hour by hour");
-  for(var hh5=0;hh5<24;hh5++){
-    var sb=C.sbars[hh5],sp2=C.sa[hh5]>0?Math.max(6,Math.round(C.sa[hh5]/C.smax*100)):2;
-    if(sb._ph!==sp2){sb._ph=sp2;sb.style.height=sp2+"%"}
-    setC(sb,(C.sa[hh5]>0?"wk":"")+(sel===today&&Math.floor(gHour())===hh5?" now":""));
-  }
-  setT(C.rota,C.rtxt);
   var fx=fxFor(sel),dm=[],mx=0.01,h2;
   for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
   for(h2=0;h2<24;h2++){
@@ -264,12 +241,12 @@ function update(){
 
   /* finances and team */
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
-  var est=mo.rent+mo.util+mo.pay+mo.ot+left*(dc.rent+dc.util+dc.pay);
+  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);
   if(S.mcount===0)est*=0.5;
   setT(ref.fin[0],"Month ends in "+left+" day"+(left>1?"s":"")+". Fixed costs expected: "+money0(est)+(S.mcount===0?" (half price in your opening month)":"")+". Full month: payroll "+money0(payroll())+", rent "+money0(EXPS[S.exp].rent)+", utilities "+money0(EXPS[S.exp].util)+").");
   setT(ref.fin[1],"This month so far: revenue "+money0(mo.rev)+", stock bought "+money0(mo.cogs)+", spoiled "+money0(mo.waste)+".");
   var lm=S.lastMonth;
-  setT(ref.fin[2],lm?"Last month: revenue "+money0(lm.rev)+", stock "+money0(lm.cogs)+", fixed costs "+money0(lm.rent+lm.util+lm.pay+(lm.ot||0))+(lm.ot>0?" (overtime "+money0(lm.ot)+")":"")+(lm.interest>0?", interest "+money0(lm.interest):"")+". "+(lm.profit>=0?"Profit ":"Loss ")+money0(Math.abs(lm.profit))+".":"No month has closed yet.");
+  setT(ref.fin[2],lm?"Last month: revenue "+money0(lm.rev)+", stock "+money0(lm.cogs)+", fixed costs "+money0(lm.rent+lm.util+lm.pay)+(lm.interest>0?", interest "+money0(lm.interest):"")+". "+(lm.profit>=0?"Profit ":"Loss ")+money0(Math.abs(lm.profit))+".":"No month has closed yet.");
   ref.fin[3].style.display=S.debt>0?"":"none";
   setT(ref.fin[3],"Debt: "+money0(S.debt)+", with 4% interest a month. "+(S.late>0?S.late+" month"+(S.late>1?"s":"")+" overdue. Staff quit after 2.":""));
   setC(ref.fin[3],"gnote up");
@@ -286,8 +263,8 @@ function update(){
   ref.mood.fill.style.width=clamp(S.mood,0,100)+"%";
   setC(ref.mood.fill,mood>=65?"hi":mood<35?"lo":"");
   if(nT){
-    var sr=0,so=0,sot=0;
-    S.team.forEach(function(e){sr+=e.wage/refWage(e);so+=7-schedStats(e).days;sot+=e.ot});
+    var sr=0;
+    S.team.forEach(function(e){sr+=e.wage/refWage(e)});
     setT(ref.mood.drv,"Wages average "+Math.round(sr/nT*100)+"% of the market rate. Raises, promotions and training lift the mood; low pay sinks it.");
   }else setT(ref.mood.drv,"Wages, raises and promotions will move this bar once you hire.");
 
@@ -319,10 +296,8 @@ function update(){
   if(sig!==ref.empSig){ref.empSig=sig;rebuildEmps()}
   ref.empNote.style.display=nT?"none":"";
   setT(ref.empNote,"Nobody yet. Hire your first person above.");
-  var gd=gDay(),gh=gHour();
   S.team.forEach(function(e){
     var r=ref.emps[e.id];if(!r)return;
-    var st=schedStats(e);
     setT(r.nm,e.name+" · "+STAFFM[e.role].n);
     setT(r.sub,LVLN[e.lvl]+". "+skillNames(e.role).map(function(sn,i){return sn.slice(0,4)+" "+e.sk[i]}).join(", ")+".");
     setT(r.tag,money0(wageOf(e)));
@@ -332,7 +307,7 @@ function update(){
   if(!se&&nT){se=S.team[0];ed.sel=se.id}
   ed.card.style.display=se?"":"none";
   if(se){
-    var ns=skillNames(se.role).length,st2=schedStats(se),hourly=wageOf(se)/160;
+    var ns=skillNames(se.role).length;
     setT(ed.nm,se.name+", "+STAFFM[se.role].n.toLowerCase()+" ("+LVLN[se.lvl].toLowerCase()+")");
     setT(ed.sub,"Wage "+money0(wageOf(se))+" a month, "+Math.round(se.wage/refWage(se)*100)+"% of the market rate. "+se.xp+" days worked.");
     for(var si=0;si<3;si++){
@@ -360,17 +335,6 @@ function update(){
       else{var cc=CLERK_UP[(se.cl||1)-1];setT(ed.bClerk,"Watch "+((se.cl||1)+1)+" ingredients: "+money0(cc));ed.bClerk.disabled=S.money<cc}
     }else ed.bClerk.style.display="none";
     setT(ed.bRaise,"Raise 10%: "+money0(se.wage*1.1));
-    setT(ed.tot,"This week: "+st2.hours+" h over "+st2.days+" days. Overtime "+st2.ot+" h, paid at double, about "+money0(st2.ot*hourly*2)+" a week.");
-    for(var wd=0;wd<7;wd++){
-      var rw=ed.sr[wd],sc=se.sch[wd],key=se.id+"|"+sc[0]+"|"+sc[1];
-      if(rw.key!==key){
-        if(document.activeElement!==rw.so)rw.so.value=String(sc[0]);
-        if(document.activeElement!==rw.sl)rw.sl.value=String(sc[1]);
-        rw.key=key;
-      }
-      var oth=otHoursOn(se,wd);
-      setT(rw.info,sc[1]>0?(oth>0?"OT "+oth+" h":"ok"):"");
-    }
   }
 
   /* expansion and trees */

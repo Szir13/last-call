@@ -17,7 +17,7 @@ Search the function names in `src/js/`.
 - Roles `STAFF` (apprentice, bartender, head, mixologist, manager, ambassador) and `SUPPORT` (cashier, clerk, prep chef, controller, security). Hiring: `genCand hireCand`. Staff limit per stage `STAFFCAP`; wages scale with the venue `WAGEK`/`wk()`; expanding raises everyone's wage.
 - Starter deal: first cashier and first clerk at the stand work for half wage until you expand.
 - Training (tree `TT`) doubles speed per level and earns ingredient picks (`TIERS`, `picksTotal`). Rare ingredients need a trained role plus reputation.
-- Weekly schedules were removed: the team works whenever the bar is open. The code remains as stubs.
+- Weekly schedules and overtime were removed: the team works whenever the bar is open. `load()` drops the old `e.sch`/`e.ot` fields and folds any unpaid overtime into payroll.
 
 ## Menu
 - 23 ingredients in groups unlocked with picks, 15+ recipes plus solos, quality tiers (standard, premium, ultra). Recipes you discover stay known. Ingredient hints were removed on purpose: the player buys, then discovers.

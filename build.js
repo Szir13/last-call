@@ -22,7 +22,7 @@ var SCRIPTS = [
   "start",
   "scene/scene-open",
   "scene/sprites", "scene/stages", "scene/customers", "scene/render", "scene/tutorial", "scene/layout",
-  "scene/ui/icons", "scene/ui/effects", "scene/ui/tabs", "scene/ui/rows", "scene/ui/team", "scene/ui/trees",
+  "scene/ui/icons", "scene/ui/effects", "scene/ui/tabs", "scene/ui/rows", "scene/ui/expansion", "scene/ui/trees",
   "scene/ui/stock", "scene/ui/missions", "scene/ui/bank", "scene/ui/decor", "scene/ui/venue",
   "scene/scene-close",
   "main-close"

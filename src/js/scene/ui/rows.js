@@ -55,7 +55,7 @@ function buildDash(){
 function updDash(){
   if(!dash){buildDash();if(!dash)return}
   var dc=dailyCost(),mo=S.month,left=28-(gDay()%28);
-  var est=mo.rent+mo.util+mo.pay+(mo.ot||0)+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=0.5;
+  var est=mo.rent+mo.util+mo.pay+left*(dc.rent+dc.util+dc.pay);if(S.mcount===0)est*=0.5;
   dash.vTeam.textContent=S.team.length+" / "+staffCap();dash.vCash.textContent=money0(S.money);dash.vDue.textContent="~"+money0(est);
   dash.vMood.textContent=satTeam(S.mood)+" "+Math.round(S.mood)+"%";
   var mb=S.mood>=60?2:S.mood>=35?1:0;

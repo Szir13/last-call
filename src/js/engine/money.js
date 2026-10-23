@@ -26,7 +26,7 @@ function staffQuits(quiet){
 }
 function moodQuit(quiet){
   var worst=null,wr=9;
-  S.team.forEach(function(e){var r=e.wage/refWage(e)-0.02*e.ot;if(r<wr){wr=r;worst=e}});
+  S.team.forEach(function(e){var r=e.wage/refWage(e);if(r<wr){wr=r;worst=e}});
   if(!worst)return;
   fireEmp(worst);
   if(!quiet)toast(worst.name+" quit: the team is unhappy.");
@@ -95,11 +95,11 @@ function showNotice(){
 }
 function monthEnd(quiet){
   var m=S.month;
-  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5;m.ot*=0.5}   /* the opening month is half price */
+  if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
   S.mcount++;
   S.team.forEach(function(e2){if(e2.starter){e2.starter--;if(e2.starter<=0){e2.wage=e2.wage*2;delete e2.starter}}});
   if(supMode()==="volume"&&m.cogs<volCommit())m.util+=0.5*(volCommit()-m.cogs);
-  var due=m.rent+m.util+m.pay+m.ot;
+  var due=m.rent+m.util+m.pay;
   var interest=S.debt*0.04;
   S.debt+=interest;m.interest=interest;
   var paid=Math.min(S.money,due);
@@ -113,7 +113,7 @@ function monthEnd(quiet){
   var profit=m.rev-m.cogs-due-interest;
   guideUpdate();
   var brInc=branchIncome();if(brInc>0){S.money+=brInc;S.totalEarned+=brInc}
-  S.lastMonth={rev:m.rev,cogs:m.cogs,rent:m.rent,util:m.util,pay:m.pay,ot:m.ot,waste:m.waste,interest:interest,profit:profit,unpaid:unpaid,branch:brInc};
+  S.lastMonth={rev:m.rev,cogs:m.cogs,rent:m.rent,util:m.util,pay:m.pay,waste:m.waste,interest:interest,profit:profit,unpaid:unpaid,branch:brInc};
   S.month=newMonth();
   if(unpaid>0.5){
     S.late++;addRep(-15,quiet);
@@ -133,21 +133,16 @@ function growSkill(e,quiet){
   e.sk[idx[0]]++;TV++;
   if(!quiet)toast(e.name+" improved "+skillNames(e.role)[idx[0]].toLowerCase()+".");
 }
-/* what yesterday meant for the team: experience, overtime pay, mood */
+/* what yesterday meant for the team: experience and mood */
 function staffDay(quiet){
-  var d=gDay(),wd=(((d-1)%7)+7)%7,n=S.team.length,sumR=0,sumOff=0,sumOt=0;
+  var n=S.team.length,sumR=0;
   S.team.forEach(function(e){
-    var len=1,st=schedStats(e),ot=0;
-    if(len>0){
-      e.xp++;
-      if(ot>0)S.month.ot+=ot*(wageOf(e)/160)*2;
-      if(e.xp%12===0)growSkill(e,quiet);
-    }
-    e.ot=e.ot*0.85+ot;
-    sumR+=e.wage/refWage(e);sumOff+=7-st.days;sumOt+=e.ot;
+    e.xp++;
+    if(e.xp%12===0)growSkill(e,quiet);
+    sumR+=e.wage/refWage(e);
   });
   if(n>0){
-    var target=55+clamp((sumR/n-1)*60,-15,20)+clamp((sumOff/n-2)*5,-10,6)-clamp(sumOt/n*3,0,30)+S.moodB;
+    var target=55+clamp((sumR/n-1)*60,-15,20)+S.moodB;
     S.mood=clamp(S.mood+(target-S.mood)*0.2,0,100);
   }else S.mood+=(60-S.mood)*0.2;
   S.moodB*=0.9;

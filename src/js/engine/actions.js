@@ -98,7 +98,7 @@ function hireCand(role,i){
   if(S.money<cd.fee){toast("You need "+money0(cd.fee)+" to hire "+cd.name+".");return}
   S.money-=cd.fee;
   var before={};for(var tr in TIERS)before[tr]=picksTotal(tr);
-  var e={id:S.nextEmp++,name:cd.name,role:role,lvl:cd.lvl,xp:LVLXP[cd.lvl],sk:cd.sk.slice(),wage:cd.wage,cl:1,ot:0,sch:autoSched(role,S.staff[role]||0)};
+  var e={id:S.nextEmp++,name:cd.name,role:role,lvl:cd.lvl,xp:LVLXP[cd.lvl],sk:cd.sk.slice(),wage:cd.wage,cl:1};
   if(S.exp===0&&(role==="cashier"||role==="clerk")&&!(S.starter&&S.starter[role])){S.starter=S.starter||{};S.starter[role]=1;e.wage=Math.round(e.wage/2/10)*10;e.starter=99}
   S.team.push(e);c.list.splice(i,1);
   syncStaff();
@@ -133,20 +133,6 @@ function trainSkill(e,i){
   S.money-=c;e.sk[i]++;S.moodB+=1;TV++;
 }
 function raiseWage(e){e.wage=Math.round(e.wage*1.1/10)*10;S.moodB+=3;TV++}
-function setSched(e,wd,start,len){
-  if(!isFinite(start)||!isFinite(len))return false;
-  start=((start%24)+24)%24;len=clamp(len,0,MAXLEN);
-  var working=0;e.sch.forEach(function(s,i){if(i!==wd&&s[1]>0)working++});
-  if(len>0&&working>=MAXDAYS){toast("Everyone needs at least one day off a week.");return false}
-  e.sch[wd]=[start,len];TV++;
-  return true;
-}
-function autoSchedAll(){
-  var idx={};
-  S.team.forEach(function(e){var i=idx[e.role]||0;e.sch=autoSched(e.role,i);idx[e.role]=i+1});
-  TV++;
-}
-
 function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
 
 /* tree nodes */

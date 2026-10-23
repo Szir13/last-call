@@ -13,7 +13,7 @@ BUILD = ROOT / "tools" / ".build" / "index.hooked.html"
 JS = ROOT / "tools" / "js"
 
 # Anything the scenarios or bots call goes here. Missing names are skipped silently.
-HOOK_NAMES = """def beginRun simulate tick syncStaff autoSched STAFFM EXPS ING INGM ITEMS skillNames autoAssignClerk payroll
+HOOK_NAMES = """def beginRun simulate tick syncStaff STAFFM EXPS ING INGM ITEMS skillNames autoAssignClerk payroll
 buyStock skey cap collect mi UT expCost staffCap roleLimit buyExp wk WAGEK STAFFCAP SLOTBASE SEATINC LINGER maxSlots gDay
 genCand hireCand save monthEnd repossess bankBorrow bankLimit repayDebt monthlyFixed msInit msAccept msDay msGenerate addStock
 fireEmp dailyCost ingLock unlockIng NODEMAP nBuy nLevel nMax nReqMet canPay nCost roleUnlocked ROLES bookNight buyDecor setTheme

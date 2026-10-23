@@ -12,7 +12,7 @@
  S.train=Object.assign({},c.train||{});
  Object.keys(c.team||{}).forEach(role=>{
    const n=c.team[role],ns=L.skillNames(role).length;
-   for(let i=0;i<n;i++){S.team.push({id:S.nextEmp++,name:'E'+role+i,role:role,lvl:c.lvl||0,xp:0,sk:Array(ns).fill(c.sk||3),wage:Math.round(L.STAFFM[role].w*(c.wmul||1)),cl:(role==='clerk'?(c.clerkcl||1):1),ot:0,sch:L.autoSched(role,i)})}
+   for(let i=0;i<n;i++){S.team.push({id:S.nextEmp++,name:'E'+role+i,role:role,lvl:c.lvl||0,xp:0,sk:Array(ns).fill(c.sk||3),wage:Math.round(L.STAFFM[role].w*(c.wmul||1)),cl:(role==='clerk'?(c.clerkcl||1):1)})}
  });
  L.resetMI();L.syncStaff();L.autoAssignClerk();
  const days=c.days||58;

@@ -26,20 +26,6 @@ nav{position:relative;flex:none;left:auto;right:auto;bottom:auto}
 .card .cand b,.card .cand strong{font-family:var(--sans)}
 .buy,.big{font-size:16px}
 
-/* employee schedule */
-.pxwk{display:none;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0 4px}
-.pxwk i{width:auto;height:36px;line-height:1;font-size:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  border:2px solid var(--edge);color:var(--muted);background:transparent;border-radius:0;box-shadow:none;font-style:normal}
-.pxwk i b{font-family:var(--sans);font-size:13px;line-height:1;font-weight:700}
-.pxwk i u{display:block;height:3px;background:currentColor;opacity:.3;text-decoration:none}
-.pxwk i.w{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
-.pxwk i.w u{opacity:.85}
-.pxwk i.t{box-shadow:0 0 0 2px var(--gold);position:relative;z-index:1}
-.pxmeta{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted);margin-top:6px}
-.pxmeta .dot{width:9px;height:9px;flex:none;background:var(--muted);opacity:.6}
-.pxmeta.on{color:var(--accent)}
-.pxmeta.on .dot{background:var(--accent);opacity:1}
-
 /* premium and ultra premium tiers use the same cards as every other ingredient */
 #p-stock>.row.cl{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ico info" "act act";gap:6px 8px;align-items:center;margin-left:0;padding:8px;border:3px solid var(--edge);background:var(--surface);box-shadow:0 3px 0 var(--edge2);cursor:pointer;grid-column:auto}
 #p-stock>.row.cl .info{grid-area:info;min-width:0}

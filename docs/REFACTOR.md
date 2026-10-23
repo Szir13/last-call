@@ -18,6 +18,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: one `rng()` (mulberry32) injected into the engine, seed settable from tests. Save the seed in `S` for debugging.
 
 ## 4. Delete the dead schedule system
+**Done.** Schedule code, overtime, the hidden editor, the calendar staff strip and the week strip in the scene are gone; `load()` migrates old saves (`tests/saves/v5-pre-refactor.json`).
 - 16 leftovers: `autoSched`, `OFFSTART`, `MAXLEN`, `MAXDAYS`, `LEAD`, `e.sch`, `schedStats`, `otHoursOn`, `empWorksAt` (now always true), the hidden schedule editor in the employee card, calendar coverage strips that now draw flat bars.
 - **Step**: remove the code and the editor DOM, add a save migration that drops `e.sch`, simplify `shiftCounts`, `staffAt`, `daysWorking`. Run the tools to confirm no change.
 

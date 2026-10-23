@@ -30,7 +30,6 @@ var LVLN=["Junior","Mid-level","Senior"],LVLM=[1,1.25,1.6];
 var LVLXP=[0,14,42];              /* days worked needed to reach mid-level and senior */
 var PROMXP=70;                    /* days worked before a senior can move to the next role */
 var LADDER=["apprentice","bartender","head","mixologist","manager","ambassador"];
-var MAXLEN=10,MAXDAYS=6;          /* at most 10 hours a day, at least one day off */
 var NAMES=["Ana","Bruno","Carla","Diego","Elena","Felix","Gina","Hugo","Iris","Jonas","Karen","Luca","Maya","Nico","Olga","Pablo","Rita","Sam","Tina","Uri","Vera","Wes","Yara","Zane","Ada","Ben","Cleo","Dan","Eva","Finn"];
 var OWN=[2,3,3];                  /* your own skills at the counter */
 

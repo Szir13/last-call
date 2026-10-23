@@ -50,3 +50,9 @@ python tools/smoke.py
 python tools/reference.py        # run it 3-5 times; S1-S4 margins must stay within 50-57%
 python tools/run_bots.py careful --months 12 --seeds 2
 ```
+
+## After the refactor steps
+| Step | Smoke | Median margins S0-S4 (runs) | Careful bot, 12 months |
+|---|---|---|---|
+| 1. split into `src/` | ok | 72 / 56 / 57 / 57 / 55 (3) | built `index.html` is byte-identical to the baseline apart from the banner line |
+| 4. schedules removed | ok | 72 / 55 / 57 / 57 / 55 (5) | stages and months unchanged (6/7/10); net worth 866k-933k vs 833k-959k for step 1, three runs of 5 seeds each, side by side |

@@ -33,10 +33,10 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | `styles/` | `base`, `scene`, `skin`, `compact`, `ui-layer`, `app` (later files override earlier ones) |
 | `js/data/` | `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()`, `load()`, `save()`, migrations |
-| `js/engine/` | `helpers` (menu, market, prices, caps), `calendar`, `shifts`, `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`...), `actions`, `loop`, `missions`, `longterm` |
+| `js/engine/` | `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`...), `actions`, `loop`, `missions`, `longterm` |
 | `js/ui/` | `overlay` (toast, `showOv`), `build`, `update` |
 | `js/start.js` | Boot sequence |
-| `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `team`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
+| `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `expansion`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
 
 The table below is the same map by section comment (search for it in `src/js`).
 
@@ -45,7 +45,7 @@ The table below is the same map by section comment (search for it in `src/js`).
 | `<style>` | CSS in layers, later layers override earlier ones: base tokens, `pixel scene`, `pixel skin`, `compact layout`, `pixel UI layer`, `app layout`, then small appended blocks |
 | `/* data */` ... `/* state */` | Static data: ingredients, recipes, staff roles, venue stages (`EXPS`), customers (`CUST`), calendar events, skill trees (`UT`, `TT`, `PT`), achievements |
 | `/* state */` | `def()`, `load()`, `save()`, global state `S` |
-| `calendar engine`, `schedules` | Dates, hours, `fxFor(day)` (all demand modifiers). Schedules are dead code, see `docs/REFACTOR.md` |
+| `calendar engine`, `who is on shift` | Dates, hours, `fxFor(day)` (all demand modifiers), `shiftCounts()` |
 | `people, fixed costs, month end and day change` | Payroll, `monthEnd()`, `dayChange()`, bank and debt, repossession |
 | `the order engine` | `tick()`, `spawnOrder()`, `finishOrder()`, `collect()`, seats, repeat orders, rowdy guests |
 | `actions` | Buying, hiring, upgrading, expanding |

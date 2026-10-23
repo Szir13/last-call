@@ -66,10 +66,6 @@ nav button.pxnew{animation:pxnav .9s steps(2) 5}
 
 
 /* team list and upgrades */
-.pxwk{display:flex;align-items:center;gap:3px;margin:4px 0 2px}
-.pxwk i{width:17px;height:17px;font-style:normal;font-size:10px;line-height:13px;text-align:center;border:2px solid var(--edge);color:var(--muted)}
-.pxwk i.w{background:var(--accent);border-color:var(--edge2);color:var(--on-accent)}
-.pxwk i.t{box-shadow:0 0 0 2px var(--gold)}
 .pxon{margin-left:6px;font-size:13px;color:var(--muted);font-weight:600}
 .pxon.on{color:var(--accent)}
 #p-staff .row.pick .sub{display:none}
@@ -109,7 +105,7 @@ body,button,input,select{font-family:var(--sans)}
 .pbv{font-weight:700}
 nav button{font-size:15px;font-weight:600}
 body{font-size:16px}
-.top,.clock,.sat,.satl,.ips,.today,.news,.note,.gnote,.row .sub,.row .sub *,.stats .l,.pxwk i,.pxon,.pxbl,.pxown,.pxnext .ts{font-size:14px;line-height:1.35}
+.top,.clock,.sat,.satl,.ips,.today,.news,.note,.gnote,.row .sub,.row .sub *,.stats .l,.pxon,.pxbl,.pxown,.pxnext .ts{font-size:14px;line-height:1.35}
 .pbox small,.pxnext .br{font-size:13px}
 .pxdlg .pxt{font-size:16px;line-height:1.35}
 .clock,.ips,.satl,.stats .v,.money{font-variant-numeric:tabular-nums}

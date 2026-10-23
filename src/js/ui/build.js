@@ -126,20 +126,6 @@ function buildEmpDetail(parent){
   ed.bRaise=act("Raise 10%",raiseWage);
   ed.bFire=act("Let go",function(e){fireEmp(e)});
   ed.card.appendChild(ed.acts);
-  var schedBox=h("div");schedBox.style.display="none";ed.card.appendChild(schedBox);
-  ed.tot=h("div","gnote");schedBox.appendChild(ed.tot);
-  ed.sr=[];
-  for(var wd=0;wd<7;wd++){
-    (function(wd){
-      var row=h("div","hrow"),lab=h("b",null,DAYN[wd]),so=h("select"),sl=h("select"),info=h("span","sp");
-      so.setAttribute("aria-label",DAYN[wd]+" start hour");sl.setAttribute("aria-label",DAYN[wd]+" hours worked");
-      for(var hx=0;hx<24;hx++){var o1=h("option",null,pad2(hx)+":00");o1.value=String(hx);so.appendChild(o1)}
-      for(var lx=0;lx<=MAXLEN;lx++){var o2=h("option",null,lx===0?"Off":lx+" h");o2.value=String(lx);sl.appendChild(o2)}
-      var apply=function(){var e=selEmp();if(e)setSched(e,wd,parseInt(so.value,10),parseInt(sl.value,10))};
-      so.onchange=apply;sl.onchange=apply;
-      row.append(lab,so,sl,info);schedBox.appendChild(row);ed.sr.push({so:so,sl:sl,info:info});
-    })(wd);
-  }
   parent.appendChild(ed.card);
 }
 function rebuildEmps(){
@@ -284,14 +270,6 @@ function build(){
   var chl=h("div","hlab");
   ["0h","6h","12h","18h","24h"].forEach(function(x){chl.appendChild(h("span",null,x))});
   cdet.appendChild(chl);
-  C.stitle=h("div","tdd");cdet.appendChild(C.stitle);
-  C.sstrip=h("div","hstrip");C.sbars=[];
-  for(var csb=0;csb<24;csb++){var sbi=h("i");C.sstrip.appendChild(sbi);C.sbars.push(sbi)}
-  cdet.appendChild(C.sstrip);
-  var chl2=h("div","hlab");
-  ["0h","6h","12h","18h","24h"].forEach(function(x){chl2.appendChild(h("span",null,x))});
-  cdet.appendChild(chl2);
-  C.rota=h("div","tdd");cdet.appendChild(C.rota);
   C.mix=[];
   for(var cx=0;cx<6;cx++){var cmx=h("div","tdd");cdet.appendChild(cmx);C.mix.push(cmx)}
   C.sum=h("div","tdm");cdet.appendChild(C.sum);
