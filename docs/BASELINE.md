@@ -61,3 +61,4 @@ python tools/run_bots.py careful --months 12 --seeds 2
 
 Margins have a low tail in every build (S1 down to 44%, S4 down to 47% in 200 runs, usually with walkouts from stock-outs). Single runs below 50% are not a regression by themselves; compare medians over 20+ seeds.
 | 5. pollers replaced by events | ok | browser 5 runs: 72/57/57/56/55 | `--node --seed 11` reference and `--seed 5` five bots × 30 months: output identical (md5) to step 3; UI flows (icons, stock groups, recipe and mission banners, dashboard, bank and mission buttons, expansion preview, trees, note clamps) match step 3 side by side |
+| 6. one DOM helper | ok | browser 3 runs: 72/55/57/55/55 | engine untouched, seeded hash unchanged; serialized DOM of all tabs, the dock and the venue, bank, missions and hire windows identical to step 5 (13 views, frozen clock) |

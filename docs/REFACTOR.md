@@ -30,6 +30,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: after step 2, update only when the relevant event fires. Keep one `requestAnimationFrame` for the scene.
 
 ## 6. One DOM helper, no `innerHTML` with data
+**Done.** `el(tag, cls, text | children)` in `ui/dom.js` is the only helper (the scene uses it too); `h()` and every `innerHTML` are gone. A save with markup in a regular's name used to run script; it now shows as text.
 - Two helpers (`h` uses `innerHTML`, `el` uses `textContent`) and 12 `innerHTML` sites. Today all strings are static, but names and user input (bar name, regular names) are one change away from injection.
 - **Step**: standardise on `el(tag, attrs, children)` with `textContent`; keep `innerHTML` only for static icons.
 

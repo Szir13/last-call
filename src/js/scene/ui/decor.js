@@ -36,15 +36,15 @@ function drawDecor(hr){
 
 /* ---- trouble at the bar ---- */
 function openRowdy(o){
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Trouble at the bar"));
-  card.appendChild(h("p",null,"A guest is getting loud. If nobody steps in, it will cost you damages and some unhappy neighbours."));
-  var a=h("button","buy","Calm them down ("+Math.round(rowdyCalmChance()*100)+"% chance)");
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Trouble at the bar"));
+  card.appendChild(el("p",null,"A guest is getting loud. If nobody steps in, it will cost you damages and some unhappy neighbours."));
+  var a=el("button","buy","Calm them down ("+Math.round(rowdyCalmChance()*100)+"% chance)");
   a.onclick=function(){hideOv();calmRowdy(o)};
-  var b=h("button","buy","Show them out (no sale, no harm)");
+  var b=el("button","buy","Show them out (no sale, no harm)");
   b.onclick=function(){hideOv();escortRowdy(o)};
-  var wrap=h("div","cand");wrap.appendChild(a);wrap.appendChild(b);card.appendChild(wrap);
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  var wrap=el("div","cand");wrap.appendChild(a);wrap.appendChild(b);card.appendChild(wrap);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);
 }
 

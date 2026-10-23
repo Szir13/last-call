@@ -2355,13 +2355,21 @@ function cleanLT(){
 
 /* ---------- DOM helpers ---------- */
 function $(s){return document.querySelector(s)}
-function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+/* el(tag, cls, content): content is text (always set as text, never parsed as HTML)
+   or an array of nodes and strings, for rich lines such as ["Points: ",el("b",null,n)] */
+function el(tag,cls,x){
+  var e=document.createElement(tag);if(cls)e.className=cls;
+  if(Array.isArray(x))x.forEach(function(c){e.appendChild(typeof c==="object"?c:document.createTextNode(String(c)))});
+  else if(x!=null)e.textContent=x;
+  return e;
+}
+function clear(e){while(e.firstChild)e.removeChild(e.firstChild)}
 function setT(e,t){if(e._t!==t){e._t=t;e.textContent=t}}
 function setC(e,c){if(e._c!==c){e._c=c;e.className=c}}
 /* ---------- toast and overlay ---------- */
 var tt;
 function showToast(m){var t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3000)}
-function showOv(card){var o=$("#ov");o.innerHTML="";o.appendChild(card);o.classList.add("on")}
+function showOv(card){var o=$("#ov");clear(o);o.appendChild(card);o.classList.add("on")}
 function hideOv(){$("#ov").classList.remove("on")}
 var tab="stock";
 onEv("toast",showToast);
@@ -2376,53 +2384,53 @@ function openHire(role){
   if(!roleUnlocked(role))return;
   if((S.staff[role]||0)>=roleLimit(role)){toast(S.team.length>=staffCap()?"Your bar is full ("+staffCap()+" staff). Expand to make room for more.":"You cannot hire more "+STAFFM[role].pl+" right now.");return}
   var c=candsToday(role);
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Hire a "+STAFFM[role].n.toLowerCase()));
-  card.appendChild(h("p",null,"Pick one of today’s candidates. A happy team attracts candidates who ask for less. New candidates come tomorrow."));
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Hire a "+STAFFM[role].n.toLowerCase()));
+  card.appendChild(el("p",null,"Pick one of today’s candidates. A happy team attracts candidates who ask for less. New candidates come tomorrow."));
   c.list.forEach(function(cd,i){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,cd.name+" · "+LVLN[cd.lvl]));
-    box.appendChild(h("span",null,skillNames(role).map(function(sn,k){return sn+" "+cd.sk[k]+"/5"}).join(" · ")));
-    box.appendChild(h("span",null,"Wage "+money0(cd.wage)+" a month · hiring fee "+money0(cd.fee)));
-    var b=h("button","buy sm","Hire for "+money0(cd.fee));
+    var box=el("div","cand");
+    box.appendChild(el("b",null,cd.name+" · "+LVLN[cd.lvl]));
+    box.appendChild(el("span",null,skillNames(role).map(function(sn,k){return sn+" "+cd.sk[k]+"/5"}).join(" · ")));
+    box.appendChild(el("span",null,"Wage "+money0(cd.wage)+" a month · hiring fee "+money0(cd.fee)));
+    var b=el("button","buy sm","Hire for "+money0(cd.fee));
     b.disabled=S.money<cd.fee;
     b.onclick=function(){hireCand(role,i)};
     box.appendChild(b);card.appendChild(box);
   });
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);
 }
 function showNotice(){
   var n=S.notice;if(!n)return;
   var ov=$("#ov");if(ov.classList.contains("on"))return;
-  var card=h("div","card");
+  var card=el("div","card");
   if(n.type==="repo"){
-    card.appendChild(h("h2",null,"The bank took your bar"));
-    card.appendChild(h("p",null,"You could not pay the bills for "+LATE_MAX+" months in a row, so the bank repossessed the "+n.from.toLowerCase()+" and sold it for "+money0(n.sale)+"."));
-    card.appendChild(h("p",null,(n.toDebt>0?money0(n.toDebt)+" went to the debt. ":"")+(n.cash>0?money0(n.cash)+" was left for you. ":"")+(n.debtLeft>0?"You still owe "+money0(n.debtLeft)+". ":"The debt is cleared. ")));
-    card.appendChild(h("p",null,"You are back at the "+n.to.toLowerCase()+(n.fired?", and "+n.fired+" staff had to go":"")+". The recipes you learned are still yours, but the fittings, the unlocked ingredients and the training are gone: you need the requirements again to buy ingredients."));
+    card.appendChild(el("h2",null,"The bank took your bar"));
+    card.appendChild(el("p",null,"You could not pay the bills for "+LATE_MAX+" months in a row, so the bank repossessed the "+n.from.toLowerCase()+" and sold it for "+money0(n.sale)+"."));
+    card.appendChild(el("p",null,(n.toDebt>0?money0(n.toDebt)+" went to the debt. ":"")+(n.cash>0?money0(n.cash)+" was left for you. ":"")+(n.debtLeft>0?"You still owe "+money0(n.debtLeft)+". ":"The debt is cleared. ")));
+    card.appendChild(el("p",null,"You are back at the "+n.to.toLowerCase()+(n.fired?", and "+n.fired+" staff had to go":"")+". The recipes you learned are still yours, but the fittings, the unlocked ingredients and the training are gone: you need the requirements again to buy ingredients."));
   }else{
-    card.appendChild(h("h2",null,"The bank steps in"));
-    card.appendChild(h("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
+    card.appendChild(el("h2",null,"The bank steps in"));
+    card.appendChild(el("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
   }
-  var ok=h("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
+  var ok=el("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
   showOv(card);
 }
 function showIncident(){
   var ov=$("#ov");if(ov.classList.contains("on")||!S.inc)return;
   var inc=incById(S.inc.id);if(!inc){S.inc=null;return}
-  var card=h("div","card");
-  card.appendChild(h("h2",null,inc.t));
-  card.appendChild(h("p",null,inc.x+(S.inc.ing?" It is "+INGM[S.inc.ing].n+".":"")));
+  var card=el("div","card");
+  card.appendChild(el("h2",null,inc.t));
+  card.appendChild(el("p",null,inc.x+(S.inc.ing?" It is "+INGM[S.inc.ing].n+".":"")));
   incOptions(inc).forEach(function(op,i){
-    var box=h("div","cand"),c=op.c();
-    box.appendChild(h("b",null,op.l));
-    box.appendChild(h("span",null,c>0?"Costs "+money0(c):"Free"+(op.role?" · "+STAFFM[op.role].n+" on your team":"")));
-    var b=h("button","buy sm","Choose");b.disabled=c>S.money;
+    var box=el("div","cand"),c=op.c();
+    box.appendChild(el("b",null,op.l));
+    box.appendChild(el("span",null,c>0?"Costs "+money0(c):"Free"+(op.role?" · "+STAFFM[op.role].n+" on your team":"")));
+    var b=el("button","buy sm","Choose");b.disabled=c>S.money;
     b.onclick=function(){
       var text=resolveInc(i,false);if(text===null)return;
-      var out=h("div","card");out.appendChild(h("h2",null,inc.t));out.appendChild(h("p",null,text));
-      var ok=h("button","buy","Continue");ok.onclick=hideOv;out.appendChild(ok);showOv(out);
+      var out=el("div","card");out.appendChild(el("h2",null,inc.t));out.appendChild(el("p",null,text));
+      var ok=el("button","buy","Continue");ok.onclick=hideOv;out.appendChild(ok);showOv(out);
     };
     box.appendChild(b);card.appendChild(box);
   });
@@ -2430,29 +2438,29 @@ function showIncident(){
 }
 /* ---------- UI: build ---------- */
 var ref={ord:[],tr:{},grp:{},ing:{},staff:{},rec:{},exp:null,br:{},mk:{},cal:{},fin:[],ed:{sel:0},mood:{},emps:{},empSig:""};
-function mkRow(nameHtml,withBtn){
-  var row=h("div","row"),info=h("div","info"),nm=h("div","name",nameHtml),sub=h("div","sub");
+function mkRow(name,withBtn){
+  var row=el("div","row"),info=el("div","info"),nm=el("div","name",name),sub=el("div","sub");
   info.append(nm,sub);row.appendChild(info);
-  var btn=null;if(withBtn){btn=h("button","buy");row.appendChild(btn)}
+  var btn=null;if(withBtn){btn=el("button","buy");row.appendChild(btn)}
   return{row:row,nm:nm,sub:sub,btn:btn,info:info};
 }
 /* ---------- UI: skill trees ---------- */
 function setA(e,k,v){if(e["_"+k]!==v){e["_"+k]=v;e.setAttribute(k,v)}}
 function mkTree(root,nodes,labels,cols){
   var NS="http://www.w3.org/2000/svg";
-  var wrap=h("div","tree");
+  var wrap=el("div","tree");
   if(labels){
-    var lb=h("div","tlabels");lb.style.gridTemplateColumns="repeat("+cols+",1fr)";
-    labels.forEach(function(x){lb.appendChild(h("span",null,x))});wrap.appendChild(lb);
+    var lb=el("div","tlabels");lb.style.gridTemplateColumns="repeat("+cols+",1fr)";
+    labels.forEach(function(x){lb.appendChild(el("span",null,x))});wrap.appendChild(lb);
   }
-  var grid=h("div","tgrid"+(cols>3?" c"+cols:""));
+  var grid=el("div","tgrid"+(cols>3?" c"+cols:""));
   grid.style.gridTemplateColumns="repeat("+cols+",1fr)";
   var svg=document.createElementNS(NS,"svg");
   svg.setAttribute("class","tlines");svg.setAttribute("aria-hidden","true");
   grid.appendChild(svg);
   var tr={nodes:nodes,tiles:{},edges:[],svg:svg,grid:grid,sel:nodes[0].id};
   nodes.forEach(function(n){
-    var b=h("button","tile"),nm=h("span","tn",n.n),st=h("span","ts");
+    var b=el("button","tile"),nm=el("span","tn",n.n),st=el("span","ts");
     b.style.gridColumn=String(n.col+1);b.style.gridRow=String(n.row+1);
     b.append(nm,st);
     b.onclick=function(){tr.sel=n.id;updateTree(tr)};
@@ -2463,7 +2471,7 @@ function mkTree(root,nodes,labels,cols){
     });
   });
   wrap.appendChild(grid);
-  var det=h("div","tdetail"),dn=h("div","tdn"),dd=h("div","tdd"),dm=h("div","tdm"),db=h("button","big");
+  var det=el("div","tdetail"),dn=el("div","tdn"),dd=el("div","tdd"),dm=el("div","tdm"),db=el("button","big");
   det.append(dn,dd,dm,db);wrap.appendChild(det);
   tr.dn=dn;tr.dd=dd;tr.dm=dm;tr.db=db;
   db.onclick=function(){nBuy(NODEMAP[tr.sel]);updateTree(tr)};
@@ -2508,20 +2516,20 @@ function drawAll(){for(var k in ref.tr)drawTree(ref.tr[k])}
 
 
 function buildOrders(){
-  var box=$("#orders");box.innerHTML="";
+  var box=$("#orders");clear(box);
   for(var i=0;i<5;i++){
     (function(){
-      var card=h("div","ocard");
-      var head=h("div","oh"),who=h("span"),rew=h("span","orew");head.append(who,rew);
-      var itemsEl=h("div"),lines=[];
+      var card=el("div","ocard");
+      var head=el("div","oh"),who=el("span"),rew=el("span","orew");head.append(who,rew);
+      var itemsEl=el("div"),lines=[];
       for(var k=0;k<3;k++){
-        var l=h("div","oline"),nm=h("span"),st=h("span","ost");l.append(nm,st);itemsEl.appendChild(l);lines.push({l:l,nm:nm,st:st});
+        var l=el("div","oline"),nm=el("span"),st=el("span","ost");l.append(nm,st);itemsEl.appendChild(l);lines.push({l:l,nm:nm,st:st});
       }
-      var bar=h("div","obar"),fill=h("i");bar.appendChild(fill);
-      var foot=h("div","ofoot"),skip=h("button","skip","Skip customer"),note=h("span","onote"),collectBtn=h("button","buy sm","Collect");
+      var bar=el("div","obar"),fill=el("i");bar.appendChild(fill);
+      var foot=el("div","ofoot"),skip=el("button","skip","Skip customer"),note=el("span","onote"),collectBtn=el("button","buy sm","Collect");
       foot.append(skip,note,collectBtn);
-      var empty=h("div",null,"Waiting for the next customer…");
-      var body=h("div");body.append(head,itemsEl,bar,foot);
+      var empty=el("div",null,"Waiting for the next customer…");
+      var body=el("div");body.append(head,itemsEl,bar,foot);
       card.append(empty,body);
       var o={card:card,who:who,rew:rew,lines:lines,fill:fill,skip:skip,note:note,collectBtn:collectBtn,empty:empty,body:body,oid:0};
       skip.onclick=function(){var od=findOrder(o.oid);if(od&&!od.ready){dropOrder(od);addSat(30)}};
@@ -2536,20 +2544,20 @@ function selEmp(){var id=ref.ed.sel;for(var i=0;i<S.team.length;i++){if(S.team[i
 function roleIndex(e){var i=0;for(var k=0;k<S.team.length;k++){var x=S.team[k];if(x===e)return i;if(x.role===e.role)i++}return i}
 function buildEmpDetail(parent){
   var ed=ref.ed;
-  ed.card=h("div","tdetail");ed.card.style.display="none";
-  ed.nm=h("div","tdn");ed.sub=h("div","tdd");
+  ed.card=el("div","tdetail");ed.card.style.display="none";
+  ed.nm=el("div","tdn");ed.sub=el("div","tdd");
   ed.card.append(ed.nm,ed.sub);
   ed.sk=[];
   for(var i=0;i<3;i++){
     (function(i){
-      var row=h("div","erow"),lab=h("span"),btn=h("button","buy sm");
+      var row=el("div","erow"),lab=el("span"),btn=el("button","buy sm");
       btn.onclick=function(){var e=selEmp();if(e)trainSkill(e,i)};
       row.append(lab,btn);ed.card.appendChild(row);ed.sk.push({row:row,lab:lab,btn:btn});
     })(i);
   }
-  ed.prog=h("div","tdd");ed.prog.style.marginTop="10px";ed.card.appendChild(ed.prog);
-  ed.acts=h("div","eacts");
-  function act(label,fn){var b=h("button","ghost",label);b.onclick=function(){var e=selEmp();if(e)fn(e)};ed.acts.appendChild(b);return b}
+  ed.prog=el("div","tdd");ed.prog.style.marginTop="10px";ed.card.appendChild(ed.prog);
+  ed.acts=el("div","eacts");
+  function act(label,fn){var b=el("button","ghost",label);b.onclick=function(){var e=selEmp();if(e)fn(e)};ed.acts.appendChild(b);return b}
   ed.bLevel=act("Promote",levelUp);
   ed.bRole=act("Promote role",promoteRole);
   ed.bClerk=act("Upgrade clerk",upgradeClerk);
@@ -2559,12 +2567,12 @@ function buildEmpDetail(parent){
   parent.appendChild(ed.card);
 }
 function rebuildEmps(){
-  var box=ref.empBox;box.innerHTML="";ref.emps={};
+  var box=ref.empBox;clear(box);ref.emps={};
   var order=ROLES.map(function(r){return r.id});
   S.team.slice().sort(function(a,b){return order.indexOf(a.role)-order.indexOf(b.role)||a.id-b.id}).forEach(function(e){
     var r=mkRow("",false);
     r.row.className="row pick";
-    var tag=h("div","val");r.row.appendChild(tag);r.tag=tag;
+    var tag=el("div","val");r.row.appendChild(tag);r.tag=tag;
     r.row.onclick=function(){ref.ed.sel=e.id;ref.ed.sig=""};
     ref.emps[e.id]=r;box.appendChild(r.row);
   });
@@ -2579,8 +2587,8 @@ var SKE={
 function skillEffect(role,i){return (SKE[role]||SKE.apprentice)[i]}
 function stockRow(x,t,p){
   var r=mkRow(t?"":x.n,true);
-  r.barWrap=h("div","sbar");r.bar=h("i");r.barWrap.appendChild(r.bar);r.info.appendChild(r.barWrap);
-  r.tog=h("button","tog");r.info.appendChild(r.tog);
+  r.barWrap=el("div","sbar");r.bar=el("i");r.barWrap.appendChild(r.bar);r.info.appendChild(r.barWrap);
+  r.tog=el("button","tog");r.info.appendChild(r.tog);
   if(t){r.row.className="row cl"}
   p.appendChild(r.row);
   return r;
@@ -2588,21 +2596,21 @@ function stockRow(x,t,p){
 function build(){
   buildOrders();
 
-  var p=$("#p-stock");p.innerHTML="";
-  p.appendChild(h("p","note","Every drink uses 1 serving of each ingredient. Unlock ingredients here, then keep the shelves stocked or orders will wait. Spirits, beer and wine come in three qualities: unlock better brands as your reputation grows, pick which one your cocktails use, and sell them neat from the Menu tab. Every 2 staff you hire earns a pick from the next ingredient list."));
-  p.appendChild(h("div","h","Market"));
+  var p=$("#p-stock");clear(p);
+  p.appendChild(el("p","note","Every drink uses 1 serving of each ingredient. Unlock ingredients here, then keep the shelves stocked or orders will wait. Spirits, beer and wine come in three qualities: unlock better brands as your reputation grows, pick which one your cocktails use, and sell them neat from the Menu tab. Every 2 staff you hire earns a pick from the next ingredient list."));
+  p.appendChild(el("div","h","Market"));
   ref.mk.ev=[];ref.mk.notes=[];
-  for(var e=0;e<5;e++){var ge=h("div","gnote");p.appendChild(ge);ref.mk.ev.push(ge)}
-  for(var q=0;q<4;q++){var gq=h("div","gnote");p.appendChild(gq);ref.mk.notes.push(gq)}
+  for(var e=0;e<5;e++){var ge=el("div","gnote");p.appendChild(ge);ref.mk.ev.push(ge)}
+  for(var q=0;q<4;q++){var gq=el("div","gnote");p.appendChild(gq);ref.mk.notes.push(gq)}
   GROUPS.forEach(function(gr){
-    p.appendChild(h("div","h",gr[1]));
-    var gnote=h("div","gnote");p.appendChild(gnote);ref.grp[gr[0]]=gnote;
+    p.appendChild(el("div","h",gr[1]));
+    var gnote=el("div","gnote");p.appendChild(gnote);ref.grp[gr[0]]=gnote;
     ING.filter(function(x){return x.g===gr[0]}).sort(function(a,b){return u0(a)-u0(b)}).forEach(function(x){
       var r=stockRow(x,0,p);
       r.btn.onclick=function(){if(x.raw)return;if(has(x.id))buyStock(x.id,0);else unlockIng(x.id)};
       r.tog.onclick=function(){toggleClerk(x.id)};
       if(x.q){
-        r.bt=h("button","tog");r.info.appendChild(r.bt);
+        r.bt=el("button","tog");r.info.appendChild(r.bt);
         r.bt.onclick=function(){cycleBrand(x.id)};
         r.tiers=[];
         for(var t=1;t<3;t++){
@@ -2618,101 +2626,101 @@ function build(){
     });
   });
 
-  var s=$("#p-staff");s.innerHTML="";
-  s.appendChild(h("p","note","You work the counter yourself. Unlock each role in the Upgrades tree, then hire people here: each time you hire you choose between 3 candidates with different wages and skills. Everyone works whenever the bar is open. Wages are due at the end of the calendar month."));
-  s.appendChild(h("div","h","Finances"));
-  for(var f=0;f<5;f++){var fl=h("div","gnote");s.appendChild(fl);ref.fin.push(fl)}
-  ref.finBtn=h("button","tog","Repay debt");ref.finBtn.onclick=repayDebt;s.appendChild(ref.finBtn);
-  s.appendChild(h("div","h","Team satisfaction"));
+  var s=$("#p-staff");clear(s);
+  s.appendChild(el("p","note","You work the counter yourself. Unlock each role in the Upgrades tree, then hire people here: each time you hire you choose between 3 candidates with different wages and skills. Everyone works whenever the bar is open. Wages are due at the end of the calendar month."));
+  s.appendChild(el("div","h","Finances"));
+  for(var f=0;f<5;f++){var fl=el("div","gnote");s.appendChild(fl);ref.fin.push(fl)}
+  ref.finBtn=el("button","tog","Repay debt");ref.finBtn.onclick=repayDebt;s.appendChild(ref.finBtn);
+  s.appendChild(el("div","h","Team satisfaction"));
   var M=ref.mood;
-  M.txt=h("div","gnote");s.appendChild(M.txt);
-  var mb=h("div","satb");M.fill=h("i");mb.appendChild(M.fill);s.appendChild(mb);
-  M.drv=h("div","gnote");M.drv.style.marginTop="8px";s.appendChild(M.drv);
-  s.appendChild(h("div","h","Hire"));
+  M.txt=el("div","gnote");s.appendChild(M.txt);
+  var mb=el("div","satb");M.fill=el("i");mb.appendChild(M.fill);s.appendChild(mb);
+  M.drv=el("div","gnote");M.drv.style.marginTop="8px";s.appendChild(M.drv);
+  s.appendChild(el("div","h","Hire"));
   ROLES.forEach(function(x){
-    var r=mkRow(x.n+'<span class="cnt"></span>',true);r.cnt=r.nm.querySelector(".cnt");
+    var r=mkRow(x.n,true);r.cnt=el("span","cnt");r.nm.appendChild(r.cnt);
     r.btn.onclick=function(){openHire(x.id)};
     ref.staff[x.id]=r;s.appendChild(r.row);
   });
-  s.appendChild(h("div","h","Your team"));
-  ref.empNote=h("div","gnote");s.appendChild(ref.empNote);
-  ref.empBox=h("div");s.appendChild(ref.empBox);
+  s.appendChild(el("div","h","Your team"));
+  ref.empNote=el("div","gnote");s.appendChild(ref.empNote);
+  ref.empBox=el("div");s.appendChild(ref.empBox);
   
   buildEmpDetail(s);
 
-  var u=$("#p-upg");u.innerHTML="";
-  u.appendChild(h("div","h","Expansion"));
+  var u=$("#p-upg");clear(u);
+  u.appendChild(el("div","h","Expansion"));
   ref.exp=mkRow("",true);ref.exp.btn.onclick=buyExp;u.appendChild(ref.exp.row);
-  u.appendChild(h("div","h","Bar upgrades"));
-  u.appendChild(h("p","gnote","Tap a node to see what it does. Each branch unlocks from the top down. Roles are hired in the Team tab once unlocked."));
+  u.appendChild(el("div","h","Bar upgrades"));
+  u.appendChild(el("p","gnote","Tap a node to see what it does. Each branch unlocks from the top down. Roles are hired in the Team tab once unlocked."));
   ref.tr.bar=mkTree(u,UT,["Team","Service","Stock","Customers"],4);
-  u.appendChild(h("div","h","Staff training"));
-  u.appendChild(h("p","gnote","Train one role to open the next. You need at least one person in a role to train it."));
+  u.appendChild(el("div","h","Staff training"));
+  u.appendChild(el("p","gnote","Train one role to open the next. You need at least one person in a role to train it."));
   ref.tr.train=mkTree(u,TT,null,3);
 
-  var b=$("#p-book");b.innerHTML="";
-  ref.bookNote=h("p","note");b.appendChild(ref.bookNote);
+  var b=$("#p-book");clear(b);
+  ref.bookNote=el("p","note");b.appendChild(ref.bookNote);
   [["soft","Soft drinks"],["cocktail","Cocktails"],["solo","Neat, beer and wine"]].forEach(function(sec){
-    b.appendChild(h("div","h",sec[1]));
+    b.appendChild(el("div","h",sec[1]));
     ITEMS.filter(function(r){return (r.solo?"solo":r.f==="Soft"?"soft":"cocktail")===sec[0]}).sort(function(a,c){return a.p-c.p}).forEach(function(r){
       var row=mkRow("",false);
-      var box=h("div","pbox"),inp=h("input"),fair=h("small"),rst=h("button","tog");
+      var box=el("div","pbox"),inp=el("input"),fair=el("small"),rst=el("button","tog");
       inp.type="number";inp.step="any";inp.min="0";inp.setAttribute("inputmode","decimal");
       inp.setAttribute("aria-label","Price of "+r.n);
       inp.addEventListener("input",function(){setPrice(r.id,parseFloat(inp.value))});
       inp.addEventListener("change",function(){if(inp.value===""||!isFinite(parseFloat(inp.value)))clearPrice(r.id)});
       rst.onclick=function(){clearPrice(r.id)};
-      var pend=h("small");
+      var pend=el("small");
       box.append(inp,fair,pend,rst);row.row.appendChild(box);
       row.box=box;row.inp=inp;row.fair=fair;row.pend=pend;row.rst=rst;
       ref.rec[r.id]=row;b.appendChild(row.row);
     });
   });
 
-  var cp=$("#p-cal");cp.innerHTML="";
+  var cp=$("#p-cal");clear(cp);
   var C=ref.cal;
   C.vm=Math.floor(gDay()/28);C.sel=gDay();
-  cp.appendChild(h("p","note","The calendar decides who walks in and what stock costs. Holidays and events change how many customers come, which kinds, and what you pay for ingredients. The bar can open at most "+MAXOPEN+" hours a day, and time runs faster while it is closed. Your team works whenever the bar is open."));
-  var chd=h("div","chead"),cpv=h("button",null,"◀"),cnx=h("button",null,"▶");
+  cp.appendChild(el("p","note","The calendar decides who walks in and what stock costs. Holidays and events change how many customers come, which kinds, and what you pay for ingredients. The bar can open at most "+MAXOPEN+" hours a day, and time runs faster while it is closed. Your team works whenever the bar is open."));
+  var chd=el("div","chead"),cpv=el("button",null,"◀"),cnx=el("button",null,"▶");
   cpv.setAttribute("aria-label","Previous month");cnx.setAttribute("aria-label","Next month");
-  C.ttl=h("b");chd.append(cpv,C.ttl,cnx);cp.appendChild(chd);
+  C.ttl=el("b");chd.append(cpv,C.ttl,cnx);cp.appendChild(chd);
   cpv.onclick=function(){C.vm=Math.max(0,C.vm-1)};
   cnx.onclick=function(){C.vm=C.vm+1};
-  var cg=h("div","cgrid");
-  DAYN.forEach(function(l){cg.appendChild(h("span","wd",l))});
+  var cg=el("div","cgrid");
+  DAYN.forEach(function(l){cg.appendChild(el("span","wd",l))});
   C.cells=[];
   for(var cc=0;cc<28;cc++){
     (function(i){
-      var cb=h("button","cday"),cn=h("span","n"),cm=h("span","mk");
+      var cb=el("button","cday"),cn=el("span","n"),cm=el("span","mk");
       cb.append(cn,cm);
       cb.onclick=function(){C.sel=C.vm*28+i};
       C.cells.push({b:cb,n:cn,mk:cm});cg.appendChild(cb);
     })(cc);
   }
   cp.appendChild(cg);
-  var cdet=h("div","tdetail");
-  C.dt=h("div","tdn");cdet.appendChild(C.dt);
+  var cdet=el("div","tdetail");
+  C.dt=el("div","tdn");cdet.appendChild(C.dt);
   C.evl=[];
-  for(var ce=0;ce<3;ce++){var cel=h("div","tdd");cdet.appendChild(cel);C.evl.push(cel)}
-  C.strip=h("div","hstrip");C.bars=[];
-  for(var cbh=0;cbh<24;cbh++){var cbi=h("i");C.strip.appendChild(cbi);C.bars.push(cbi)}
+  for(var ce=0;ce<3;ce++){var cel=el("div","tdd");cdet.appendChild(cel);C.evl.push(cel)}
+  C.strip=el("div","hstrip");C.bars=[];
+  for(var cbh=0;cbh<24;cbh++){var cbi=el("i");C.strip.appendChild(cbi);C.bars.push(cbi)}
   cdet.appendChild(C.strip);
-  var chl=h("div","hlab");
-  ["0h","6h","12h","18h","24h"].forEach(function(x){chl.appendChild(h("span",null,x))});
+  var chl=el("div","hlab");
+  ["0h","6h","12h","18h","24h"].forEach(function(x){chl.appendChild(el("span",null,x))});
   cdet.appendChild(chl);
   C.mix=[];
-  for(var cx=0;cx<6;cx++){var cmx=h("div","tdd");cdet.appendChild(cmx);C.mix.push(cmx)}
-  C.sum=h("div","tdm");cdet.appendChild(C.sum);
+  for(var cx=0;cx<6;cx++){var cmx=el("div","tdd");cdet.appendChild(cmx);C.mix.push(cmx)}
+  C.sum=el("div","tdm");cdet.appendChild(C.sum);
   cp.appendChild(cdet);
-  cp.appendChild(h("div","h","Opening hours"));
-  cp.appendChild(h("p","gnote","Pick when the bar opens and closes each day. Closing after midnight is fine. Staff need at least "+(24-MAXOPEN)+" hours off a day."));
+  cp.appendChild(el("div","h","Opening hours"));
+  cp.appendChild(el("p","gnote","Pick when the bar opens and closes each day. Closing after midnight is fine. Staff need at least "+(24-MAXOPEN)+" hours off a day."));
   C.hr=[];
   for(var cw=0;cw<7;cw++){
     (function(w){
-      var row=h("div","hrow"),lab=h("b",null,DAYN[w]),so=h("select"),sc=h("select"),sp=h("span","sp");
+      var row=el("div","hrow"),lab=el("b",null,DAYN[w]),so=el("select"),sc=el("select"),sp=el("span","sp");
       so.setAttribute("aria-label",DAYN[w]+" opening hour");sc.setAttribute("aria-label",DAYN[w]+" closing hour");
       for(var hx=0;hx<24;hx++){
-        var o1=h("option",null,pad2(hx)+":00"),o2=h("option",null,pad2(hx)+":00");
+        var o1=el("option",null,pad2(hx)+":00"),o2=el("option",null,pad2(hx)+":00");
         o1.value=String(hx);o2.value=String(hx);so.appendChild(o1);sc.appendChild(o2);
       }
       var apply=function(){setHours(w,parseInt(so.value,10),parseInt(sc.value,10))};
@@ -2721,32 +2729,32 @@ function build(){
       C.hr.push({so:so,sc:sc,sp:sp});
     })(cw);
   }
-  var ccopy=h("button","link","Copy Monday to every day");
+  var ccopy=el("button","link","Copy Monday to every day");
   ccopy.onclick=function(){copyHours(0)};
   cp.appendChild(ccopy);
 
 
-  var br=$("#p-brand");br.innerHTML="";
+  var br=$("#p-brand");clear(br);
   var B=ref.br;
-  B.note=h("p","note","Reputation grows with happy customers, profitable months and achievements, and falls when you cannot pay your bills. A better name brings more customers and richer ones, who accept higher prices and ask for premium brands. Each level earns a perk point.");
+  B.note=el("p","note","Reputation grows with happy customers, profitable months and achievements, and falls when you cannot pay your bills. A better name brings more customers and richer ones, who accept higher prices and ask for premium brands. Each level earns a perk point.");
   br.appendChild(B.note);
-  var sm=h("div","summary");
-  B.lvl=h("b");B.pts=h("b");
-  var ba=h("div"),bc=h("div");
-  B.name=h("span");ba.append(B.lvl,B.name);bc.append(B.pts,h("span",null,"perk points"));
+  var sm=el("div","summary");
+  B.lvl=el("b");B.pts=el("b");
+  var ba=el("div"),bc=el("div");
+  B.name=el("span");ba.append(B.lvl,B.name);bc.append(B.pts,el("span",null,"perk points"));
   sm.append(ba,bc);br.appendChild(sm);
-  var bb=h("div","satb");B.bar=h("i","hi");bb.appendChild(B.bar);br.appendChild(bb);
-  B.prog=h("p","note");br.appendChild(B.prog);
-  B.eff=h("p","gnote");br.appendChild(B.eff);
-  br.appendChild(h("div","h","Reputation perks"));
+  var bb=el("div","satb");B.bar=el("i","hi");bb.appendChild(B.bar);br.appendChild(bb);
+  B.prog=el("p","note");br.appendChild(B.prog);
+  B.eff=el("p","gnote");br.appendChild(B.eff);
+  br.appendChild(el("div","h","Reputation perks"));
   ref.tr.rep=mkTree(br,PT,["Brand","Service","Business"],3);
-  br.appendChild(h("div","h","Achievements"));
+  br.appendChild(el("div","h","Achievements"));
   B.ach={};
   ACH.forEach(function(a){
-    var r=mkRow(a.n,false);var v=h("div","val");r.row.appendChild(v);r.val=v;
+    var r=mkRow(a.n,false);var v=el("div","val");r.row.appendChild(v);r.val=v;
     B.ach[a.id]=r;br.appendChild(r.row);
   });
-  var reset=h("button","link","Erase all progress");var rc=false,rt;
+  var reset=el("button","link","Erase all progress");var rc=false,rt;
   reset.onclick=function(){
     if(!rc){rc=true;reset.textContent="Tap again to erase everything";clearTimeout(rt);rt=setTimeout(function(){rc=false;reset.textContent="Erase all progress"},4000)}
     else{newGame();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
@@ -2827,10 +2835,10 @@ function updateCal(){
   var se=eventsOn(sel);
   setT(C.dt,dstr(sel)+(sel===today?" (today)":""));
   for(var k=0;k<3;k++){
-    var el=C.evl[k],ev=se[k];
-    if(ev){el.style.display="";setT(el,ev.n+(ev.len>1?" (day "+(ev.k+1)+" of "+ev.len+")":"")+": "+fxText(ev))}
-    else if(k===0){el.style.display="";setT(el,"A regular day. Weekends are busier than Mondays.")}
-    else el.style.display="none";
+    var ln=C.evl[k],ev=se[k];
+    if(ev){ln.style.display="";setT(ln,ev.n+(ev.len>1?" (day "+(ev.k+1)+" of "+ev.len+")":"")+": "+fxText(ev))}
+    else if(k===0){ln.style.display="";setT(ln,"A regular day. Weekends are busier than Mondays.")}
+    else ln.style.display="none";
   }
   var fx=fxFor(sel),dm=[],mx=0.01,h2;
   for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
@@ -2905,10 +2913,10 @@ function update(){
   calMk.forEach(function(c){mlist.push({f:c.mk.f,t:c.n+": "+c.mk.h+" (today)"})});
   evs.forEach(function(ev){mlist.push({f:ev.f,t:ev.h+" ("+Math.ceil(ev.left)+" s)"})});
   for(var e=0;e<5;e++){
-    var el=ref.mk.ev[e],ev=mlist[e];
-    if(ev){el.style.display="";setT(el,(ev.f>1?"↑ ":"↓ ")+ev.t);setC(el,"gnote "+(ev.f>1?"up":"down"))}
-    else if(e===0){el.style.display="";setT(el,"Markets are calm. Small price swings still happen.");setC(el,"gnote")}
-    else el.style.display="none";
+    var ln=ref.mk.ev[e],ev=mlist[e];
+    if(ev){ln.style.display="";setT(ln,(ev.f>1?"↑ ":"↓ ")+ev.t);setC(ln,"gnote "+(ev.f>1?"up":"down"))}
+    else if(e===0){ln.style.display="";setT(ln,"Markets are calm. Small price swings still happen.");setC(ln,"gnote")}
+    else ln.style.display="none";
   }
   var hasCtl=(S.staff.controller||0)>0;
   for(var z=0;z<4;z++){
@@ -3211,10 +3219,10 @@ build();
   if(S.kits&&away>30){
     var res=simulate(Math.min(away,offlineCap()));
     if(res.earned>=1){
-      var card=h("div","card");
-      card.appendChild(h("h2",null,"Welcome back"));
-      card.appendChild(h("p",null,"While you were away, your team served "+res.served+" orders and the bar earned "+mshow(res.earned)+"."));
-      var ok=h("button","big","Continue");ok.onclick=hideOv;card.appendChild(ok);
+      var card=el("div","card");
+      card.appendChild(el("h2",null,"Welcome back"));
+      card.appendChild(el("p",null,"While you were away, your team served "+res.served+" orders and the bar earned "+mshow(res.earned)+"."));
+      var ok=el("button","big","Continue");ok.onclick=hideOv;card.appendChild(ok);
       showOv(card);
     }
   }
@@ -3236,7 +3244,6 @@ function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;ret
 function rn(n){var x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function sp(a,n){return a[Math.floor(rn(n)*a.length)]}
 function cl(v,a,b){return v<a?a:(v>b?b:v)}
-function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function fr(c,x,y,w,hh,col){c.fillStyle=col;c.fillRect(x,y,w,hh)}
 
 /* ---------- sprites ---------- */
@@ -3936,7 +3943,7 @@ function updDash(){
   dash.vTeam.textContent=S.team.length+" / "+staffCap();dash.vCash.textContent=money0(S.money);dash.vDue.textContent="~"+money0(est);
   dash.vMood.textContent=satTeam(S.mood)+" "+Math.round(S.mood)+"%";
   var mb=S.mood>=60?2:S.mood>=35?1:0;
-  if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");ic.innerHTML="";ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
+  if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");clear(ic);ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
   dash.l1.textContent="Payday in "+left+" day"+(left>1?"s":"");
   dash.f1.style.width=((28-left)/28*100)+"%";
   var cov=est>0?cl(S.money/est,0,1):1;
@@ -3982,7 +3989,7 @@ function updNext(key,tr,labels){
   if(nx.length&&!nx.some(function(o){return o.n.id===tr.sel})){tr.sel=nx[0].n.id;updateTree(tr)}
   var sig=nx.map(function(o){return o.n.id+":"+o.l+":"+(canPay(o.n,o.l)?1:0)+":"+(tr.sel===o.n.id?1:0)}).join("|")+"#"+own.length;
   if(sig===box.sig)return;
-  box.sig=sig;box.el.innerHTML="";
+  box.sig=sig;clear(box.el);
   if(!nx.length){box.el.appendChild(el("p","gnote","Everything here is unlocked."))}
   else{
     var grid=el("div","pxnext");
@@ -4044,32 +4051,32 @@ function groupStock(){
 /* ---- special missions: button, window and announcements ---- */
 function openMissions(){
   var ms=msInit();ms.seen=true;
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Special missions"));
-  card.appendChild(h("p",null,"Finish a mission before the time runs out to earn a cash bonus. You can hold "+MS_MAX+" at once, and new offers arrive every day."));
-  card.appendChild(h("div","h","In progress ("+ms.active.length+" of "+MS_MAX+")"));
-  if(!ms.active.length)card.appendChild(h("p","note","Nothing yet. Accept a mission below."));
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Special missions"));
+  card.appendChild(el("p",null,"Finish a mission before the time runs out to earn a cash bonus. You can hold "+MS_MAX+" at once, and new offers arrive every day."));
+  card.appendChild(el("div","h","In progress ("+ms.active.length+" of "+MS_MAX+")"));
+  if(!ms.active.length)card.appendChild(el("p","note","Nothing yet. Accept a mission below."));
   ms.active.forEach(function(m1){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,m1.title));
+    var box=el("div","cand");
+    box.appendChild(el("b",null,m1.title));
     var left=Math.max(0,m1.dl-gDay()+1);
-    box.appendChild(h("span",null,m1.p+" of "+m1.n+" · "+left+" day"+(left===1?"":"s")+" left · reward "+money0(m1.reward)));
-    var bar=h("div","pxbr"),fi=h("i");fi.style.width=Math.min(100,m1.p/m1.n*100)+"%";bar.appendChild(fi);box.appendChild(bar);
-    var ab=h("button","link","Give up");ab.onclick=function(){msAbandon(m1.id);openMissions()};box.appendChild(ab);
+    box.appendChild(el("span",null,m1.p+" of "+m1.n+" · "+left+" day"+(left===1?"":"s")+" left · reward "+money0(m1.reward)));
+    var bar=el("div","pxbr"),fi=el("i");fi.style.width=Math.min(100,m1.p/m1.n*100)+"%";bar.appendChild(fi);box.appendChild(bar);
+    var ab=el("button","link","Give up");ab.onclick=function(){msAbandon(m1.id);openMissions()};box.appendChild(ab);
     card.appendChild(box);
   });
-  card.appendChild(h("div","h","On offer today"));
-  if(!ms.offers.length)card.appendChild(h("p","note","No offers right now. Come back tomorrow."));
+  card.appendChild(el("div","h","On offer today"));
+  if(!ms.offers.length)card.appendChild(el("p","note","No offers right now. Come back tomorrow."));
   ms.offers.forEach(function(m1){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,m1.title));
-    box.appendChild(h("span",null,"Within "+m1.days+" days · reward "+money0(m1.reward)));
-    var b=h("button","buy sm","Accept");b.disabled=ms.active.length>=MS_MAX;
+    var box=el("div","cand");
+    box.appendChild(el("b",null,m1.title));
+    box.appendChild(el("span",null,"Within "+m1.days+" days · reward "+money0(m1.reward)));
+    var b=el("button","buy sm","Accept");b.disabled=ms.active.length>=MS_MAX;
     b.onclick=function(){if(msAccept(m1.id)){sfx("tab");openMissions()}};
     box.appendChild(b);card.appendChild(box);
   });
-  card.appendChild(h("p","note","Completed "+ms.done+" · earned "+money0(ms.earned)+" · missed "+ms.failed));
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  card.appendChild(el("p","note","Completed "+ms.done+" · earned "+money0(ms.earned)+" · missed "+ms.failed));
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);updMisBtn();
 }
 document.getElementById("pxmis").addEventListener("click",openMissions);
@@ -4092,29 +4099,29 @@ function misTick(){
 
 /* ---- bank window ---- */
 function openBank(){
-  var card=h("div","card"),base=Math.max(500,Math.round(monthlyFixed()/100)*100);
-  card.appendChild(h("h2",null,"Bank"));
-  card.appendChild(h("p",null,"Debt: "+money0(S.debt)+" · interest 4% a month · lending limit "+money0(bankLimit())+"."));
-  card.appendChild(h("p",null,S.late>0?"You are "+S.late+" of "+LATE_MAX+" months behind. At "+LATE_MAX+" the bank repossesses the bar, sells it, and you go back one stage.":"If you cannot pay the monthly bills the bank lends you the difference. Fail "+LATE_MAX+" months in a row and it repossesses the bar."));
-  card.appendChild(h("div","h","Borrow"));
+  var card=el("div","card"),base=Math.max(500,Math.round(monthlyFixed()/100)*100);
+  card.appendChild(el("h2",null,"Bank"));
+  card.appendChild(el("p",null,"Debt: "+money0(S.debt)+" · interest 4% a month · lending limit "+money0(bankLimit())+"."));
+  card.appendChild(el("p",null,S.late>0?"You are "+S.late+" of "+LATE_MAX+" months behind. At "+LATE_MAX+" the bank repossesses the bar, sells it, and you go back one stage.":"If you cannot pay the monthly bills the bank lends you the difference. Fail "+LATE_MAX+" months in a row and it repossesses the bar."));
+  card.appendChild(el("div","h","Borrow"));
   [base,base*2,base*4].forEach(function(a){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,money0(a)));
-    box.appendChild(h("span",null,"Repay "+money0(a*1.04)+" after one month"));
-    var b=h("button","buy sm","Borrow");b.disabled=S.debt+a>bankLimit();
+    var box=el("div","cand");
+    box.appendChild(el("b",null,money0(a)));
+    box.appendChild(el("span",null,"Repay "+money0(a*1.04)+" after one month"));
+    var b=el("button","buy sm","Borrow");b.disabled=S.debt+a>bankLimit();
     b.onclick=function(){if(bankBorrow(a)){sfx("coin");openBank()}};
     box.appendChild(b);card.appendChild(box);
   });
   if(S.debt>0.5){
-    card.appendChild(h("div","h","Repay"));
+    card.appendChild(el("div","h","Repay"));
     var half=Math.min(S.money,Math.round(S.debt/2)),all=Math.min(S.money,S.debt);
-    var r1=h("button","buy sm","Repay "+money0(half));r1.disabled=half<=0;
+    var r1=el("button","buy sm","Repay "+money0(half));r1.disabled=half<=0;
     r1.onclick=function(){repayPart(half);sfx("buy");openBank()};
-    var r2=h("button","buy sm","Repay "+money0(all)+(all>=S.debt?" (all)":""));r2.disabled=all<=0;
+    var r2=el("button","buy sm","Repay "+money0(all)+(all>=S.debt?" (all)":""));r2.disabled=all<=0;
     r2.onclick=function(){repayDebt();sfx("buy");openBank()};
-    var row=h("div","cand");row.appendChild(h("span",null,"Cash "+money0(S.money)));row.appendChild(r1);row.appendChild(r2);card.appendChild(row);
+    var row=el("div","cand");row.appendChild(el("span",null,"Cash "+money0(S.money)));row.appendChild(r1);row.appendChild(r2);card.appendChild(row);
   }
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);updBankBtn();
 }
 document.getElementById("pxbank").addEventListener("click",openBank);
@@ -4163,79 +4170,79 @@ function drawDecor(hr){
 
 /* ---- trouble at the bar ---- */
 function openRowdy(o){
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Trouble at the bar"));
-  card.appendChild(h("p",null,"A guest is getting loud. If nobody steps in, it will cost you damages and some unhappy neighbours."));
-  var a=h("button","buy","Calm them down ("+Math.round(rowdyCalmChance()*100)+"% chance)");
+  var card=el("div","card");
+  card.appendChild(el("h2",null,"Trouble at the bar"));
+  card.appendChild(el("p",null,"A guest is getting loud. If nobody steps in, it will cost you damages and some unhappy neighbours."));
+  var a=el("button","buy","Calm them down ("+Math.round(rowdyCalmChance()*100)+"% chance)");
   a.onclick=function(){hideOv();calmRowdy(o)};
-  var b=h("button","buy","Show them out (no sale, no harm)");
+  var b=el("button","buy","Show them out (no sale, no harm)");
   b.onclick=function(){hideOv();escortRowdy(o)};
-  var wrap=h("div","cand");wrap.appendChild(a);wrap.appendChild(b);card.appendChild(wrap);
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  var wrap=el("div","cand");wrap.appendChild(a);wrap.appendChild(b);card.appendChild(wrap);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);
 }
 
 /* ---- the venue window ---- */
 var VPAGE="guide",MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function vBar(pg,label,frac,color){
-  var row=h("div","vbar");row.appendChild(h("span",null,label));
-  var bar=h("div","pxbr"),fi=h("i");fi.style.width=Math.round(clamp(frac,0,1)*100)+"%";if(color)fi.style.background=color;bar.appendChild(fi);row.appendChild(bar);pg.appendChild(row);
+  var row=el("div","vbar");row.appendChild(el("span",null,label));
+  var bar=el("div","pxbr"),fi=el("i");fi.style.width=Math.round(clamp(frac,0,1)*100)+"%";if(color)fi.style.background=color;bar.appendChild(fi);row.appendChild(bar);pg.appendChild(row);
 }
 function vGuide(pg){
-  var stars=guideStars(),gd=S.guide,sr=h("div","vstars");
+  var stars=guideStars(),gd=S.guide,sr=el("div","vstars");
   sr.textContent="\u2605".repeat(stars)+"\u2606".repeat(5-stars);pg.appendChild(sr);
-  pg.appendChild(h("p",null,gd?"The Bar Guide rated you at the end of last month. Each star brings 3% more guests, richer guests and more critics.":"Your first rating arrives at the end of this month. Until then you are at 2 stars."));
+  pg.appendChild(el("p",null,gd?"The Bar Guide rated you at the end of last month. Each star brings 3% more guests, richer guests and more critics.":"Your first rating arrives at the end of this month. Until then you are at 2 stars."));
   var comp=gd?gd.comp:guideCalc().comp;
   [["sat","Guest satisfaction"],["price","Fair prices"],["menu","Menu variety"],["rep","Reputation"],["style","Style and decor"]].forEach(function(r){vBar(pg,r[1],comp[r[0]])});
   var TIP={sat:"Faster service and friendlier staff lift satisfaction.",price:"Prices close to the fair price score best.",menu:"Unlock more ingredients to widen the menu.",rep:"Reputation grows with good months and happy guests.",style:"Decor and a theme add style points."};
   var low=null,lv=2;for(var k in comp){if(comp[k]<lv){lv=comp[k];low=k}}
-  if(low)pg.appendChild(h("p","note","Weakest area: "+TIP[low]));
+  if(low)pg.appendChild(el("p","note","Weakest area: "+TIP[low]));
 }
 function vRegs(pg){
-  pg.appendChild(h("p",null,"Regulars are guests who keep coming back for their favourite drink. A strong bond means bigger tips and more rounds. Happy guests can become regulars. Room for "+regCap()+" at this venue."));
+  pg.appendChild(el("p",null,"Regulars are guests who keep coming back for their favourite drink. A strong bond means bigger tips and more rounds. Happy guests can become regulars. Room for "+regCap()+" at this venue."));
   var a=S.reg||[];
-  if(!a.length){pg.appendChild(h("p","note","Nobody yet. Serve guests well and friendly staff will win some over."));return}
+  if(!a.length){pg.appendChild(el("p","note","Nobody yet. Serve guests well and friendly staff will win some over."));return}
   a.forEach(function(r){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,"\u2665 "+r.name+" \u00b7 "+r.type));
-    box.appendChild(h("span",null,"Favourite: "+(ITM[r.fav]?ITM[r.fav].n:"anything")+" \u00b7 "+r.visits+" visit"+(r.visits===1?"":"s")+" \u00b7 bond "+Math.round(r.bond)+"%"));
-    var bar=h("div","pxbr"),fi=h("i");fi.style.width=r.bond+"%";bar.appendChild(fi);box.appendChild(bar);
+    var box=el("div","cand");
+    box.appendChild(el("b",null,"\u2665 "+r.name+" \u00b7 "+r.type));
+    box.appendChild(el("span",null,"Favourite: "+(ITM[r.fav]?ITM[r.fav].n:"anything")+" \u00b7 "+r.visits+" visit"+(r.visits===1?"":"s")+" \u00b7 bond "+Math.round(r.bond)+"%"));
+    var bar=el("div","pxbr"),fi=el("i");fi.style.width=r.bond+"%";bar.appendChild(fi);box.appendChild(bar);
     pg.appendChild(box);
   });
 }
 function vStyle(pg){
   var d=S.deco||{items:{}};
-  pg.appendChild(h("p",null,"Style points: "+stylePts()+" of 11. Each one makes guests a little happier and the bar a little busier. A theme attracts certain guests."));
-  pg.appendChild(h("div","h","Theme"));
+  pg.appendChild(el("p",null,"Style points: "+stylePts()+" of 11. Each one makes guests a little happier and the bar a little busier. A theme attracts certain guests."));
+  pg.appendChild(el("div","h","Theme"));
   Object.keys(THEMES).forEach(function(id){
-    var t=THEMES[id],box=h("div","cand"),on=d.theme===id;
-    box.appendChild(h("b",null,t.n+(on?" \u2713":"")));box.appendChild(h("span",null,t.d));
-    if(!on){var c=themeCost(),b=h("button","buy sm",c?"Switch "+money0(c):"Choose");b.disabled=S.money<c;b.onclick=function(){if(setTheme(id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
+    var t=THEMES[id],box=el("div","cand"),on=d.theme===id;
+    box.appendChild(el("b",null,t.n+(on?" \u2713":"")));box.appendChild(el("span",null,t.d));
+    if(!on){var c=themeCost(),b=el("button","buy sm",c?"Switch "+money0(c):"Choose");b.disabled=S.money<c;b.onclick=function(){if(setTheme(id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
     pg.appendChild(box);
   });
-  pg.appendChild(h("div","h","Decor"));
+  pg.appendChild(el("div","h","Decor"));
   DECOR.forEach(function(it){
-    var box=h("div","cand"),own=!!d.items[it.id];
-    box.appendChild(h("b",null,it.n+(own?" \u2713":"")));box.appendChild(h("span",null,"+"+it.pts+" style point"+(it.pts>1?"s":"")+(it.id==="neon"?" \u00b7 shows your theme":"")));
-    if(!own){var c=decorCost(it),b=h("button","buy sm","Buy "+money0(c));b.disabled=S.money<c;b.onclick=function(){if(buyDecor(it.id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
+    var box=el("div","cand"),own=!!d.items[it.id];
+    box.appendChild(el("b",null,it.n+(own?" \u2713":"")));box.appendChild(el("span",null,"+"+it.pts+" style point"+(it.pts>1?"s":"")+(it.id==="neon"?" \u00b7 shows your theme":"")));
+    if(!own){var c=decorCost(it),b=el("button","buy sm","Buy "+money0(c));b.disabled=S.money<c;b.onclick=function(){if(buyDecor(it.id)){sfx("buy");openVenue("style")}};box.appendChild(b)}
     pg.appendChild(box);
   });
 }
 function vNights(pg){
-  pg.appendChild(h("p",null,"Book a themed night to pull a crowd in the evening. You pay when you book. The calendar and the weather still apply."));
+  pg.appendChild(el("p",null,"Book a themed night to pull a crowd in the evening. You pay when you book. The calendar and the weather still apply."));
   var d0=gDay(),hr=gHour();
   for(var i=0;i<7;i++){
     (function(day){
-      var dt=dateOf(day),box=h("div","cand"),wx=weatherOf(day);
-      box.appendChild(h("b",null,DAYN[day%7]+" "+dt.d+" "+MN[dt.m]+(day===d0?" (today)":"")));
-      box.appendChild(h("span",null,WXN[wx]+" \u00b7 "+SEASONN[seasonOf(day)]));
+      var dt=dateOf(day),box=el("div","cand"),wx=weatherOf(day);
+      box.appendChild(el("b",null,DAYN[day%7]+" "+dt.d+" "+MN[dt.m]+(day===d0?" (today)":"")));
+      box.appendChild(el("span",null,WXN[wx]+" \u00b7 "+SEASONN[seasonOf(day)]));
       var booked=S.nights&&S.nights[day];
-      if(booked){box.appendChild(h("span",null,"Booked: "+NIGHTS[booked].n))}
-      else if(day===d0&&hr>=17){box.appendChild(h("span",null,"Too late to book tonight."))}
+      if(booked){box.appendChild(el("span",null,"Booked: "+NIGHTS[booked].n))}
+      else if(day===d0&&hr>=17){box.appendChild(el("span",null,"Too late to book tonight."))}
       else{
-        var row=h("div","vrow");
+        var row=el("div","vrow");
         Object.keys(NIGHTS).forEach(function(t){
-          var c=nightCost(t),b=h("button","buy sm",NIGHTS[t].n.split(" ")[0]+" "+eur(c));b.disabled=S.money<c;
+          var c=nightCost(t),b=el("button","buy sm",NIGHTS[t].n.split(" ")[0]+" "+eur(c));b.disabled=S.money<c;
           b.onclick=function(){if(bookNight(day,t)){sfx("buy");openVenue("nights")}};row.appendChild(b);
         });
         box.appendChild(row);
@@ -4245,60 +4252,60 @@ function vNights(pg){
   }
 }
 function vSup(pg){
-  pg.appendChild(h("p",null,"Choose how you buy your ingredients. Your clerks' negotiation still lowers the price on top."));
+  pg.appendChild(el("p",null,"Choose how you buy your ingredients. Your clerks' negotiation still lowers the price on top."));
   Object.keys(SUPS).forEach(function(id){
-    var s2=SUPS[id],box=h("div","cand"),on=supMode()===id;
-    box.appendChild(h("b",null,s2.n+(on?" \u2713":"")));box.appendChild(h("span",null,s2.d));
-    if(id==="volume")box.appendChild(h("span",null,"Commitment: "+money0(volCommit())+" of purchases a month."));
-    if(on&&id==="contract")box.appendChild(h("span",null,Math.max(0,S.sup.until-gDay())+" days left."));
-    if(!on){var locked=supMode()==="contract"&&gDay()<S.sup.until,b=h("button","buy sm",locked?"Locked until the contract ends":"Switch");b.disabled=locked;b.onclick=function(){if(supSet(id)){sfx("buy");openVenue("sup")}};box.appendChild(b)}
+    var s2=SUPS[id],box=el("div","cand"),on=supMode()===id;
+    box.appendChild(el("b",null,s2.n+(on?" \u2713":"")));box.appendChild(el("span",null,s2.d));
+    if(id==="volume")box.appendChild(el("span",null,"Commitment: "+money0(volCommit())+" of purchases a month."));
+    if(on&&id==="contract")box.appendChild(el("span",null,Math.max(0,S.sup.until-gDay())+" days left."));
+    if(!on){var locked=supMode()==="contract"&&gDay()<S.sup.until,b=el("button","buy sm",locked?"Locked until the contract ends":"Switch");b.disabled=locked;b.onclick=function(){if(supSet(id)){sfx("buy");openVenue("sup")}};box.appendChild(b)}
     pg.appendChild(box);
   });
 }
 function vLegacy(pg){
   var L=S.leg||{pts:0,perks:{}};
-  pg.appendChild(h("p",null,"Legacy points: <b>"+L.pts+"</b> \u00b7 bars retired: "+(S.legacy||0)+"."));
-  pg.appendChild(h("div","h","Branches"));
-  if(S.exp<4)pg.appendChild(h("p","note","Branches open once you run the global chain. Each branch needs a brand ambassador and pays a share of a chain's profit every month."));
-  else pg.appendChild(h("p","note","Active branches: "+branchActive()+" of "+(S.br||[]).length+" open (each needs its own brand ambassador). Income last month: "+money0((S.lastMonth&&S.lastMonth.branch)||0)+"."));
+  pg.appendChild(el("p",null,["Legacy points: ",el("b",null,L.pts)," \u00b7 bars retired: "+(S.legacy||0)+"."]));
+  pg.appendChild(el("div","h","Branches"));
+  if(S.exp<4)pg.appendChild(el("p","note","Branches open once you run the global chain. Each branch needs a brand ambassador and pays a share of a chain's profit every month."));
+  else pg.appendChild(el("p","note","Active branches: "+branchActive()+" of "+(S.br||[]).length+" open (each needs its own brand ambassador). Income last month: "+money0((S.lastMonth&&S.lastMonth.branch)||0)+"."));
   CITIES.forEach(function(c){
-    var box=h("div","cand"),open=(S.br||[]).indexOf(c.id)>=0;
-    box.appendChild(h("b",null,c.n+(open?" \u2713":"")));
-    box.appendChild(h("span",null,open?"Open. Pays about "+money0(0.3*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
-    if(!open){var b=h("button","buy sm","Open branch");b.disabled=S.exp<4||S.money<c.cost;b.onclick=function(){if(openBranch(c.id)){sfx("new");openVenue("legacy")}};box.appendChild(b)}
+    var box=el("div","cand"),open=(S.br||[]).indexOf(c.id)>=0;
+    box.appendChild(el("b",null,c.n+(open?" \u2713":"")));
+    box.appendChild(el("span",null,open?"Open. Pays about "+money0(0.3*HQP*c.k*(0.7+0.06*guideStars()))+" a month with an ambassador.":"Opening costs "+money0(c.cost)+"."));
+    if(!open){var b=el("button","buy sm","Open branch");b.disabled=S.exp<4||S.money<c.cost;b.onclick=function(){if(openBranch(c.id)){sfx("new");openVenue("legacy")}};box.appendChild(b)}
     pg.appendChild(box);
   });
-  pg.appendChild(h("div","h","Retire and restart"));
-  pg.appendChild(h("p",null,"Hand the keys to the next generation. You start again at the lemonade stand, but your reputation perks stay, and you earn legacy points to spend on permanent bonuses. You would earn <b>"+legacyPoints()+"</b> points now."));
-  var rb=h("button","buy","Retire and restart");rb.disabled=!canRetire();
-  if(!canRetire())pg.appendChild(h("p","note","Available at the global chain once you have earned at least $3,000,000 in total."));
+  pg.appendChild(el("div","h","Retire and restart"));
+  pg.appendChild(el("p",null,["Hand the keys to the next generation. You start again at the lemonade stand, but your reputation perks stay, and you earn legacy points to spend on permanent bonuses. You would earn ",el("b",null,legacyPoints())," points now."]));
+  var rb=el("button","buy","Retire and restart");rb.disabled=!canRetire();
+  if(!canRetire())pg.appendChild(el("p","note","Available at the global chain once you have earned at least $3,000,000 in total."));
   rb.onclick=function(){
-    var c=h("div","card");c.appendChild(h("h2",null,"Retire for good?"));
-    c.appendChild(h("p",null,"Your bar, team, stock and money are gone. You keep reputation perks, legacy points ("+legacyPoints()+" new) and any permanent bonuses."));
-    var yes=h("button","buy","Yes, retire"),no=h("button","link","Not yet");
+    var c=el("div","card");c.appendChild(el("h2",null,"Retire for good?"));
+    c.appendChild(el("p",null,"Your bar, team, stock and money are gone. You keep reputation perks, legacy points ("+legacyPoints()+" new) and any permanent bonuses."));
+    var yes=el("button","buy","Yes, retire"),no=el("button","link","Not yet");
     yes.onclick=function(){retire();location.reload()};no.onclick=function(){openVenue("legacy")};
     c.appendChild(yes);c.appendChild(no);showOv(c);
   };
   pg.appendChild(rb);
-  pg.appendChild(h("div","h","Legacy bonuses"));
+  pg.appendChild(el("div","h","Legacy bonuses"));
   LEGP.forEach(function(p){
-    var l=legLvl(p.id),box=h("div","cand");
-    box.appendChild(h("b",null,p.n+" \u00b7 level "+l+" of "+p.max));box.appendChild(h("span",null,p.d));
-    if(l<p.max){var b=h("button","buy sm","Buy for "+p.cost[l]+" points");b.disabled=L.pts<p.cost[l];b.onclick=function(){if(buyLeg(p.id)){sfx("buy");openVenue("legacy")}};box.appendChild(b)}
+    var l=legLvl(p.id),box=el("div","cand");
+    box.appendChild(el("b",null,p.n+" \u00b7 level "+l+" of "+p.max));box.appendChild(el("span",null,p.d));
+    if(l<p.max){var b=el("button","buy sm","Buy for "+p.cost[l]+" points");b.disabled=L.pts<p.cost[l];b.onclick=function(){if(buyLeg(p.id)){sfx("buy");openVenue("legacy")}};box.appendChild(b)}
     pg.appendChild(box);
   });
 }
 function openVenue(page){
   if(page)VPAGE=page;
-  var card=h("div","card vh");card.appendChild(h("h2",null,"Venue"));
-  var tabs=h("div","vtabs");
+  var card=el("div","card vh");card.appendChild(el("h2",null,"Venue"));
+  var tabs=el("div","vtabs");
   [["guide","Guide"],["regs","Regulars"],["style","Style"],["nights","Nights"],["sup","Suppliers"],["legacy","Legacy"]].forEach(function(t){
-    var b=h("button","ghost"+(VPAGE===t[0]?" on":""),t[1]);b.onclick=function(){openVenue(t[0])};tabs.appendChild(b);
+    var b=el("button","ghost"+(VPAGE===t[0]?" on":""),t[1]);b.onclick=function(){openVenue(t[0])};tabs.appendChild(b);
   });
   card.appendChild(tabs);
-  var pg=h("div","vpage");card.appendChild(pg);
+  var pg=el("div","vpage");card.appendChild(pg);
   ({guide:vGuide,regs:vRegs,style:vStyle,nights:vNights,sup:vSup,legacy:vLegacy})[VPAGE](pg);
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  var cl=el("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
   showOv(card);updVenBtn();
 }
 document.getElementById("pxven").addEventListener("click",function(){openVenue()});

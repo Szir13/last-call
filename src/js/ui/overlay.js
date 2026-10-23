@@ -1,7 +1,7 @@
 /* ---------- toast and overlay ---------- */
 var tt;
 function showToast(m){var t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3000)}
-function showOv(card){var o=$("#ov");o.innerHTML="";o.appendChild(card);o.classList.add("on")}
+function showOv(card){var o=$("#ov");clear(o);o.appendChild(card);o.classList.add("on")}
 function hideOv(){$("#ov").classList.remove("on")}
 var tab="stock";
 onEv("toast",showToast);

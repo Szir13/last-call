@@ -34,7 +34,7 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | `js/data/` | `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
 | `js/state.js` | `def()`, `migrate()` (runs on every load) |
 | `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
-| `js/ui/` | `dom` (`$`, `h`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |
+| `js/ui/` | `dom` (`$`, `el`, `clear`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |
 | `js/app/` | `storage` (`load`, `save`, localStorage), `loop` (the 100 ms heartbeat), `start` (boot) |
 | `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `expansion`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
 
@@ -72,6 +72,7 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 - Colors are tokens on `:root` with dark overrides (`--bg --surface --ink --muted --line --accent --edge --edge2 --gold`). The scene art uses fixed palettes.
 - App layout: fixed `#dock` on top, `<nav>` fixed at the bottom, only `#main` scrolls. Do not reintroduce body scroll.
 - Minimum tap target 44 px for primary actions. Respect `prefers-reduced-motion`.
+- Build DOM with `el(tag, cls, content)` (`ui/dom.js`): content is text, or an array of nodes and strings for rich lines (`["Points: ", el("b",null,n)]`). Never use `innerHTML`; `clear(node)` empties a container. Names and saves are untrusted text.
 
 ## Definition of done for a change
 `node build.js` (it syntax-checks the script) and `index.html` committed with `src/`, no console errors on a fresh game and on an old save, `tools/reference.py` margins still 50-57% if economy was touched, screenshots in dark and light if UI was touched.

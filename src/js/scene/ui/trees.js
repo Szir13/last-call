@@ -13,7 +13,7 @@ function updNext(key,tr,labels){
   if(nx.length&&!nx.some(function(o){return o.n.id===tr.sel})){tr.sel=nx[0].n.id;updateTree(tr)}
   var sig=nx.map(function(o){return o.n.id+":"+o.l+":"+(canPay(o.n,o.l)?1:0)+":"+(tr.sel===o.n.id?1:0)}).join("|")+"#"+own.length;
   if(sig===box.sig)return;
-  box.sig=sig;box.el.innerHTML="";
+  box.sig=sig;clear(box.el);
   if(!nx.length){box.el.appendChild(el("p","gnote","Everything here is unlocked."))}
   else{
     var grid=el("div","pxnext");

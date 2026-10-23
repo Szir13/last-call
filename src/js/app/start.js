@@ -7,10 +7,10 @@ build();
   if(S.kits&&away>30){
     var res=simulate(Math.min(away,offlineCap()));
     if(res.earned>=1){
-      var card=h("div","card");
-      card.appendChild(h("h2",null,"Welcome back"));
-      card.appendChild(h("p",null,"While you were away, your team served "+res.served+" orders and the bar earned "+mshow(res.earned)+"."));
-      var ok=h("button","big","Continue");ok.onclick=hideOv;card.appendChild(ok);
+      var card=el("div","card");
+      card.appendChild(el("h2",null,"Welcome back"));
+      card.appendChild(el("p",null,"While you were away, your team served "+res.served+" orders and the bar earned "+mshow(res.earned)+"."));
+      var ok=el("button","big","Continue");ok.onclick=hideOv;card.appendChild(ok);
       showOv(card);
     }
   }

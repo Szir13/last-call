@@ -71,10 +71,10 @@ function updateCal(){
   var se=eventsOn(sel);
   setT(C.dt,dstr(sel)+(sel===today?" (today)":""));
   for(var k=0;k<3;k++){
-    var el=C.evl[k],ev=se[k];
-    if(ev){el.style.display="";setT(el,ev.n+(ev.len>1?" (day "+(ev.k+1)+" of "+ev.len+")":"")+": "+fxText(ev))}
-    else if(k===0){el.style.display="";setT(el,"A regular day. Weekends are busier than Mondays.")}
-    else el.style.display="none";
+    var ln=C.evl[k],ev=se[k];
+    if(ev){ln.style.display="";setT(ln,ev.n+(ev.len>1?" (day "+(ev.k+1)+" of "+ev.len+")":"")+": "+fxText(ev))}
+    else if(k===0){ln.style.display="";setT(ln,"A regular day. Weekends are busier than Mondays.")}
+    else ln.style.display="none";
   }
   var fx=fxFor(sel),dm=[],mx=0.01,h2;
   for(h2=0;h2<24;h2++){var v=demandAt(sel,h2,fx);dm.push(v);if(v>mx)mx=v}
@@ -149,10 +149,10 @@ function update(){
   calMk.forEach(function(c){mlist.push({f:c.mk.f,t:c.n+": "+c.mk.h+" (today)"})});
   evs.forEach(function(ev){mlist.push({f:ev.f,t:ev.h+" ("+Math.ceil(ev.left)+" s)"})});
   for(var e=0;e<5;e++){
-    var el=ref.mk.ev[e],ev=mlist[e];
-    if(ev){el.style.display="";setT(el,(ev.f>1?"↑ ":"↓ ")+ev.t);setC(el,"gnote "+(ev.f>1?"up":"down"))}
-    else if(e===0){el.style.display="";setT(el,"Markets are calm. Small price swings still happen.");setC(el,"gnote")}
-    else el.style.display="none";
+    var ln=ref.mk.ev[e],ev=mlist[e];
+    if(ev){ln.style.display="";setT(ln,(ev.f>1?"↑ ":"↓ ")+ev.t);setC(ln,"gnote "+(ev.f>1?"up":"down"))}
+    else if(e===0){ln.style.display="";setT(ln,"Markets are calm. Small price swings still happen.");setC(ln,"gnote")}
+    else ln.style.display="none";
   }
   var hasCtl=(S.staff.controller||0)>0;
   for(var z=0;z<4;z++){

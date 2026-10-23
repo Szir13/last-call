@@ -3,7 +3,6 @@ function mk(w,h){var c=document.createElement("canvas");c.width=w;c.height=h;ret
 function rn(n){var x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x)}
 function sp(a,n){return a[Math.floor(rn(n)*a.length)]}
 function cl(v,a,b){return v<a?a:(v>b?b:v)}
-function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function fr(c,x,y,w,hh,col){c.fillStyle=col;c.fillRect(x,y,w,hh)}
 
 /* ---------- sprites ---------- */

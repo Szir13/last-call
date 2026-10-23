@@ -58,7 +58,7 @@ function updDash(){
   dash.vTeam.textContent=S.team.length+" / "+staffCap();dash.vCash.textContent=money0(S.money);dash.vDue.textContent="~"+money0(est);
   dash.vMood.textContent=satTeam(S.mood)+" "+Math.round(S.mood)+"%";
   var mb=S.mood>=60?2:S.mood>=35?1:0;
-  if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");ic.innerHTML="";ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
+  if(dash.lastMood!==mb){dash.lastMood=mb;var ic=dash.moodTile.querySelector(".pxti");clear(ic);ic.appendChild(faceEl(mb===2?70:mb===1?45:20,3))}
   dash.l1.textContent="Payday in "+left+" day"+(left>1?"s":"");
   dash.f1.style.width=((28-left)/28*100)+"%";
   var cov=est>0?cl(S.money/est,0,1):1;
