@@ -22,7 +22,7 @@ fireEmp dailyCost ingLock unlockIng NODEMAP nBuy nLevel nMax nReqMet canPay nCos
 DECOR decorCost supSet openBranch CITIES retire canRetire guideStars guideUpdate guideCalc checkUnlocks applyPrices weatherOf
 seasonOf fxNow fxFor shiftCounts spawnOrder finishOrder reorderChance rowdyStep calmRowdy escortRowdy rollIncident resolveInc
 INCS showIncident showNotice NIGHTS stylePts supMode unitCost regAfterServe pickRegular legacyPoints buyLeg legLvl regOf bondOf
-branchIncome dateOf""".split()
+branchIncome dateOf setEnv""".split()
 
 
 def build_hook():
@@ -56,17 +56,23 @@ def js(name):
     return (JS / name).read_text(encoding="utf-8")
 
 
-def run_node(script, calls):
-    """Run a tools/js script headless once per argument in calls."""
-    job = json.dumps({"script": script, "calls": calls})
+def run_node(script, calls, seed=None):
+    """Run a tools/js script headless once per argument in calls. Call i uses seed + i."""
+    job = json.dumps({"script": script, "calls": calls, "seed": seed})
     res = subprocess.run(["node", str(ROOT / "tools" / "engine.js")], input=job, capture_output=True, text=True, check=True)
     return json.loads(res.stdout)
 
 
-def run_scenarios(scenarios, node=False):
-    """scenarios: list of (name, config dict). Returns a list of result dicts."""
+def set_seed(page, seed):
+    """The next new game in the page starts from this seed (None keeps them random)."""
+    if seed is not None:
+        page.evaluate("s=>window.__lc.setEnv({seed:function(){return s}})", seed)
+
+
+def run_scenarios(scenarios, node=False, seed=None):
+    """scenarios: list of (name, config dict). Returns a list of result dicts. Scenario i uses seed + i."""
     if node:
-        out = run_node("scenario.js", [cfg for _, cfg in scenarios])
+        out = run_node("scenario.js", [cfg for _, cfg in scenarios], seed)
         for (name, _), r in zip(scenarios, out):
             r["name"] = name
         return out
@@ -74,7 +80,8 @@ def run_scenarios(scenarios, node=False):
     with sync_playwright() as pw:
         browser, page = new_game(pw)
         code = js("scenario.js")
-        for name, cfg in scenarios:
+        for i, (name, cfg) in enumerate(scenarios):
+            set_seed(page, None if seed is None else seed + i)
             r = page.evaluate(code, cfg)
             r["name"] = name
             out.append(r)
@@ -82,14 +89,16 @@ def run_scenarios(scenarios, node=False):
     return out
 
 
-def run_bot(style, months=30, seeds=1, node=False):
+def run_bot(style, months=30, seeds=1, node=False, seed=None):
+    """Run a bot style several times. With seed, run i uses seed + i."""
     if node:
-        return run_node("bot.js", [[style, months]] * seeds)
+        return run_node("bot.js", [[style, months]] * seeds, seed)
     out = []
     with sync_playwright() as pw:
         browser, page = new_game(pw)
         code = js("bot.js")
-        for _ in range(seeds):
+        for i in range(seeds):
+            set_seed(page, None if seed is None else seed + i)
             t0 = time.time()
             r = page.evaluate(code, [style, months])
             r["secs"] = round(time.time() - t0)

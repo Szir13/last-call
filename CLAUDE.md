@@ -63,7 +63,7 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 4. **Caches to invalidate**: `MI=null` after the menu changes (ingredients); `FXC.day=-1` after changing anything `fxFor` reads (nights, `S.mods`); `TV++` when the team changes.
 5. **One global overlay** (`showOv`, `hideOv`). Notices (`S.notice`) and incidents (`S.inc`) are shown from `loop()` when the overlay is free.
 6. **Old saves must keep loading.** New fields are created lazily (`S.ms`, `S.reg`, `S.deco`, `S.sup`...). Save keys: engine `last-call-orders-v5`, scene prefs `last-call-pixel-v1`. Add migrations next to `load()`.
-7. **Randomness is unseeded** (`Math.random`), so sims vary run to run. Use 5 runs and medians.
+7. **Randomness is seeded.** The engine's `random()` is mulberry32 with its state in `S.rng` (`S.seed` records the start), so a save replays the same dice. New games get a random seed: compare balance with medians over many seeds (`--node` makes 20+ runs cheap), and use `--seed N` to reproduce a run exactly or to diff two builds. Cosmetic randomness in the scene still uses `Math.random`.
 8. Money is shown in dollars. Month = 28 days, year = 12 months. One game minute is about one real second while open, and time runs 12x faster while closed.
 9. Offline progress calls `simulate()`; orders are only collected automatically by cashiers.
 

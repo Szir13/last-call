@@ -1,7 +1,7 @@
 /* ---------- state ---------- */
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
 function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
-function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
+function def(){var seed=ENV.seed();return{seed:seed,rng:seed,money:300,totalEarned:0,served:0,walkouts:0,
   ing:{},ql:{},brand:{},stock:{},bat:{},auto:{},par:{},parCat:{},notes:[],
   price:{},act:{},cprice:{},staff:{},train:{},upg:{},exp:0,
   orders:[],jobs:[],arrive:2,nextId:1,sat:60,

@@ -46,7 +46,7 @@ Created by `def()`; many later features create their field lazily. Important gro
 ## Engine and UI
 The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock access:
 - **Out**: `emit(name,data)`, heard by `onEv(name,fn)`. Events today: `toast`, `unlock` (new drinks), `hired`, `fired`, `save`. The UI registers its listeners in `ui/overlay.js` and `app/storage.js`.
-- **In**: `now()` and `random()` read `ENV`, which `setEnv({now,random})` replaces (tests, seeded runs).
+- **In**: `now()` reads `ENV.now`; `random()` is mulberry32 over `S.rng`, seeded by `def()` from `ENV.seed()`. `setEnv({now,seed})` replaces them (tests; `--seed` in the tools). The same seed gives identical results in the browser and in Node.
 - Windows that only show engine state (`openHire`, `showNotice`, `showIncident`) live in `ui/windows.js`; `S.notice` and `S.inc` are still picked up by `loop()`.
 - `tools/engine.js` loads only the engine files (the list comes from `build.js`) into an empty Node `vm` context and runs `tools/js/scenario.js` and `bot.js` against it. `reference.py --node` and `run_bots.py --node` use it.
 

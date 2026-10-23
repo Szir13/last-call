@@ -15,6 +15,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: engine emits events (`served`, `walkout`, `monthEnd`, `dayChange`, `incident`, `notice`, `unlock`) through a tiny bus; UI subscribes. Pass `now()` and `random()` into the engine. Then run the engine in Node and keep Playwright for UI only.
 
 ## 3. Seeded randomness
+**Done.** mulberry32 in `engine/events.js`, state in `S.rng`, start seed in `S.seed`; `--seed` in `reference.py` and `run_bots.py`.
 - 35 `Math.random()` calls make sims noisy; failures are not reproducible.
 - **Step**: one `rng()` (mulberry32) injected into the engine, seed settable from tests. Save the seed in `S` for debugging.
 
