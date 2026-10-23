@@ -99,7 +99,7 @@ function vLegacy(pg){
     var c=el("div","card");c.appendChild(el("h2",null,"Retire for good?"));
     c.appendChild(el("p",null,"Your bar, team, stock and money are gone. You keep reputation perks, legacy points ("+legacyPoints()+" new) and any permanent bonuses."));
     var yes=el("button","buy","Yes, retire"),no=el("button","link","Not yet");
-    yes.onclick=function(){retire();location.reload()};no.onclick=function(){openVenue("legacy")};
+    yes.onclick=function(){retire();location.reload()};no.setAttribute("data-close","");no.onclick=function(){openVenue("legacy")};
     c.appendChild(yes);c.appendChild(no);showOv(c);
   };
   pg.appendChild(rb);

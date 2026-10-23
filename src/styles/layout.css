@@ -5,9 +5,9 @@
 .satb i.lo{background:var(--warn)}
 .news{color:var(--muted);min-height:18px}
 .news.up{color:var(--warn)}
-.news.down{color:var(--accent)}
+.news.down{color:var(--accent-ink)}
 .clock{display:flex;justify-content:space-between;gap:10px}
-.clock .open{color:var(--accent)}
+.clock .open{color:var(--accent-ink)}
 .clock .shut{color:var(--warn)}
 .today{color:var(--muted);min-height:18px}
 nav .in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
@@ -35,11 +35,11 @@ nav .dot{position:absolute;top:7px;right:20%;display:none;border-radius:0;width:
 .pxstrip [hidden]{display:none}
 .pxstrip[hidden]{display:none}
 .today,.news{margin-top:8px}
-#pxnm{color:var(--ink);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+#pxnm{position:relative;color:var(--ink);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 #pxnm.dim{color:var(--muted);font-weight:600}
 nav button.pxgone{display:none}
 nav button.pxnew{animation:pxnav .9s steps(2) 5}
-nav button{position:relative;background:none;border:0;padding:10px 0;color:#e6cf9f;font-size:15px;font-weight:600}
+nav button{position:relative;background:none;border:0;padding:10px 0;min-height:44px;color:#e6cf9f;font-size:15px;font-weight:600}
 #app{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:520px;margin:0 auto;padding:0}
 #dock{background:var(--bg) repeating-linear-gradient(0deg,transparent 0 46px,rgba(59,36,20,.07) 46px 48px);border-bottom:3px solid var(--edge);box-shadow:0 3px 0 var(--edge2);position:relative;top:auto;left:auto;transform:none;width:auto;max-width:none;flex:none;margin:0;z-index:6;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px}
 #main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 16px 24px}
@@ -48,5 +48,6 @@ nav{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5;backgr
 .hud2{display:flex;justify-content:space-between;gap:8px;margin-top:2px;align-items:flex-start}
 .hudr{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 #dock .pxstrip{display:flex;flex-wrap:nowrap;white-space:nowrap;align-items:center;gap:8px;margin:0;padding:0;border:0;background:none;font-size:13px;font-weight:600;color:var(--muted)}
-#dock .pxstrip .ghost{min-height:32px;padding:3px 10px;font-size:14px}
+#dock .pxstrip .ghost{min-height:32px;padding:3px 10px;font-size:14px;position:relative}
+#dock .pxstrip .ghost::before,#pxnm::before{content:"";position:absolute;inset:-6px -2px}   /* 44 px to the finger, compact to the eye */
 #dock .pxstrip .ghost:disabled{opacity:.6}

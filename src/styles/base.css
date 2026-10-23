@@ -3,7 +3,9 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button:focus-visible,input:focus-visible,select:focus-visible,[role=button]:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#ov .card:focus{outline:none}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 body,button,input,select{font-family:var(--sans)}
 body{color:var(--ink);line-height:1.4;background:var(--bg) repeating-linear-gradient(0deg,transparent 0 46px,rgba(59,36,20,.07) 46px 48px);font-size:16px}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}

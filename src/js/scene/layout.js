@@ -38,10 +38,10 @@ applyHide();
 function clampNotes(){
   document.querySelectorAll(".panel.on .note,.panel.on .gnote").forEach(function(n){
     if(n.classList.contains("clamp")||n.classList.contains("up")||n.classList.contains("down")||n.closest(".tdetail"))return;
-    if(n.textContent.length>90)n.classList.add("clamp");
+    if(n.textContent.length>90){n.classList.add("clamp");n.setAttribute("role","button");n.tabIndex=0;n.setAttribute("aria-expanded","false")}
   });
 }
-document.addEventListener("click",function(e){var n=e.target.closest&&e.target.closest(".clamp");if(n)n.classList.toggle("open")});
+document.addEventListener("click",function(e){var n=e.target.closest&&e.target.closest(".clamp");if(n){n.classList.toggle("open");n.setAttribute("aria-expanded",n.classList.contains("open")?"true":"false")}});
 /* long sections fold; later tiers start closed */
 var DEFFOLD=/^(Unlocked by|Rare|Neat, beer|Achievements|Finances|Team satisfaction|Staff training)/;
 function foldKey(h){return h.parentNode.id+"|"+h.textContent}
@@ -49,7 +49,7 @@ function applyFolds(){
   var st=pget().fold||{};
   document.querySelectorAll(".panel > .h").forEach(function(h){
     var sec=h.classList.contains("pxsec"),k=foldKey(h),f=sec?false:((k in st)?!!st[k]:DEFFOLD.test(h.textContent));
-    if(!sec){h.classList.add("fh");h.classList.toggle("folded",f);h.setAttribute("role","button");h.setAttribute("aria-expanded",f?"false":"true")}
+    if(!sec){h.classList.add("fh");h.classList.toggle("folded",f);h.setAttribute("role","button");h.tabIndex=0;h.setAttribute("aria-expanded",f?"false":"true")}
     var e=h.nextElementSibling;
     while(e&&!e.classList.contains("h")){e.classList.toggle("fold",f);e=e.nextElementSibling}
   });

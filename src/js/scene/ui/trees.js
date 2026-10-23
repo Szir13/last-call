@@ -22,6 +22,7 @@ function updNext(key,tr,labels){
       if(labels&&labels[n.col])b.appendChild(el("span","br",labels[n.col]));
       b.appendChild(el("span","tn",n.n));
       b.appendChild(el("span","ts",(o.mx>1?o.l+"/"+o.mx+" · ":"")+costText(n,o.l)));
+      if(canPay(n,o.l))b.appendChild(el("span","sr"," You can afford it."));
       b.onclick=function(){tr.sel=n.id;updateTree(tr);box.sig="";updNext(key,tr,labels)};
       grid.appendChild(b);
     });

@@ -67,6 +67,7 @@ function updateCal(){
     setT(cell.n,String(i+1));
     setT(cell.mk,(hol?"●":"")+(rn?"○":""));
     setC(cell.b,"cday"+(d===today?" today":d<today?" past":"")+(d===sel?" sel":""));
+    if(cell.b._cur!==(d===today)){cell.b._cur=(d===today);if(d===today)cell.b.setAttribute("aria-current","date");else cell.b.removeAttribute("aria-current")}
   }
   var se=eventsOn(sel);
   setT(C.dt,dstr(sel)+(sel===today?" (today)":""));

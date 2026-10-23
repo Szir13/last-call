@@ -1,19 +1,21 @@
 /* Colour and font tokens, light and dark. Colours are only ever used through these.
+   Text colours (--ink, --muted, --accent-ink, --warn) reach WCAG AA 4.5:1 on --bg, --surface and --accent-soft.
+   --accent is for fills and borders; green text uses --accent-ink.
    The dark rules are more specific than :root, so their order does not matter.
    data-theme="dark"|"light" on <html> forces a theme (nothing sets it yet). */
 :root{color-scheme:light;box-sizing:border-box;padding:0;
-  --bg:#e3cb98;--surface:#f6e7c1;--ink:#3b2414;--muted:#7a5834;--line:#c9a96e;
-  --accent:#3f7a2e;--accent-soft:rgba(63,122,46,.18);--on-accent:#ffffff;--warn:#a8402a;
+  --bg:#e3cb98;--surface:#f6e7c1;--ink:#3b2414;--muted:#5f4529;--line:#c9a96e;
+  --accent:#3f7a2e;--accent-ink:#2b531f;--accent-soft:rgba(63,122,46,.18);--on-accent:#ffffff;--warn:#7f3020;
   --edge:#6a4020;--edge2:#3b2414;--gold:#e0a020;
   --px:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif;
   --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){color-scheme:dark;
     --bg:#1c120b;--surface:#2e2014;--ink:#f3e2b9;--muted:#c2a275;--line:#5a3d22;
-    --accent:#7fc062;--accent-soft:rgba(127,192,98,.2);--on-accent:#1c120b;--warn:#e8896f;
+    --accent:#7fc062;--accent-ink:#7fc062;--accent-soft:rgba(127,192,98,.2);--on-accent:#1c120b;--warn:#e8896f;
     --edge:#8a5a30;--edge2:#0f0904;--gold:#f2c14a}
 }
 :root[data-theme="dark"]{color-scheme:dark;
   --bg:#1c120b;--surface:#2e2014;--ink:#f3e2b9;--muted:#c2a275;--line:#5a3d22;
-  --accent:#7fc062;--accent-soft:rgba(127,192,98,.2);--on-accent:#1c120b;--warn:#e8896f;
+  --accent:#7fc062;--accent-ink:#7fc062;--accent-soft:rgba(127,192,98,.2);--on-accent:#1c120b;--warn:#e8896f;
   --edge:#8a5a30;--edge2:#0f0904;--gold:#f2c14a}

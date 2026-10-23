@@ -3,7 +3,7 @@
 .tlines{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
 .tile.locked{color:var(--muted)}
 .tile.part{border-color:var(--accent)}
-.tile.owned .ts{color:var(--accent)}
+.tile.owned .ts{color:var(--accent-ink)}
 .tile.sel{box-shadow:0 0 0 2px var(--accent)}
 .tdetail{padding:14px;margin-top:18px}
 .tdn{font-weight:600;font-size:16px}

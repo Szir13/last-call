@@ -62,6 +62,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: render at 30 fps (or on dirty), pause when hidden, cache per-frame derived data, avoid per-frame `Array.sort` on customers.
 
 ## 12. Accessibility and input
+**Done.** Modal overlay (focus in, Tab trapped, Escape, focus back), keyboard access to bubbles, cards, folds and notes, 44 px primary targets, AA text contrast in the light theme (`--accent-ink` for green text), canvas and tree affordability described in words, `aria-current` on today, reduced motion for every animation. `tools/a11y.py` audits 84 states and runs in `npm test`. Left: the Venue stars rely on their dark outline for contrast (reported as a warning).
 - Overlay has no focus trap or Escape; the bubble skip "x" is 20 px; canvas has no text alternative beyond `aria-label`; colour-only status in places.
 - **Step**: focus management for `showOv`, 44 px targets, live region for toasts (exists), labels for icon-only controls.
 

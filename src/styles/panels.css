@@ -6,9 +6,9 @@
 .note{color:var(--muted);margin:18px 0 4px;max-width:46ch}
 .gnote{color:var(--muted);margin:0 0 4px;max-width:46ch}
 .gnote.up{color:var(--warn)}
-.gnote.down{color:var(--accent)}
+.gnote.down{color:var(--accent-ink)}
 .row .info{flex:1;min-width:0}
-.row .name .cnt{color:var(--accent);margin-left:8px;font-variant-numeric:tabular-nums}
+.row .name .cnt{color:var(--accent-ink);margin-left:8px;font-variant-numeric:tabular-nums}
 .row .sub{color:var(--muted);margin-top:2px}
 .sbar{margin-top:6px;overflow:hidden}
 .sbar i{display:block;height:100%;background:var(--accent);width:0}
@@ -27,11 +27,11 @@
 .row{display:flex;align-items:center;gap:14px;border-bottom:2px dashed var(--line);padding:10px 0}
 .h{font-size:18px;font-weight:700;color:var(--ink);padding-bottom:4px;border-bottom:3px solid var(--edge);margin:18px 0 2px}
 .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;position:relative;padding-right:18px}
-.clamp::after{content:"\25BE";position:absolute;right:0;top:0;color:var(--accent)}
+.clamp::after{content:"\25BE";position:absolute;right:0;top:0;color:var(--accent-ink)}
 .clamp.open{display:block;-webkit-line-clamp:unset}
 .clamp.open::after{content:"\25B4"}
 .fh{cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
-.fh::after{content:"\25BE";color:var(--accent);font-size:16px}
+.fh::after{content:"\25BE";color:var(--accent-ink);font-size:16px}
 .fh.folded::after{content:"\25B8"}
 .fold{display:none!important}
 .row.rec.locked{display:none}
@@ -39,7 +39,7 @@
 .cards.on{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
 .cards>.h,.cards>.note,.cards>.gnote,.row.tier{grid-column:1/-1}
 .row.ing,.row.rec{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ico info" "act act";gap:6px 8px;align-items:center;padding:8px;border:3px solid var(--edge);background:var(--surface);box-shadow:0 3px 0 var(--edge2);cursor:pointer}
-.row.ing .info,.row.rec .info{grid-area:info;min-width:0}
+.row.ing .info,.row.rec .info{grid-area:info;min-width:0;padding:4px 0;margin:-4px 0}   /* 25 px to tap, same layout */
 .row.ing>.buy{grid-area:act;min-width:0;width:100%;padding:6px 6px;font-size:15px}
 .row.ing .sbar{max-width:none}
 .row.ing .sub,.row.ing .tog,.row.rec .sub{display:none;font-size:13px}
@@ -63,7 +63,7 @@
 .h.pxsec{font-size:20px;border-bottom-width:4px;margin-top:22px}
 .h[data-empty],.gnote[data-empty]{display:none!important}
 .row.tier{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"ico info" "act act";gap:6px 8px;align-items:center;margin-left:0;padding:8px;border:3px solid var(--edge);background:var(--surface);box-shadow:0 3px 0 var(--edge2);cursor:pointer;grid-column:auto}
-.row.tier .info{grid-area:info;min-width:0}
+.row.tier .info{grid-area:info;min-width:0;padding:4px 0;margin:-4px 0}
 .row.tier>.buy{grid-area:act;min-width:0;width:100%;padding:6px;font-size:15px}
 .row.tier .name{font-size:15px;line-height:1.15;overflow-wrap:normal;hyphens:none;font-family:var(--sans);font-weight:700}
 .row.tier .sbar{max-width:none}

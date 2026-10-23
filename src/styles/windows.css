@@ -1,11 +1,11 @@
 /* Toast, the overlay and its cards: hire, bank, missions, venue, incidents, order details. */
 .ocard{padding:12px 14px;margin-top:10px}
 .oh{display:flex;justify-content:space-between;gap:10px;font-weight:500}
-.orew{font-variant-numeric:tabular-nums;color:var(--accent);text-align:right}
+.orew{font-variant-numeric:tabular-nums;color:var(--accent-ink);text-align:right}
 .oline{display:flex;justify-content:space-between;gap:10px;font-size:15px;margin-top:6px}
 .oline .ost{color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
 .oline .ost.bad{color:var(--warn)}
-.oline .ost.ok{color:var(--accent)}
+.oline .ost.ok{color:var(--accent-ink)}
 .obar{margin-top:10px;overflow:hidden}
 .obar i{display:block;height:100%;background:var(--ink);width:100%}
 .ocard.ready .obar i{background:var(--accent)}
@@ -28,7 +28,7 @@
 .card h2{margin:0 0 6px;font-size:22px;line-height:1.2}
 .card .cand b,.card .cand strong{font-family:var(--sans)}
 .vtabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
-.vtabs .ghost{min-height:36px;padding:3px 10px;font-size:14px}
+.vtabs .ghost{min-height:44px;padding:3px 10px;font-size:14px}
 .vstars{font-size:34px;color:#e0a020;letter-spacing:4px;line-height:1.1;text-shadow:2px 2px 0 var(--edge2);margin:4px 0}
 .vbar{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:center;font-size:14px;margin:6px 0}
 .vrow{display:flex;flex-wrap:wrap;gap:6px}

@@ -9,5 +9,12 @@ function el(tag,cls,x){
   return e;
 }
 function clear(e){while(e.firstChild)e.removeChild(e.firstChild)}
+/* Enter and Space press anything with role="button" that is not a real button */
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  var t=e.target;
+  if(!t||!t.matches||!t.matches("[role=button]")||/^(BUTTON|A|INPUT|SELECT|TEXTAREA)$/.test(t.tagName))return;
+  e.preventDefault();t.click();
+});
 function setT(e,t){if(e._t!==t){e._t=t;e.textContent=t}}
 function setC(e,c){if(e._c!==c){e._c=c;e.className=c}}

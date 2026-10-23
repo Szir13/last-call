@@ -32,7 +32,7 @@ function showNotice(){
     card.appendChild(el("h2",null,"The bank steps in"));
     card.appendChild(el("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
   }
-  var ok=el("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
+  var ok=el("button","buy","Continue");ok.setAttribute("data-close","");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
   showOv(card);
 }
 function showIncident(){

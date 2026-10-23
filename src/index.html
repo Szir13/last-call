@@ -31,7 +31,7 @@
   <main id="main">
   <div class="pxwrap">
     <div class="pxstage" id="pxstage">
-      <canvas id="pxcv" width="160" height="140" aria-label="Your bar, with customers waiting for their drinks"></canvas>
+      <canvas id="pxcv" width="160" height="140" role="img" aria-label="Your bar seen from the street: your team behind the counter and guests waiting for their drinks. Each guest's order is a button above the scene; Order details lists them as text."></canvas>
       <div id="pxov"></div>
     </div>
     <div class="pxdlg" id="pxdlg" hidden>
@@ -40,7 +40,7 @@
         <div class="pxn">Joe</div>
         <div class="pxt" id="pxtxt"></div>
         <div class="pxform" id="pxform" hidden><input id="pxin" maxlength="18" autocomplete="off" placeholder="Bar name" aria-label="Bar name"><button id="pxok" type="button">Open the bar</button></div>
-        <div class="pxf2"><span id="pxnext"></span><button id="pxskip" type="button">Skip tutorial</button></div>
+        <div class="pxf2"><button id="pxnext" type="button" aria-label="Next"></button><button id="pxskip" type="button">Skip tutorial</button></div>
       </div>
     </div>
   </div>

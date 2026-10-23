@@ -16,6 +16,7 @@
 .pbp{height:4px;background:#d8c8a0;margin-top:3px}
 .pbp i{display:block;height:100%;width:100%;background:#4f9a3a}
 .pbx{position:absolute;top:-10px;right:-8px;width:20px;height:20px;padding:0;line-height:16px;font-size:14px;background:#fffaf0;border:2px solid #3b2414;color:#3b2414;font-family:inherit}
+.pbx::before{content:"";position:absolute;inset:-12px}
 .pbt{position:absolute;left:50%;bottom:-11px;width:14px;height:9px;margin-left:-7px;background:#3b2414;clip-path:polygon(0 0,100% 0,50% 100%)}
 .pbt::after{content:"";position:absolute;left:3px;right:3px;top:0;bottom:3px;background:#fffaf0;clip-path:polygon(0 0,100% 0,50% 100%)}
 .pb.rdy{background:#fff0bd;border-color:#7a4a00;box-shadow:0 2px 0 #7a4a00;animation:pbj .8s steps(2) infinite}
@@ -27,8 +28,9 @@
 .pxdlg[hidden]{display:none}
 .pxb{flex:1;min-width:0}
 .pxf2{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
-#pxnext{width:14px;height:10px;background:#3b2414;clip-path:polygon(0 0,100% 0,50% 100%);animation:pxblink 1s steps(2) infinite}
-#pxskip{background:transparent;border:2px solid #6a4020;color:#7a5834;padding:4px 10px;font-size:14px;min-height:32px}
+#pxnext{width:44px;height:44px;margin:-10px 0 -10px -15px;padding:0;border:0;background:none;display:flex;align-items:center;justify-content:center}
+#pxnext::after{content:"";width:14px;height:10px;background:#3b2414;clip-path:polygon(0 0,100% 0,50% 100%);animation:pxblink 1s steps(2) infinite}
+#pxskip{background:transparent;border:2px solid #6a4020;color:#5f4529;padding:4px 10px;font-size:14px;min-height:44px}
 .pxhide{display:none}
 .pxdlg{display:flex;background:#f6e7c1;color:#3b2414;border:3px solid #6a4020;box-shadow:0 3px 0 #3b2414;cursor:pointer;font-family:"Pixelify Sans","Hanken Grotesk",system-ui,sans-serif;margin-top:8px;padding:8px;gap:8px}
 .pxpor{flex:none;background:#b9824a;border:3px solid #3b2414;display:flex;align-items:center;justify-content:center;width:50px;height:70px}
@@ -48,7 +50,7 @@
 .pxbt b{font-size:16px}
 .pxbt span{font-size:13px}
 .pxstage{position:relative;margin:0 auto;background:#000;line-height:0;overflow:hidden;--z:2.2;border:3px solid var(--edge2);box-shadow:0 4px 0 var(--edge2)}
-.pxbar .ghost{min-height:40px}
+.pxbar .ghost{min-height:44px}
 #pxov,.pb{font-family:var(--sans)}
 .pb{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);margin-top:-9px;width:calc(var(--z) * 27px);background:#fffaf0;color:#3b2414;border:2px solid #3b2414;box-shadow:0 2px 0 #3b2414;text-align:center;cursor:pointer;touch-action:manipulation;font-weight:700;font-size:max(10px,calc(var(--z) * 4.4px))}
 .pb.sm{font-size:max(9px,calc(var(--z) * 3.8px))}
@@ -64,6 +66,6 @@
 @keyframes pbj{50%{margin-top:-13px}}
 @keyframes pxf{to{transform:translate(-50%,-50%) translateY(-40px);opacity:0}}
 @keyframes pxblink{50%{opacity:.2}}
-@keyframes pxnav{50%{color:var(--accent);transform:translateY(-3px)}}
+@keyframes pxnav{50%{color:var(--accent-ink);transform:translateY(-3px)}}
 @keyframes pxcoin{to{transform:translate(var(--dx),var(--dy));opacity:0}}
 @keyframes pxban{from{transform:translateX(-50%) translateY(-40px)}}

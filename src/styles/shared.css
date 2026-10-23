@@ -1,7 +1,7 @@
 /* Rules shared by several components: the pixel frame (borders, shadows), fonts (pixel font only for big short labels, the clean font for numbers and anything you read) and reduced motion. */
 @media (prefers-reduced-motion: reduce){
   #toast,.satb i{transition:none}
-  .pb.rdy,.pxf,#pxnext,nav button.pxpulse{animation:none}
+  .pb.rdy,.pb.rowdy,.pxf,#pxnext::after,nav button.pxpulse{animation:none}
 }
 .ghost,.buy,.big,.chead button{border-radius:0}
 .ocard,.cand,.tdetail,.card,.tile,.cday,.pbox input,.hrow select{border-radius:0;border:3px solid var(--edge);background:var(--surface);color:var(--ink)}

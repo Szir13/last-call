@@ -4,9 +4,11 @@ function decorate(){
   for(id in ref.ing){
     r=ref.ing[id];
     if(r.row&&!r.row._ic){r.row._ic=1;r.row.insertBefore(icoBox(ingIconEl(id)),r.row.firstChild)}
+    a11yRow(r,true);
     if(r.tiers){
       for(var tq=1;tq<3;tq++){
         var tr2=r.tiers[tq];
+        a11yRow(tr2,true);
         if(tr2&&tr2.row&&!tr2.row._ic){
           tr2.row._ic=1;var tb=icoBox(ingIconEl(id));tb.appendChild(el("span","pxstar",tq===1?"\u2605":"\u2605\u2605"));
           tr2.row.insertBefore(tb,tr2.row.firstChild);
@@ -15,23 +17,30 @@ function decorate(){
     }
   }
   for(id in ref.rec){
-    r=ref.rec[id];
+    r=ref.rec[id];a11yRow(r,true);
     if(r.row&&!r.row._ic&&ITM[id]){r.row._ic=1;r.row.insertBefore(icoBox(glassEl(ITM[id])),r.row.firstChild);var g0=r.row.firstChild.firstChild;g0.style.width=(g0.width*3)+"px";g0.style.height=(g0.height*3)+"px"}
   }
   ROLES.forEach(function(x,i){
-    r=ref.staff[x.id];
+    r=ref.staff[x.id];a11yRow(r,true);
     if(r&&r.row&&!r.row._ic){r.row._ic=1;r.row.insertBefore(icoBox(roleIcon(x.id,i+3)),r.row.firstChild)}
   });
   S.team.forEach(function(e){
-    r=ref.emps&&ref.emps[e.id];
+    r=ref.emps&&ref.emps[e.id];a11yRow(r,false);
     if(r&&r.row&&!r.row._ic){r.row._ic=1;r.row.insertBefore(icoBox(portraitFor(e)),r.row.firstChild)}
   });
 }
 function portraitFor(e){var c=mk(12,18);drawPerson(c.getContext("2d"),staffLook(e),6,18,0,0,false);return pxCv(c,12,18,2)}
+var CARDROWS=".row.ing,.row.tier,.row.rec,.row.role";
+function a11yRow(r,expands){
+  if(!r||!r.info||r.info._a11y)return;
+  r.info._a11y=1;r.info.setAttribute("role","button");r.info.tabIndex=0;
+  if(expands)r.info.setAttribute("aria-expanded","false");
+}
 document.addEventListener("click",function(e){
-  var row=e.target.closest&&e.target.closest("#p-stock>.row,#p-book>.row,#p-staff>.row");
+  var row=e.target.closest&&e.target.closest(CARDROWS);
   if(!row||e.target.closest("button,input,select"))return;
   if(row.hasAttribute("data-open"))row.removeAttribute("data-open");else row.setAttribute("data-open","1");
+  var inf=row.querySelector(".info[aria-expanded]");if(inf)inf.setAttribute("aria-expanded",row.hasAttribute("data-open")?"true":"false");
 });
 
 /* ---- team dashboard: numbers and bars instead of paragraphs ---- */
