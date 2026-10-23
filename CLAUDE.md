@@ -15,8 +15,8 @@ node build.js                                # src/ -> index.html (also syntax-c
 node build.js --check                        # fail if index.html is stale
 open index.html                              # play
 pip install -r tools/requirements.txt && playwright install chromium
-python tools/reference.py [--sweep]          # economy check, one equipped team per stage, ~20 s
-python tools/run_bots.py [styles] --months 30 --seeds 5   # five bot play styles, ~3 min
+python tools/reference.py [--sweep] [--node] # economy check, one equipped team per stage, ~20 s (~4 s with --node)
+python tools/run_bots.py [styles] --months 30 --seeds 5 [--node]   # five bot play styles, ~3 min
 python tools/smoke.py                        # fresh game + tests/saves/*.json, 390x780, light and dark, fails on console errors
 npm test                                     # check + smoke + reference (activate .venv first)
 ```
@@ -32,10 +32,10 @@ All scripts are slices of **one** IIFE and share its scope: `js/main-open.js` op
 | `src/index.html` | HTML shell with `@@styles` and `@@script` markers |
 | `styles/` | `base`, `scene`, `skin`, `compact`, `ui-layer`, `app` (later files override earlier ones) |
 | `js/data/` | `catalog` (ingredients, recipes, market news), `people` (staff roles, `EXPS`, `CUST`), `calendar`, `trees` (+ achievements) |
-| `js/state.js` | `def()`, `load()`, `save()`, migrations |
-| `js/engine/` | `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`...), `actions`, `loop`, `missions`, `longterm` |
-| `js/ui/` | `overlay` (toast, `showOv`), `build`, `update` |
-| `js/start.js` | Boot sequence |
+| `js/state.js` | `def()`, `migrate()` (runs on every load) |
+| `js/engine/` | `events` (`emit`, `onEv`, `now()`, `random()`, `toast`), `helpers` (menu, market, prices, caps), `calendar` (dates, hours, events, `fxFor`), `shifts` (`shiftCounts`: the whole team is on shift), `money` (payroll, `monthEnd`, `dayChange`), `orders` (`tick`, `spawnOrder`, `simulate`...), `actions`, `missions`, `longterm` |
+| `js/ui/` | `dom` (`$`, `h`, `setT`, `setC`), `overlay` (toast, `showOv`, event listeners), `windows` (hire, bank notice, incident), `build`, `update` |
+| `js/app/` | `storage` (`load`, `save`, localStorage), `loop` (the 100 ms heartbeat), `start` (boot) |
 | `js/scene/` | `sprites`, `stages`, `customers`, `render`, `tutorial`, `layout`; `scene/ui/` is the second UI layer: `icons`, `effects`, `tabs`, `rows`, `expansion`, `trees`, `stock`, `missions`, `bank`, `decor`, `venue` |
 
 The table below is the same map by section comment (search for it in `src/js`).
@@ -58,7 +58,7 @@ Details: `docs/ARCHITECTURE.md`. Features and where they live: `docs/FEATURES.md
 
 ## Rules that will bite you
 1. **`S` is reassigned** by `load()` and `retire()` (`S=Object.assign(def(),...)`). Never cache `S` or its sub-objects across ticks. The test hook uses `getS()`.
-2. **Engine functions are in one IIFE; the pixel scene is an inner IIFE.** Engine code cannot call scene functions (`openVenue`, `drawDecor`...). Put anything the engine must call at the top level of the main IIFE, before `/* start */`.
+2. **The engine (`data/`, `engine/`, `state.js`) never touches the DOM, storage or `Date.now`/`Math.random`.** It uses `now()`, `random()`, `toast()` and `emit(name,data)`; the UI listens with `onEv` (see `ui/overlay.js`). State changes belong in engine functions, not in click handlers. `tools/engine.js` runs the engine in Node with no DOM, so a slip shows up as a ReferenceError there. The pixel scene is an inner IIFE: nothing outside it can call scene functions (`openVenue`, `drawDecor`...).
 3. **`setC(el,cls)` and `setT(el,text)` overwrite className and textContent** and cache the last value. Do not add classes to engine-managed nodes; use `data-*` attributes (done for `data-open`, `data-exp`).
 4. **Caches to invalidate**: `MI=null` after the menu changes (ingredients); `FXC.day=-1` after changing anything `fxFor` reads (nights, `S.mods`); `TV++` when the team changes.
 5. **One global overlay** (`showOv`, `hideOv`). Notices (`S.notice`) and incidents (`S.inc`) are shown from `loop()` when the overlay is free.

@@ -21,7 +21,7 @@ function workers(){
   return w.map(function(x){return x*mult});
 }
 var LINGER=[8,12,16,18,20];   /* seconds a served customer stays seated, by venue */
-function lingerTime(){return LINGER[S.exp]*(0.7+Math.random()*0.6)}
+function lingerTime(){return LINGER[S.exp]*(0.7+random()*0.6)}
 function freeSlot(){
   var used={};S.orders.forEach(function(o){used[o.slot]=1});
   (S.hold||[]).forEach(function(hd){used[hd.slot]=1});
@@ -35,8 +35,8 @@ function spawnOrder(re){
   var slot=(re&&re.slot!==undefined)?re.slot:freeSlot();if(slot<0)return;
   var fx=fxNow(),per=periodOf(gHour());
   var cust=re?re.cust:wpick(CUST,function(c){return c.w[per]*(fx.type[c.n]||1)*(c.n==="Food critic"&&lvl("critics")?2:1)*themeType(c.n)*(c.n==="Food critic"?1+0.25*(guideStars()-2):1)});
-  var cls=re?re.cls:clamp(Math.floor(cust.wb+wealthShift()+(Math.random()-0.5)*1.4+0.5),0,3);
-  var want=1+Math.floor(Math.random()*(EXPS[S.exp].k+(S.upg.table?1:0)+(cust.bi||0)));
+  var cls=re?re.cls:clamp(Math.floor(cust.wb+wealthShift()+(random()-0.5)*1.4+0.5),0,3);
+  var want=1+Math.floor(random()*(EXPS[S.exp].k+(S.upg.table?1:0)+(cust.bi||0)));
   var items=[],know=1+0.12*(floorAvg(0)-1);
   for(var i=0;i<want;i++){
     var it=(re&&re.fav&&i===0&&ITM[re.fav]&&m.list.indexOf(ITM[re.fav])>=0)?ITM[re.fav]:wpick(m.list,function(x){
@@ -46,13 +46,13 @@ function spawnOrder(re){
       return w;
     });
     var q=priceOf(it)/(fairOf(it)*WTP[cls]);
-    if((re&&re.rid&&i===0)||Math.random()<demandFactor(q))items.push({r:it.id,done:false});
+    if((re&&re.rid&&i===0)||random()<demandFactor(q))items.push({r:it.id,done:false});
   }
   if(!items.length){if(!re)addSat(15);return}   /* too expensive: the customer walks away */
   var n=items.length;
   var pat=cust.pat*(S.upg.seats?1.5:1)*(1+0.2*lvl("patience"))*(1+0.1*(n-1));
   var od={id:S.nextId++,cid:re?re.cid:undefined,re:re&&re.n?re.n:0,rid:re?re.rid:undefined,slot:slot,who:cust.n,m:cust.m,cls:cls,items:items,pat:pat,left:pat,ready:false,reward:0,sat:0};
-  if(per>=3&&!(re&&re.n)&&Math.random()<rowdyChance(cust,per)){od.rowdy=true;od.rt=0}
+  if(per>=3&&!(re&&re.n)&&random()<rowdyChance(cust,per)){od.rowdy=true;od.rt=0}
   S.orders.push(od);
   if(re&&re.reg)re.reg.last=gDay();
 }
@@ -91,9 +91,9 @@ function collect(o){
   earn(o.reward);
   msProgress(o);
   regAfterServe(o);
-  var again=Math.random()<reorderChance(o);
+  var again=random()<reorderChance(o);
   if(again)S.reorders=(S.reorders||0)+1;
-  (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+Math.random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
+  (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
 }
 function dropOrder(o){
   msStreakBreak();
@@ -143,7 +143,7 @@ function chefTick(dt){
     while(guard++<6&&(S.stock[x.id]||0)<24&&S.chefB>=x.pre.y){
       var raw=INGM[x.pre.raw];
       if((S.stock[raw.id]||0)<1&&!buyBulk(raw))break;
-      var y=x.pre.y*(1+0.08*(roleSkill("prepchef",0)-1)),yu=Math.floor(y)+(Math.random()<y-Math.floor(y)?1:0);
+      var y=x.pre.y*(1+0.08*(roleSkill("prepchef",0)-1)),yu=Math.floor(y)+(random()<y-Math.floor(y)?1:0);
       takeStock(raw.id,1);addStock(x.id,yu);S.chefB-=x.pre.y;
     }
   });
@@ -161,7 +161,7 @@ function tickMarket(dt,quiet){
     M.t20=20;
     ING.forEach(function(x){
       var d=M.drift[x.id]||1;
-      d+=(1-d)*0.15+(Math.random()-0.5)*0.08;
+      d+=(1-d)*0.15+(random()-0.5)*0.08;
       M.drift[x.id]=clamp(d,0.75,1.35);
     });
     changed=true;
@@ -172,11 +172,11 @@ function tickMarket(dt,quiet){
   }
   M.next-=dt;
   if(M.next<=0){
-    M.next=100+Math.random()*100;
+    M.next=100+random()*100;
     if(M.ev.length<3){
       var opts=NEWS.filter(function(n){return n.ids==="all"||n.ids.some(relevantId)});
       if(opts.length){
-        var n=opts[Math.floor(Math.random()*opts.length)];
+        var n=opts[Math.floor(random()*opts.length)];
         M.ev.push({h:n.h,ids:n.ids,f:n.f,left:n.dur});
         changed=true;
         if(!quiet)toast("News: "+n.h);
@@ -213,7 +213,7 @@ function tick(dt,quiet){
   T+=dt;
   tickMarket(dt,quiet);
   controllerTick(dt);
-  var hh=Date.now()<S.hhUntil;
+  var hh=now()<S.hhUntil;
   /* the clock: time flies while the bar is closed */
   var open=isOpenNow();
   if(wasOpen&&!open)ctlPrices();
@@ -225,7 +225,7 @@ function tick(dt,quiet){
   /* customers arrive, but only while the bar is open */
   if(open&&freeSlot()>=0){
     S.arrive-=dt*(hh?2:1)*arrivalMult()*demandNow();
-    if(S.arrive<=0){spawnOrder();S.arrive=interval()*(0.8+Math.random()*0.4)}
+    if(S.arrive<=0){spawnOrder();S.arrive=interval()*(0.8+random()*0.4)}
   }
   if(S.hold){for(var hi=S.hold.length-1;hi>=0;hi--){
     var hd=S.hold[hi];hd.left-=dt;
@@ -283,6 +283,7 @@ function tick(dt,quiet){
     if(!quiet)toast("A regular lent you $10 for lemons.");
   }
 }
+function offlineCap(){return (2+2*lvl("offline"))*3600}
 function simulate(secs){
   var steps=Math.floor(secs/2);
   var m0=S.totalEarned,s0=S.served;

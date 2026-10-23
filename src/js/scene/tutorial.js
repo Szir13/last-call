@@ -16,7 +16,7 @@ function applyName(){
 function submitName(){
   var v=document.getElementById("pxin").value.replace(/\s+/g," ").trim().slice(0,18);
   if(!v)v=S.barName||"Last Call";
-  S.barName=v;applyName();save();toast("Welcome to "+v+"!");endTut();
+  nameBar(v);applyName();save();toast("Welcome to "+v+"!");endTut();
 }
 
 var tutOn=false,tutI=0,tutFull="",tutN=0,tutT=0,tutSnap=0;

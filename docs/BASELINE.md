@@ -56,3 +56,4 @@ python tools/run_bots.py careful --months 12 --seeds 2
 |---|---|---|---|
 | 1. split into `src/` | ok | 72 / 56 / 57 / 57 / 55 (3) | built `index.html` is byte-identical to the baseline apart from the banner line |
 | 4. schedules removed | ok | 72 / 55 / 57 / 57 / 55 (5) | stages and months unchanged (6/7/10); net worth 866k-933k vs 833k-959k for step 1, three runs of 5 seeds each, side by side |
+| 2. engine without DOM | ok | 10 runs side by side, previous / new: 72/56/57/57/55 vs 72/56/57/57/56 | browser 861k-1.15M vs 889k-1.08M before; Node 865k-1.0M; all five styles run 30 months headless with no errors |

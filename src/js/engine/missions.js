@@ -20,21 +20,21 @@ function msGenerate(){
   var famNames=Object.keys(fams).filter(function(f){return fams[f].length>=2});
   var avg=0;m.list.forEach(function(x){avg+=priceOf(x)});avg=avg/m.list.length||1;
   var types=["drink","family","streak","drink"],picks=[],usedItem={};
-  while(picks.length<3&&types.length){var t=types.splice(Math.floor(Math.random()*types.length),1)[0];if(picks.indexOf(t)<0||t==="drink")picks.push(t)}
+  while(picks.length<3&&types.length){var t=types.splice(Math.floor(random()*types.length),1)[0];if(picks.indexOf(t)<0||t==="drink")picks.push(t)}
   picks.forEach(function(type){
     if(type==="drink"&&!list.some(function(x){return !usedItem[x.id]}))type="streak";
-    var id=ms.next++,n,m1,days,jitter=0.8+Math.random()*0.5;
+    var id=ms.next++,n,m1,days,jitter=0.8+random()*0.5;
     if(type==="drink"||(type==="family"&&!famNames.length)){
       var it=wpick(list,function(x){return usedItem[x.id]?0.0001:Math.pow(x.p,0.6)});usedItem[it.id]=1;
       days=4;n=Math.max(6,Math.min(90,Math.round(ex.perDay*ex.share(it)*days*1.6*jitter)));
       m1={id:id,type:"drink",item:it.id,n:n,days:days,title:"Serve "+n+" "+it.n,reward:msRound(flat*0.25*clamp(priceOf(it)/avg,0.8,1.3))};
     }else if(type==="family"){
-      var fam=famNames[Math.floor(Math.random()*famNames.length)],sh=0,fa=0;
+      var fam=famNames[Math.floor(random()*famNames.length)],sh=0,fa=0;
       fams[fam].forEach(function(x){sh+=ex.share(x);fa+=priceOf(x)});fa=fa/fams[fam].length;
       days=5;n=Math.max(10,Math.min(200,Math.round(ex.perDay*sh*days*1.6*jitter)));
       m1={id:id,type:"family",fam:fam,n:n,days:days,title:"Serve "+n+" "+fam.toLowerCase()+" drinks",reward:msRound(flat*0.22*clamp(fa/avg,0.8,1.3))};
     }else{
-      days=4;n=30+Math.floor(Math.random()*21);
+      days=4;n=30+Math.floor(random()*21);
       m1={id:id,type:"streak",n:n,days:days,title:"Serve "+n+" orders in a row without losing a customer",reward:msRound(flat*0.14)};
     }
     ms.offers.push(m1);

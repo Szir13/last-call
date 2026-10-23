@@ -45,7 +45,7 @@ function regBond(id,d){var r=regOf(id);if(r)r.bond=clamp(r.bond+d,0,100)}
 function custByName(n){for(var i=0;i<CUST.length;i++){if(CUST[i].n===n)return CUST[i]}return CUST[0]}
 function pickRegular(){
   if(!S.reg||!S.reg.length)return null;
-  if(Math.random()>Math.min(0.5,0.05*S.reg.length*(1+0.1*(guideStars()-2))))return null;
+  if(random()>Math.min(0.5,0.05*S.reg.length*(1+0.1*(guideStars()-2))))return null;
   var busy={},d=gDay();
   S.orders.forEach(function(o){if(o.rid)busy[o.rid]=1});(S.hold||[]).forEach(function(x){if(x.rid)busy[x.rid]=1});
   var pool=S.reg.filter(function(r){return !busy[r.id]&&r.last<d});
@@ -55,10 +55,10 @@ function pickRegular(){
 function regAfterServe(o){
   if(!S.reg)S.reg=[];
   if(o.rid){var r=regOf(o.rid);if(r){r.visits++;r.bond=clamp(r.bond+(o.sat>=70?6:(o.sat<45?-10:1)),0,100)}return}
-  if(o.sat>=85&&(o.re||0)===0&&S.reg.length<regCap()&&Math.random()<0.05+0.10*clamp((floorAvg(2)-1)/4,0,1)){
+  if(o.sat>=85&&(o.re||0)===0&&S.reg.length<regCap()&&random()<0.05+0.10*clamp((floorAvg(2)-1)/4,0,1)){
     var used={};S.reg.forEach(function(x){used[x.name]=1});
     var free=REGN.filter(function(n){return !used[n]});if(!free.length)return;
-    var nm=free[Math.floor(Math.random()*free.length)];
+    var nm=free[Math.floor(random()*free.length)];
     S.reg.push({id:(S.nextReg=(S.nextReg||0)+1),name:nm,type:o.who,cls:o.cls,fav:o.items[0]?o.items[0].r:null,bond:20,visits:1,last:gDay()});
     toast(nm+" liked it here and became a regular.");
   }
@@ -129,10 +129,10 @@ var INCS=[
     {l:"Let your manager handle it",role:"manager",c:function(){return ic(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
   {id:"inspect",from:2,t:"Health inspection",x:"An inspector walked in and wants to see the kitchen.",o:[
     {l:"Deep clean right now",c:function(){return ic(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
-    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(Math.random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
-    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(Math.random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
+    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
+    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
   {id:"review",from:1,t:"A bad review is spreading",x:"A guest posted a harsh review of the bar and people are sharing it.",o:[
-    {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(Math.random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
+    {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
     {l:"Ignore it",c:function(){return 0},r:function(){addRep(-5);addMod(3,0.92,0);return "It stung: fewer guests for a few days."}},
     {l:"Offer a free round to apologise",c:function(){return ic(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
   {id:"shortage",from:1,t:"Supplier shortage",x:"Your supplier cannot deliver one of your ingredients this week.",o:[
@@ -149,15 +149,15 @@ var INCS=[
 function incById(id){for(var i=0;i<INCS.length;i++){if(INCS[i].id===id)return INCS[i]}return null}
 function rollIncident(quiet){
   if(S.inc||S.served<30||S.mcount<1)return;
-  if(Math.random()>0.08+0.01*S.exp)return;
+  if(random()>0.08+0.01*S.exp)return;
   var pool=INCS.filter(function(i){return S.exp>=i.from});
   if(!pool.length)return;
-  var inc=pool[Math.floor(Math.random()*pool.length)];
+  var inc=pool[Math.floor(random()*pool.length)];
   S.inc={id:inc.id};
   if(inc.id==="shortage"){
     var own=ING.filter(function(x){return S.ing[x.id]&&!x.raw});
     if(!own.length){S.inc=null;return}
-    S.inc.ing=own[Math.floor(Math.random()*own.length)].id;
+    S.inc.ing=own[Math.floor(random()*own.length)].id;
   }
   if(quiet)resolveInc(null,true);
 }
@@ -172,26 +172,6 @@ function resolveInc(i,auto){
   S.inc=null;
   if(auto){S.notes=S.notes||[]}
   return text;
-}
-function showIncident(){
-  var ov=$("#ov");if(ov.classList.contains("on")||!S.inc)return;
-  var inc=incById(S.inc.id);if(!inc){S.inc=null;return}
-  var card=h("div","card");
-  card.appendChild(h("h2",null,inc.t));
-  card.appendChild(h("p",null,inc.x+(S.inc.ing?" It is "+INGM[S.inc.ing].n+".":"")));
-  incOptions(inc).forEach(function(op,i){
-    var box=h("div","cand"),c=op.c();
-    box.appendChild(h("b",null,op.l));
-    box.appendChild(h("span",null,c>0?"Costs "+money0(c):"Free"+(op.role?" · "+STAFFM[op.role].n+" on your team":"")));
-    var b=h("button","buy sm","Choose");b.disabled=c>S.money;
-    b.onclick=function(){
-      var text=resolveInc(i,false);if(text===null)return;
-      var out=h("div","card");out.appendChild(h("h2",null,inc.t));out.appendChild(h("p",null,text));
-      var ok=h("button","buy","Continue");ok.onclick=hideOv;out.appendChild(ok);showOv(out);
-    };
-    box.appendChild(b);card.appendChild(box);
-  });
-  showOv(card);
 }
 
 /* ---- rowdy guests ---- */
@@ -217,7 +197,7 @@ function rowdyStep(o,dt,quiet){
 }
 function rowdyCalmChance(){return clamp(0.35+0.15*(floorAvg(2)-1),0.2,0.9)}
 function calmRowdy(o){
-  if(Math.random()<rowdyCalmChance()){o.rowdy=false;toast("You talked them round.");return true}
+  if(random()<rowdyCalmChance()){o.rowdy=false;toast("You talked them round.");return true}
   rowdyEscalate(o,false);return false;
 }
 function escortRowdy(o){o.rowdy=false;dropQuiet(o);toast("You showed them out politely. No harm done.")}
@@ -263,7 +243,7 @@ function retire(){
   S.known=keepKnown;
   beginRun();
   S.money=300+seed;
-  save();
+  emit("save");
 }
 
 function cleanLT(){

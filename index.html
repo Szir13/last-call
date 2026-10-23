@@ -691,7 +691,6 @@ nav{position:relative;flex:none;left:auto;right:auto;bottom:auto}
 <script>
 (function(){
 "use strict";
-var KEY="last-call-orders-v5";
 
 /* ---------- data ---------- */
 var SPIRITS=["gin","rum","vodka","cachaca","whiskey","tequila","pisco","cognac","mezcal"];
@@ -1023,6 +1022,16 @@ var ACH=[
 ];
 var REPN=["Unknown","Known locally","Neighborhood favorite","Local star","City hotspot","Destination bar","Famous","Legendary"];
 
+/* ---------- engine environment: events out, clock and dice in ----------
+   The engine never touches the DOM or storage. It announces what happened with emit(name,data);
+   the UI listens with onEv(name,fn). now() and random() are its only clock and dice: setEnv() replaces them in tests. */
+var BUS={},ENV={now:Date.now,random:Math.random};
+function onEv(ev,fn){(BUS[ev]=BUS[ev]||[]).push(fn)}
+function emit(ev,a){var l=BUS[ev];if(l)for(var i=0;i<l.length;i++)l[i](a)}
+function setEnv(o){for(var k in o)ENV[k]=o[k]}
+function now(){return ENV.now()}
+function random(){return ENV.random()}
+function toast(m){emit("toast",m)}
 /* ---------- state ---------- */
 function defHours(){var a=[];for(var i=0;i<7;i++)a.push([10,22]);return a}
 function newMonth(){return{rev:0,cogs:0,rent:0,util:0,pay:0,waste:0,interest:0,gs:0,gn:0,gp:0}}
@@ -1036,10 +1045,10 @@ function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
   gt:600,curDay:0,hours:defHours(),dayE:0,dayN:0,prev:{e:0,n:0},
   picks:{},known:[],kits:false,
   team:[],cands:{},mood:60,moodB:0,nextEmp:1,maxStaff:{},
-  hhUntil:0,hhReady:0,last:Date.now(),newRec:false}}
+  hhUntil:0,hhReady:0,last:now(),newRec:false}}
 var S=def();
-function load(){
-  try{var r=localStorage.getItem(KEY);if(r){S=Object.assign(def(),JSON.parse(r))}}catch(e){}
+/* bring a loaded save up to date (new fields are also created lazily where they are used) */
+function migrate(){
   if(!Array.isArray(S.hours)||S.hours.length!==7)S.hours=defHours();
   if(!S.prev)S.prev={e:0,n:0};
   if(!S.month)S.month=newMonth();
@@ -1048,14 +1057,10 @@ function load(){
   S.team.forEach(function(e){delete e.sch;delete e.ot});
   [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
   syncStaff();
+  if(S.kits&&!S.wkMig){S.wkMig=1;var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}
 }
-function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 /* ---------- helpers ---------- */
-function $(s){return document.querySelector(s)}
-function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
-function setT(e,t){if(e._t!==t){e._t=t;e.textContent=t}}
-function setC(e,c){if(e._c!==c){e._c=c;e.className=c}}
 var SUF=["","k","M","B","T","Qa","Qi","Sx","Sp"];
 function fmt(n){
   if(!isFinite(n))return "∞";
@@ -1073,7 +1078,7 @@ function roleUnlocked(id){return !!S.upg[id==="prepchef"?"kitchen":id]}
 function chefActive(){return !!S.upg.kitchen&&(S.staff.prepchef||0)>0}
 function wpick(arr,wf){
   var t=0,i;for(i=0;i<arr.length;i++)t+=wf(arr[i]);
-  var r=Math.random()*t;
+  var r=random()*t;
   for(i=0;i<arr.length;i++){r-=wf(arr[i]);if(r<=0)return arr[i]}
   return arr[arr.length-1];
 }
@@ -1106,7 +1111,7 @@ function spoil(quiet){
     var sh=shelfOf(key),b=S.bat[key],x=INGM[baseId(key)];
     while(b.length&&b[0].d+sh<=d){
       var n=b[0].n;b.shift();
-      var care=empAvg("clerk",1),keep=care>0?0.06*(care-1)*n:0,saved=Math.floor(keep)+(Math.random()<keep-Math.floor(keep)?1:0);
+      var care=empAvg("clerk",1),keep=care>0?0.06*(care-1)*n:0,saved=Math.floor(keep)+(random()<keep-Math.floor(keep)?1:0);
       if(saved>0){n=Math.max(0,n-saved);b.push({d:d,n:saved})}
       S.stock[key]=Math.max(0,(S.stock[key]||0)-n);
       cost+=n*(x.q?x.u[tierOfKey(key)]:x.u);
@@ -1265,23 +1270,6 @@ function assignedCount(){var n=0;for(var k in S.auto){if(S.auto[k])n++}return n}
 function clerkCap(){var c=0;S.team.forEach(function(e){if(e.role==="clerk")c+=(e.cl||1)});return c}
 function parOf(id){return (S.staff.controller>0&&S.par[id]!==undefined)?Math.min(S.par[id],cap()):10}
 
-/* ---------- toast and overlay ---------- */
-var tt;
-function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3000)}
-function showOv(card){var o=$("#ov");o.innerHTML="";o.appendChild(card);o.classList.add("on")}
-function hideOv(){$("#ov").classList.remove("on")}
-var tab="stock";
-function checkUnlocks(){
-  var nw=ITEMS.filter(function(r){return unlocked(r)&&S.known.indexOf(r.id)<0});
-  if(!nw.length)return;
-  nw.forEach(function(r){S.known.push(r.id);if(S.act[r.id]===undefined)S.act[r.id]=stagedPrice(r)});
-  if(S.kits){
-    toast((nw.length>1?"New drinks: ":"New drink: ")+nw.slice(0,3).map(function(r){return r.n}).join(", ")+(nw.length>3?"…":""));
-    if(tab!=="book")S.newRec=true;
-  }
-}
-
-
 /* ---------- calendar engine ---------- */
 function pad2(n){return n<10?"0"+n:String(n)}
 function gDay(){return Math.floor(S.gt/1440)}
@@ -1418,7 +1406,7 @@ function fireEmp(e){
   var ix=S.team.indexOf(e);if(ix<0)return;
   S.team.splice(ix,1);
   syncStaff();trimAssign();
-  if(ref.ed&&ref.ed.sel===e.id)ref.ed.sel=0;
+  emit("fired",e);
 }
 function staffQuits(quiet){
   var best=null;
@@ -1480,22 +1468,6 @@ function repossess(quiet){
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }
-function showNotice(){
-  var n=S.notice;if(!n)return;
-  var ov=$("#ov");if(ov.classList.contains("on"))return;
-  var card=h("div","card");
-  if(n.type==="repo"){
-    card.appendChild(h("h2",null,"The bank took your bar"));
-    card.appendChild(h("p",null,"You could not pay the bills for "+LATE_MAX+" months in a row, so the bank repossessed the "+n.from.toLowerCase()+" and sold it for "+money0(n.sale)+"."));
-    card.appendChild(h("p",null,(n.toDebt>0?money0(n.toDebt)+" went to the debt. ":"")+(n.cash>0?money0(n.cash)+" was left for you. ":"")+(n.debtLeft>0?"You still owe "+money0(n.debtLeft)+". ":"The debt is cleared. ")));
-    card.appendChild(h("p",null,"You are back at the "+n.to.toLowerCase()+(n.fired?", and "+n.fired+" staff had to go":"")+". The recipes you learned are still yours, but the fittings, the unlocked ingredients and the training are gone: you need the requirements again to buy ingredients."));
-  }else{
-    card.appendChild(h("h2",null,"The bank steps in"));
-    card.appendChild(h("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
-  }
-  var ok=h("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
-  showOv(card);
-}
 function monthEnd(quiet){
   var m=S.month;
   if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
@@ -1549,7 +1521,7 @@ function staffDay(quiet){
     S.mood=clamp(S.mood+(target-S.mood)*0.2,0,100);
   }else S.mood+=(60-S.mood)*0.2;
   S.moodB*=0.9;
-  if(n>0&&S.mood<40&&Math.random()<(40-S.mood)/200)moodQuit(quiet);
+  if(n>0&&S.mood<40&&random()<(40-S.mood)/200)moodQuit(quiet);
 }
 function dayChange(quiet){
   var d=gDay();
@@ -1599,7 +1571,7 @@ function workers(){
   return w.map(function(x){return x*mult});
 }
 var LINGER=[8,12,16,18,20];   /* seconds a served customer stays seated, by venue */
-function lingerTime(){return LINGER[S.exp]*(0.7+Math.random()*0.6)}
+function lingerTime(){return LINGER[S.exp]*(0.7+random()*0.6)}
 function freeSlot(){
   var used={};S.orders.forEach(function(o){used[o.slot]=1});
   (S.hold||[]).forEach(function(hd){used[hd.slot]=1});
@@ -1613,8 +1585,8 @@ function spawnOrder(re){
   var slot=(re&&re.slot!==undefined)?re.slot:freeSlot();if(slot<0)return;
   var fx=fxNow(),per=periodOf(gHour());
   var cust=re?re.cust:wpick(CUST,function(c){return c.w[per]*(fx.type[c.n]||1)*(c.n==="Food critic"&&lvl("critics")?2:1)*themeType(c.n)*(c.n==="Food critic"?1+0.25*(guideStars()-2):1)});
-  var cls=re?re.cls:clamp(Math.floor(cust.wb+wealthShift()+(Math.random()-0.5)*1.4+0.5),0,3);
-  var want=1+Math.floor(Math.random()*(EXPS[S.exp].k+(S.upg.table?1:0)+(cust.bi||0)));
+  var cls=re?re.cls:clamp(Math.floor(cust.wb+wealthShift()+(random()-0.5)*1.4+0.5),0,3);
+  var want=1+Math.floor(random()*(EXPS[S.exp].k+(S.upg.table?1:0)+(cust.bi||0)));
   var items=[],know=1+0.12*(floorAvg(0)-1);
   for(var i=0;i<want;i++){
     var it=(re&&re.fav&&i===0&&ITM[re.fav]&&m.list.indexOf(ITM[re.fav])>=0)?ITM[re.fav]:wpick(m.list,function(x){
@@ -1624,13 +1596,13 @@ function spawnOrder(re){
       return w;
     });
     var q=priceOf(it)/(fairOf(it)*WTP[cls]);
-    if((re&&re.rid&&i===0)||Math.random()<demandFactor(q))items.push({r:it.id,done:false});
+    if((re&&re.rid&&i===0)||random()<demandFactor(q))items.push({r:it.id,done:false});
   }
   if(!items.length){if(!re)addSat(15);return}   /* too expensive: the customer walks away */
   var n=items.length;
   var pat=cust.pat*(S.upg.seats?1.5:1)*(1+0.2*lvl("patience"))*(1+0.1*(n-1));
   var od={id:S.nextId++,cid:re?re.cid:undefined,re:re&&re.n?re.n:0,rid:re?re.rid:undefined,slot:slot,who:cust.n,m:cust.m,cls:cls,items:items,pat:pat,left:pat,ready:false,reward:0,sat:0};
-  if(per>=3&&!(re&&re.n)&&Math.random()<rowdyChance(cust,per)){od.rowdy=true;od.rt=0}
+  if(per>=3&&!(re&&re.n)&&random()<rowdyChance(cust,per)){od.rowdy=true;od.rt=0}
   S.orders.push(od);
   if(re&&re.reg)re.reg.last=gDay();
 }
@@ -1669,9 +1641,9 @@ function collect(o){
   earn(o.reward);
   msProgress(o);
   regAfterServe(o);
-  var again=Math.random()<reorderChance(o);
+  var again=random()<reorderChance(o);
   if(again)S.reorders=(S.reorders||0)+1;
-  (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+Math.random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
+  (S.hold=S.hold||[]).push({slot:o.slot,left:again?4+random()*5:lingerTime(),id:o.cid||o.id,who:o.who,cls:o.cls,rid:o.rid,drink:o.items&&o.items[0]?o.items[0].r:null,again:again,re:(o.re||0)+1});
 }
 function dropOrder(o){
   msStreakBreak();
@@ -1721,7 +1693,7 @@ function chefTick(dt){
     while(guard++<6&&(S.stock[x.id]||0)<24&&S.chefB>=x.pre.y){
       var raw=INGM[x.pre.raw];
       if((S.stock[raw.id]||0)<1&&!buyBulk(raw))break;
-      var y=x.pre.y*(1+0.08*(roleSkill("prepchef",0)-1)),yu=Math.floor(y)+(Math.random()<y-Math.floor(y)?1:0);
+      var y=x.pre.y*(1+0.08*(roleSkill("prepchef",0)-1)),yu=Math.floor(y)+(random()<y-Math.floor(y)?1:0);
       takeStock(raw.id,1);addStock(x.id,yu);S.chefB-=x.pre.y;
     }
   });
@@ -1739,7 +1711,7 @@ function tickMarket(dt,quiet){
     M.t20=20;
     ING.forEach(function(x){
       var d=M.drift[x.id]||1;
-      d+=(1-d)*0.15+(Math.random()-0.5)*0.08;
+      d+=(1-d)*0.15+(random()-0.5)*0.08;
       M.drift[x.id]=clamp(d,0.75,1.35);
     });
     changed=true;
@@ -1750,11 +1722,11 @@ function tickMarket(dt,quiet){
   }
   M.next-=dt;
   if(M.next<=0){
-    M.next=100+Math.random()*100;
+    M.next=100+random()*100;
     if(M.ev.length<3){
       var opts=NEWS.filter(function(n){return n.ids==="all"||n.ids.some(relevantId)});
       if(opts.length){
-        var n=opts[Math.floor(Math.random()*opts.length)];
+        var n=opts[Math.floor(random()*opts.length)];
         M.ev.push({h:n.h,ids:n.ids,f:n.f,left:n.dur});
         changed=true;
         if(!quiet)toast("News: "+n.h);
@@ -1791,7 +1763,7 @@ function tick(dt,quiet){
   T+=dt;
   tickMarket(dt,quiet);
   controllerTick(dt);
-  var hh=Date.now()<S.hhUntil;
+  var hh=now()<S.hhUntil;
   /* the clock: time flies while the bar is closed */
   var open=isOpenNow();
   if(wasOpen&&!open)ctlPrices();
@@ -1803,7 +1775,7 @@ function tick(dt,quiet){
   /* customers arrive, but only while the bar is open */
   if(open&&freeSlot()>=0){
     S.arrive-=dt*(hh?2:1)*arrivalMult()*demandNow();
-    if(S.arrive<=0){spawnOrder();S.arrive=interval()*(0.8+Math.random()*0.4)}
+    if(S.arrive<=0){spawnOrder();S.arrive=interval()*(0.8+random()*0.4)}
   }
   if(S.hold){for(var hi=S.hold.length-1;hi>=0;hi--){
     var hd=S.hold[hi];hd.left-=dt;
@@ -1861,6 +1833,7 @@ function tick(dt,quiet){
     if(!quiet)toast("A regular lent you $10 for lemons.");
   }
 }
+function offlineCap(){return (2+2*lvl("offline"))*3600}
 function simulate(secs){
   var steps=Math.floor(secs/2);
   var m0=S.totalEarned,s0=S.served;
@@ -1870,6 +1843,12 @@ function simulate(secs){
 }
 
 /* ---------- starting a bar ---------- */
+function checkUnlocks(){
+  var nw=ITEMS.filter(function(r){return unlocked(r)&&S.known.indexOf(r.id)<0});
+  if(!nw.length)return;
+  nw.forEach(function(r){S.known.push(r.id);if(S.act[r.id]===undefined)S.act[r.id]=stagedPrice(r)});
+  if(S.kits)emit("unlock",nw);
+}
 function usedIn(x){
   var n=REC.filter(function(r){return !r.s&&r.i.indexOf(x.id)>=0}).length;
   var s=n?"Used in "+n+(n>1?" recipes":" recipe"):"Special ingredient";
@@ -1885,7 +1864,7 @@ function beginRun(){
   checkUnlocks();
   S.newRec=false;
   toast("Your lemonade stand is open. Customers are ordering.");
-  save();
+  emit("save");
 }
 
 /* ---------- actions ---------- */
@@ -1903,6 +1882,17 @@ function unlockTier(id,t){
   S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);MI=null;
   checkUnlocks();
 }
+function setPrice(id,v){if(isFinite(v)&&v>=0)S.price[id]=v}
+function clearPrice(id){delete S.price[id]}
+function copyHours(from){var m0=S.hours[from].slice();S.hours=S.hours.map(function(){return m0.slice()});HV++}
+function startHappyHour(){
+  var t=now();
+  if(!S.kits||t<S.hhReady)return;
+  S.hhUntil=t+30000*(1+0.5*lvl("hhour"));S.hhReady=t+120000;
+}
+function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
+function nameBar(v){S.barName=v}
+function newGame(){S=def();MI=null;recomputeMarket()}
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
@@ -1929,40 +1919,25 @@ function upgradeClerk(e){
 function pickName(){
   var used={};S.team.forEach(function(e){used[e.name]=1});
   var free=NAMES.filter(function(n){return !used[n]}),src=free.length?free:NAMES;
-  return src[Math.floor(Math.random()*src.length)];
+  return src[Math.floor(random()*src.length)];
 }
 function genCand(role){
   var r=STAFFM[role],ns=skillNames(role).length;
   var lv=wpick([0,1,2],function(x){return x===0?70:x===1?25:5});
   var expect=ns===3?[7,9,11]:[4,6,8];
-  var budget=expect[lv]+Math.floor(Math.random()*3)-1;
+  var budget=expect[lv]+Math.floor(random()*3)-1;
   var sk=[],i;for(i=0;i<ns;i++)sk.push(1);
   var sum=ns,guard=0;
-  while(sum<budget&&guard++<60){var j=Math.floor(Math.random()*ns);if(sk[j]<5){sk[j]++;sum++}}
+  while(sum<budget&&guard++<60){var j=Math.floor(random()*ns);if(sk[j]<5){sk[j]++;sum++}}
   var prem=1+0.04*(sum-expect[lv]);
-  var wage=Math.round(r.w*wk()*LVLM[lv]*prem*clamp(1.25-0.5*S.mood/100,0.75,1.25)*(0.93+Math.random()*0.14)/10)*10;
+  var wage=Math.round(r.w*wk()*LVLM[lv]*prem*clamp(1.25-0.5*S.mood/100,0.75,1.25)*(0.93+random()*0.14)/10)*10;
   return{name:pickName(),role:role,lvl:lv,sk:sk,wage:wage,fee:Math.round(wage*HIRE)};
 }
-function openHire(role){
-  if(!roleUnlocked(role))return;
-  if((S.staff[role]||0)>=roleLimit(role)){toast(S.team.length>=staffCap()?"Your bar is full ("+staffCap()+" staff). Expand to make room for more.":"You cannot hire more "+STAFFM[role].pl+" right now.");return}
+/* today's three candidates for a role, drawn once a day */
+function candsToday(role){
   var c=S.cands[role];
   if(!c||c.day!==gDay()||!c.list.length)S.cands[role]=c={day:gDay(),list:[genCand(role),genCand(role),genCand(role)]};
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Hire a "+STAFFM[role].n.toLowerCase()));
-  card.appendChild(h("p",null,"Pick one of today’s candidates. A happy team attracts candidates who ask for less. New candidates come tomorrow."));
-  c.list.forEach(function(cd,i){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,cd.name+" · "+LVLN[cd.lvl]));
-    box.appendChild(h("span",null,skillNames(role).map(function(sn,k){return sn+" "+cd.sk[k]+"/5"}).join(" · ")));
-    box.appendChild(h("span",null,"Wage "+money0(cd.wage)+" a month · hiring fee "+money0(cd.fee)));
-    var b=h("button","buy sm","Hire for "+money0(cd.fee));
-    b.disabled=S.money<cd.fee;
-    b.onclick=function(){hireCand(role,i)};
-    box.appendChild(b);card.appendChild(box);
-  });
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
-  showOv(card);
+  return c;
 }
 function hireCand(role,i){
   var c=S.cands[role],cd=c&&c.list[i];if(!cd)return;
@@ -1974,8 +1949,7 @@ function hireCand(role,i){
   S.team.push(e);c.list.splice(i,1);
   syncStaff();
   if(role==="clerk")autoAssignClerk();
-  ref.ed.sel=e.id;
-  hideOv();
+  emit("hired",e);
   var pk=false;for(var t2 in TIERS){if(picksTotal(t2)>before[t2])pk=true}
   toast(cd.name+" joined the team."+(e.starter?" Starter deal: half wage until you leave the stand.":"")+(pk?" New ingredient pick! Open Stock.":""));
 }
@@ -2035,6 +2009,415 @@ function trainToast(role){
 }
 
 
+/* ---------- special missions: finish a task before it runs out for a cash bonus ---------- */
+var MS_DAYREV=[505,3000,10400,22300,34000];
+var MS_MAX=2;     /* missions you can hold at once */     /* typical revenue of one day in each venue; rewards are a share of it */
+function msInit(){if(!S.ms)S.ms={offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true};return S.ms}
+function msExpected(list){
+  /* how many drinks a day the bar sells, and each drink's share of them */
+  var hr=S.hours[gDay()%7],span=Math.max(6,spanOf(hr[0],hr[1])),arrivals=span*60/interval()*arrivalMult()*0.9;
+  var perOrder=1+(EXPS[S.exp].k+(S.upg.table?1:0)-1)/2,tot=0,w={};
+  list.forEach(function(x){w[x.id]=Math.pow(x.p,0.6)*(x.solo?0.5:1);tot+=w[x.id]});
+  return{perDay:arrivals*perOrder,share:function(x){return tot?w[x.id]/tot:0}};
+}
+function msRound(v){return Math.max(10,Math.round(v/10)*10)}
+function msGenerate(){
+  var ms=msInit(),m=mi(),list=m.list.filter(function(x){return !x.solo});
+  if(!list.length)list=m.list;
+  ms.offers=[];
+  if(!list.length)return;
+  var ex=msExpected(m.list),flat=MS_DAYREV[S.exp];
+  var fams={};list.forEach(function(x){(fams[x.f]=fams[x.f]||[]).push(x)});
+  var famNames=Object.keys(fams).filter(function(f){return fams[f].length>=2});
+  var avg=0;m.list.forEach(function(x){avg+=priceOf(x)});avg=avg/m.list.length||1;
+  var types=["drink","family","streak","drink"],picks=[],usedItem={};
+  while(picks.length<3&&types.length){var t=types.splice(Math.floor(random()*types.length),1)[0];if(picks.indexOf(t)<0||t==="drink")picks.push(t)}
+  picks.forEach(function(type){
+    if(type==="drink"&&!list.some(function(x){return !usedItem[x.id]}))type="streak";
+    var id=ms.next++,n,m1,days,jitter=0.8+random()*0.5;
+    if(type==="drink"||(type==="family"&&!famNames.length)){
+      var it=wpick(list,function(x){return usedItem[x.id]?0.0001:Math.pow(x.p,0.6)});usedItem[it.id]=1;
+      days=4;n=Math.max(6,Math.min(90,Math.round(ex.perDay*ex.share(it)*days*1.6*jitter)));
+      m1={id:id,type:"drink",item:it.id,n:n,days:days,title:"Serve "+n+" "+it.n,reward:msRound(flat*0.25*clamp(priceOf(it)/avg,0.8,1.3))};
+    }else if(type==="family"){
+      var fam=famNames[Math.floor(random()*famNames.length)],sh=0,fa=0;
+      fams[fam].forEach(function(x){sh+=ex.share(x);fa+=priceOf(x)});fa=fa/fams[fam].length;
+      days=5;n=Math.max(10,Math.min(200,Math.round(ex.perDay*sh*days*1.6*jitter)));
+      m1={id:id,type:"family",fam:fam,n:n,days:days,title:"Serve "+n+" "+fam.toLowerCase()+" drinks",reward:msRound(flat*0.22*clamp(fa/avg,0.8,1.3))};
+    }else{
+      days=4;n=30+Math.floor(random()*21);
+      m1={id:id,type:"streak",n:n,days:days,title:"Serve "+n+" orders in a row without losing a customer",reward:msRound(flat*0.14)};
+    }
+    ms.offers.push(m1);
+  });
+}
+function msAccept(id){
+  var ms=msInit();if(ms.active.length>=MS_MAX)return false;
+  for(var i=0;i<ms.offers.length;i++){if(ms.offers[i].id===id){var m1=ms.offers.splice(i,1)[0];m1.p=0;m1.dl=gDay()+m1.days;ms.active.push(m1);return true}}
+  return false;
+}
+function msAbandon(id){var ms=msInit();ms.active=ms.active.filter(function(m1){return m1.id!==id})}
+function msStreakBreak(){var ms=S.ms;if(!ms)return;ms.active.forEach(function(m1){if(m1.type==="streak")m1.p=0})}
+function msComplete(m1){
+  var ms=msInit();ms.active=ms.active.filter(function(x){return x!==m1});
+  S.money+=m1.reward;S.totalEarned+=m1.reward;S.month.rev+=m1.reward;S.dayE+=m1.reward;
+  ms.done++;ms.earned+=m1.reward;ms.last={t:m1.title,r:m1.reward};
+  toast("Mission complete: "+m1.title+". +"+money0(m1.reward));
+}
+function msProgress(o){
+  var ms=S.ms;if(!ms||!ms.active.length)return;
+  var done=[];
+  ms.active.forEach(function(m1){
+    if(m1.type==="drink"){o.items.forEach(function(it){if(it.r===m1.item)m1.p++})}
+    else if(m1.type==="family"){o.items.forEach(function(it){if(ITM[it.r].f===m1.fam)m1.p++})}
+    else m1.p++;
+    if(m1.p>=m1.n)done.push(m1);
+  });
+  done.forEach(msComplete);
+}
+function msDay(quiet){
+  var ms=msInit(),d=gDay();
+  ms.active=ms.active.filter(function(m1){if(d>m1.dl){ms.failed++;if(!quiet)toast("Mission expired: "+m1.title+".");return false}return true});
+  if(ms.day!==d){ms.day=d;ms.seen=false;msGenerate();if(!quiet&&S.served>=8)toast("New special missions are on offer.")}
+}
+
+
+/* ====================== long-term systems ====================== */
+function dRev(){return MS_DAYREV[S.exp]}
+function ic(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
+function hasRole(r){return (S.staff[r]||0)>0}
+function legLvl(id){return ((S.leg&&S.leg.perks)||{})[id]||0}
+
+/* ---- seasons and weather: nothing is stored, both follow the calendar ---- */
+var SEASONN=["Winter","Spring","Summer","Autumn"],WXN=["Sunny","Cloudy","Rainy","Snowy"];
+function seasonOf(day){var m=dateOf(day).m;return (m===11||m<2)?0:(m<5?1:(m<8?2:3))}
+function weatherOf(day){
+  var P=[[0.28,0.30,0.30,0.12],[0.45,0.30,0.25,0],[0.70,0.18,0.12,0],[0.40,0.30,0.30,0]][seasonOf(day)],r=rnd(day*5.77+1.3),acc=0;
+  for(var t=0;t<4;t++){acc+=P[t];if(r<=acc)return t}
+  return 0;
+}
+
+/* ---- themed nights ---- */
+var NIGHTS={
+  live:{n:"Live music",k:0.08,per:{3:1.45,4:1.35},type:{"Couple":1.6,"Regular":1.3,"Tourist":1.2},fam:{Classic:1.2},sat:4},
+  quiz:{n:"Quiz night",k:0.06,per:{3:1.4},type:{"Office crowd":1.7,"Party crowd":1.2},fam:{},sat:3},
+  cocktail:{n:"Cocktail night",k:0.09,per:{3:1.3,4:1.25},type:{"Food critic":1.8,"Couple":1.3},fam:{Classic:1.4,Sour:1.4,Tropical:1.3},sat:5}
+};
+function nightCost(t){return ic(NIGHTS[t].k)}
+function bookNight(day,t){
+  S.nights=S.nights||{};
+  if(S.nights[day]||!NIGHTS[t])return false;
+  var c=nightCost(t);if(S.money<c)return false;
+  S.money-=c;S.month.cogs+=c;S.nights[day]=t;FXC.day=-1;
+  return true;
+}
+function addMod(days,dem,sat){(S.mods=S.mods||[]).push({from:gDay(),until:gDay()+days-1,dem:dem,sat:sat||0});FXC.day=-1}
+
+/* ---- Bar Guide: a monthly star rating ---- */
+var MENUREF=[3,12,25,45,60];
+function guideStars(){return S.guide?S.guide.stars:2}
+function guideCalc(){
+  var m=S.month,gn=Math.max(1,m.gn||0),sat=(m.gs||0)/gn,pr=(m.gp||0)/gn;
+  var comp={sat:clamp(sat/100,0,1),price:clamp(pr/100,0,1),menu:Math.min(1,mi().list.length/MENUREF[S.exp]),rep:Math.min(1,repLevel()/8),style:Math.min(1,stylePts()/11)};
+  return {comp:comp,score:0.32*comp.sat+0.22*comp.price+0.18*comp.menu+0.14*comp.rep+0.14*comp.style};
+}
+function guideUpdate(){
+  var gc=guideCalc(),prev=S.guide?S.guide.score:gc.score,sc=0.5*prev+0.5*gc.score;
+  S.guide={score:sc,stars:Math.max(0,Math.min(5,Math.round(sc*6.2-0.7))),comp:gc.comp,month:S.mcount};
+}
+
+/* ---- regulars: guests who come back, with a favourite drink and a bond with the bar ---- */
+var REGN=["Ana","Rui","Marta","Tiago","Ines","Carlos","Bea","Nuno","Sofia","Joao","Rita","Pedro","Lena","Hugo","Clara","Diogo","Maya","Tomas","Vera","Leo","Nina","Dario"];
+function regCap(){return [2,4,6,9,12][S.exp]||2}
+function regOf(id){var a=S.reg||[];for(var i=0;i<a.length;i++){if(a[i].id===id)return a[i]}return null}
+function bondOf(id){var r=regOf(id);return r?r.bond:0}
+function regBond(id,d){var r=regOf(id);if(r)r.bond=clamp(r.bond+d,0,100)}
+function custByName(n){for(var i=0;i<CUST.length;i++){if(CUST[i].n===n)return CUST[i]}return CUST[0]}
+function pickRegular(){
+  if(!S.reg||!S.reg.length)return null;
+  if(random()>Math.min(0.5,0.05*S.reg.length*(1+0.1*(guideStars()-2))))return null;
+  var busy={},d=gDay();
+  S.orders.forEach(function(o){if(o.rid)busy[o.rid]=1});(S.hold||[]).forEach(function(x){if(x.rid)busy[x.rid]=1});
+  var pool=S.reg.filter(function(r){return !busy[r.id]&&r.last<d});
+  if(!pool.length)return null;
+  return wpick(pool,function(r){return 1+r.bond/50});
+}
+function regAfterServe(o){
+  if(!S.reg)S.reg=[];
+  if(o.rid){var r=regOf(o.rid);if(r){r.visits++;r.bond=clamp(r.bond+(o.sat>=70?6:(o.sat<45?-10:1)),0,100)}return}
+  if(o.sat>=85&&(o.re||0)===0&&S.reg.length<regCap()&&random()<0.05+0.10*clamp((floorAvg(2)-1)/4,0,1)){
+    var used={};S.reg.forEach(function(x){used[x.name]=1});
+    var free=REGN.filter(function(n){return !used[n]});if(!free.length)return;
+    var nm=free[Math.floor(random()*free.length)];
+    S.reg.push({id:(S.nextReg=(S.nextReg||0)+1),name:nm,type:o.who,cls:o.cls,fav:o.items[0]?o.items[0].r:null,bond:20,visits:1,last:gDay()});
+    toast(nm+" liked it here and became a regular.");
+  }
+}
+
+/* ---- decor and style ---- */
+var DECOR=[
+  {id:"bunting",n:"String lights",k:0.15,pts:1},
+  {id:"plant",n:"Potted plants",k:0.12,pts:1},
+  {id:"lamp",n:"Floor lamp",k:0.15,pts:1},
+  {id:"neon",n:"Neon sign",k:0.5,pts:2},
+  {id:"trophy",n:"Trophy case",k:0.8,pts:3},
+  {id:"jukebox",n:"Jukebox",k:1.0,pts:3}
+];
+var THEMES={
+  classic:{n:"Classic",w:"BAR",c:"#ffd36a",type:{"Business traveler":1.2,"Food critic":1.2,"Couple":1.1},fam:{Classic:1.15},d:"Business travellers, critics and couples."},
+  tiki:{n:"Tiki",w:"TIKI",c:"#6fe0a8",type:{"Tourist":1.35,"Party crowd":1.15},fam:{Tropical:1.3},d:"Tourists, party crowds and tropical drinks."},
+  jazz:{n:"Jazz",w:"JAZZ",c:"#8fb4ff",type:{"Couple":1.3,"Regular":1.2,"Night owl":1.2},fam:{Classic:1.2,Neat:1.15},d:"Couples, regulars, night owls and neat spirits."},
+  retro:{n:"Retro",w:"RETRO",c:"#ff9a5a",type:{"Commuter":1.2,"Regular":1.25,"Office crowd":1.15},fam:{Beer:1.25,Soft:1.1},d:"Commuters, the office crowd and beer."},
+  neon:{n:"Neon",w:"NEON",c:"#ff5ad8",type:{"Party crowd":1.35,"Night owl":1.25},fam:{Party:1.3,Sour:1.1},d:"Party crowds, night owls and party drinks."}
+};
+function stylePts(){var n=0;if(S.deco&&S.deco.items)DECOR.forEach(function(d){if(S.deco.items[d.id])n+=d.pts});return n}
+function styleSat(){return Math.min(4,0.35*stylePts())}
+function decorCost(d){return Math.max(10,Math.round(d.k*dRev()*3/10)*10)}
+function themeType(n){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.type[n])||1}
+function themeFam(f){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.fam[f])||1}
+function themeCost(){return (S.deco&&S.deco.theme)?ic(0.4):0}
+function setTheme(id){
+  if(!THEMES[id])return false;
+  var c=themeCost();if(S.money<c)return false;
+  S.money-=c;S.deco=S.deco||{items:{}};S.deco.theme=id;return true;
+}
+function buyDecor(id){
+  var d=null;DECOR.forEach(function(x){if(x.id===id)d=x});if(!d)return false;
+  S.deco=S.deco||{items:{}};if(S.deco.items[id])return false;
+  var c=decorCost(d);if(S.money<c)return false;
+  S.money-=c;S.deco.items[id]=1;return true;
+}
+
+/* ---- suppliers ---- */
+var SUPS={
+  spot:{n:"Spot market",d:"Buy at the daily market price. No commitments."},
+  contract:{n:"3-month contract",d:"Prices are frozen at 97% of today's market for 84 days. Great when prices climb, a loss when they fall."},
+  volume:{n:"Volume deal",d:"8% off everything, but you owe half of the shortfall if a month's purchases fall below the commitment."},
+  premium:{n:"Premium supplier",d:"Prices are 12% higher, but fresher produce leaves guests a little happier (+2 satisfaction)."}
+};
+function supMode(){return (S.sup&&S.sup.mode)||"spot"}
+function volCommit(){return Math.round(dRev()*28*0.05/100)*100}
+function supSet(mode){
+  if(!SUPS[mode]||mode===supMode())return false;
+  if(supMode()==="contract"&&gDay()<S.sup.until)return false;   /* a contract has to run its course */
+  var o={mode:mode};
+  if(mode==="contract"){
+    o.until=gDay()+84;o.lk={};
+    for(var id in INGM){var key=RAWOF[id]||id;if(o.lk[key]===undefined)o.lk[key]=(MK[key]||1)*0.97}
+  }
+  S.sup=o;return true;
+}
+
+/* ---- incidents: a surprise with a choice ---- */
+function loseStock(f){for(var k in S.stock){S.stock[k]=Math.floor((S.stock[k]||0)*(1-f))}}
+function incIng(){return S.inc&&S.inc.ing?INGM[S.inc.ing]:null}
+function shortCost(f){var x=incIng();return x?Math.round(40*unitCost(x,0)*f/10)*10:0}
+var INCS=[
+  {id:"fridge",from:1,t:"The fridge broke down",x:"The cold room stopped overnight and the stock is warming up.",o:[
+    {l:"Emergency repair",c:function(){return ic(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
+    {l:"Wait for the technician",c:function(){return 0},r:function(){loseStock(0.35);return "A third of your stock spoiled before it was fixed."}},
+    {l:"Let your manager handle it",role:"manager",c:function(){return ic(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
+  {id:"inspect",from:2,t:"Health inspection",x:"An inspector walked in and wants to see the kitchen.",o:[
+    {l:"Deep clean right now",c:function(){return ic(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
+    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
+    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
+  {id:"review",from:1,t:"A bad review is spreading",x:"A guest posted a harsh review of the bar and people are sharing it.",o:[
+    {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
+    {l:"Ignore it",c:function(){return 0},r:function(){addRep(-5);addMod(3,0.92,0);return "It stung: fewer guests for a few days."}},
+    {l:"Offer a free round to apologise",c:function(){return ic(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
+  {id:"shortage",from:1,t:"Supplier shortage",x:"Your supplier cannot deliver one of your ingredients this week.",o:[
+    {l:"Emergency order at a premium",c:function(){return shortCost(1.6)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "A rush delivery arrived: 40 units on the shelf."}},
+    {l:"Do without for a few days",c:function(){return 0},r:function(){var x=incIng();if(x){S.ban=S.ban||{};S.ban[x.id]=gDay()+3;S.stock[x.id]=0}return "Drinks that need it are off the menu until the supplier recovers."}},
+    {l:"Let your clerk negotiate",role:"clerk",c:function(){return shortCost(1.15)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "Your clerk found another supplier at a fair price."}}]},
+  {id:"power",from:2,t:"Power cut",x:"The lights went out across the street and your bar is dark.",o:[
+    {l:"Rent a generator",c:function(){return ic(0.05)},r:function(){return "The generator kept everything running."}},
+    {l:"Serve by candlelight",c:function(){return 0},r:function(){addMod(1,0.8,4);return "Fewer guests came, but the mood was lovely."}}]},
+  {id:"viral",from:1,t:"Your bar is trending",x:"A photo of your bar is going round the internet.",o:[
+    {l:"Run a quick promotion",c:function(){return ic(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
+    {l:"Let it ride",c:function(){return 0},r:function(){addMod(2,1.2,0);return "A few more curious guests came through."}}]}
+];
+function incById(id){for(var i=0;i<INCS.length;i++){if(INCS[i].id===id)return INCS[i]}return null}
+function rollIncident(quiet){
+  if(S.inc||S.served<30||S.mcount<1)return;
+  if(random()>0.08+0.01*S.exp)return;
+  var pool=INCS.filter(function(i){return S.exp>=i.from});
+  if(!pool.length)return;
+  var inc=pool[Math.floor(random()*pool.length)];
+  S.inc={id:inc.id};
+  if(inc.id==="shortage"){
+    var own=ING.filter(function(x){return S.ing[x.id]&&!x.raw});
+    if(!own.length){S.inc=null;return}
+    S.inc.ing=own[Math.floor(random()*own.length)].id;
+  }
+  if(quiet)resolveInc(null,true);
+}
+function incOptions(inc){return inc.o.filter(function(op){return !op.role||hasRole(op.role)})}
+function resolveInc(i,auto){
+  var inc=incById(S.inc.id),ops=incOptions(inc),op=null;
+  if(i===null){for(var k=0;k<ops.length;k++){if(ops[k].c()===0){op=ops[k];break}}if(!op)op=ops[0]}else op=ops[i];
+  var c=op.c();
+  if(c>S.money&&c>0)return null;
+  S.money-=c;S.month.cogs+=c;
+  var text=op.r();
+  S.inc=null;
+  if(auto){S.notes=S.notes||[]}
+  return text;
+}
+
+/* ---- rowdy guests ---- */
+function rowdyChance(cust,per){
+  var base=0.006*(cust.n==="Party crowd"?3:cust.n==="Night owl"?2.5:cust.n==="Tourist"?1.3:0.6)*(per===4?1.6:1);
+  var g=shiftCounts().security||0;
+  return base*(1-Math.min(0.6,0.3*g));
+}
+function dropQuiet(o){
+  var ix=S.orders.indexOf(o);if(ix>=0)S.orders.splice(ix,1);
+  S.jobs=S.jobs.filter(function(j){return j.o!==o.id});o.gone=true;
+}
+function rowdyEscalate(o,quiet){
+  var f=Math.min(S.money,ic(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
+  S.orders.forEach(function(n){if(n!==o&&Math.abs(n.slot-o.slot)<=1&&!n.ready)n.left*=0.6});
+  o.rowdy=false;S.walkouts++;addSat(0);msStreakBreak();dropQuiet(o);
+  if(!quiet)toast("A rowdy guest made a scene: "+money0(f)+" in damages.");
+}
+function rowdyStep(o,dt,quiet){
+  o.rt=(o.rt||0)+dt;
+  if((shiftCounts().security||0)>0&&o.rt>5){o.rowdy=false;S.calmed=(S.calmed||0)+1;return}
+  if(o.rt>25)rowdyEscalate(o,quiet);
+}
+function rowdyCalmChance(){return clamp(0.35+0.15*(floorAvg(2)-1),0.2,0.9)}
+function calmRowdy(o){
+  if(random()<rowdyCalmChance()){o.rowdy=false;toast("You talked them round.");return true}
+  rowdyEscalate(o,false);return false;
+}
+function escortRowdy(o){o.rowdy=false;dropQuiet(o);toast("You showed them out politely. No harm done.")}
+
+/* ---- branches and legacy: what comes after the global chain ---- */
+var CITIES=[
+  {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
+  {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
+];
+var HQP=455000;   /* a global chain's typical monthly profit: branches pay a share of it */
+function branchActive(){return Math.min((S.br||[]).length,S.staff.ambassador||0)}
+function branchIncome(){
+  var inc=0,act=branchActive();
+  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=0.3*HQP*c.k*(0.7+0.06*guideStars())})});
+  return Math.round(inc);
+}
+function openBranch(id){
+  var c=null;CITIES.forEach(function(x){if(x.id===id)c=x});
+  S.br=S.br||[];
+  if(!c||S.exp<4||S.br.indexOf(id)>=0||S.money<c.cost)return false;
+  S.money-=c.cost;S.br.push(id);return true;
+}
+function legacyPoints(){return Math.floor(Math.sqrt(S.totalEarned/250000))+3*(S.br?S.br.length:0)}
+function canRetire(){return S.exp>=4&&S.totalEarned>=3000000}
+var LEGP=[
+  {id:"seed",n:"Seed money",d:"Start each new bar with +$2,500 per level.",max:5,cost:[2,3,4,6,8]},
+  {id:"crew",n:"Loyal crew",d:"New hires ask 4% less in wages, per level.",max:5,cost:[2,3,4,6,8]},
+  {id:"fame",n:"Famous name",d:"Every order pays 4% more, per level.",max:5,cost:[3,4,6,8,12]},
+  {id:"estate",n:"Real estate",d:"Expansions cost 8% less, per level.",max:5,cost:[3,4,6,8,12]},
+  {id:"picks",n:"Insider tips",d:"+1 ingredient pick in every group, per level.",max:3,cost:[3,5,8]},
+  {id:"recipes",n:"Recipe book",d:"Keep the recipes you learned when you start over.",max:1,cost:[4]}
+];
+function buyLeg(id){
+  var p=null;LEGP.forEach(function(x){if(x.id===id)p=x});if(!p)return false;
+  S.leg=S.leg||{pts:0,perks:{}};var l=legLvl(id);
+  if(l>=p.max||S.leg.pts<p.cost[l])return false;
+  S.leg.pts-=p.cost[l];S.leg.perks[id]=l+1;return true;
+}
+function retire(){
+  var gain=legacyPoints(),perks=(S.leg&&S.leg.perks)||{},keepKnown=legLvl("recipes")?S.known.slice():[],seed=2500*legLvl("seed");
+  var keep={perm:S.perm,pts:S.pts,ach:S.ach,leg:{pts:((S.leg&&S.leg.pts)||0)+gain,perks:perks},legacy:(S.legacy||0)+1,wkMig:1};
+  S=Object.assign(def(),keep);
+  S.known=keepKnown;
+  beginRun();
+  S.money=300+seed;
+  emit("save");
+}
+
+function cleanLT(){
+  var d=gDay();
+  if(S.nights){for(var k in S.nights){if(+k<d-1)delete S.nights[k]}}
+  if(S.mods)S.mods=S.mods.filter(function(m){return m.until>=d});
+  if(S.ban){for(var b in S.ban){if(S.ban[b]<=d)delete S.ban[b]}}
+}
+
+/* ---------- DOM helpers ---------- */
+function $(s){return document.querySelector(s)}
+function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+function setT(e,t){if(e._t!==t){e._t=t;e.textContent=t}}
+function setC(e,c){if(e._c!==c){e._c=c;e.className=c}}
+/* ---------- toast and overlay ---------- */
+var tt;
+function showToast(m){var t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3000)}
+function showOv(card){var o=$("#ov");o.innerHTML="";o.appendChild(card);o.classList.add("on")}
+function hideOv(){$("#ov").classList.remove("on")}
+var tab="stock";
+onEv("toast",showToast);
+onEv("unlock",function(nw){
+  toast((nw.length>1?"New drinks: ":"New drink: ")+nw.slice(0,3).map(function(r){return r.n}).join(", ")+(nw.length>3?"…":""));
+  if(tab!=="book")S.newRec=true;
+});
+onEv("hired",function(e){ref.ed.sel=e.id;hideOv()});
+onEv("fired",function(e){if(ref.ed&&ref.ed.sel===e.id)ref.ed.sel=0});
+/* ---------- windows: hiring, bank notices and incidents ---------- */
+function openHire(role){
+  if(!roleUnlocked(role))return;
+  if((S.staff[role]||0)>=roleLimit(role)){toast(S.team.length>=staffCap()?"Your bar is full ("+staffCap()+" staff). Expand to make room for more.":"You cannot hire more "+STAFFM[role].pl+" right now.");return}
+  var c=candsToday(role);
+  var card=h("div","card");
+  card.appendChild(h("h2",null,"Hire a "+STAFFM[role].n.toLowerCase()));
+  card.appendChild(h("p",null,"Pick one of today’s candidates. A happy team attracts candidates who ask for less. New candidates come tomorrow."));
+  c.list.forEach(function(cd,i){
+    var box=h("div","cand");
+    box.appendChild(h("b",null,cd.name+" · "+LVLN[cd.lvl]));
+    box.appendChild(h("span",null,skillNames(role).map(function(sn,k){return sn+" "+cd.sk[k]+"/5"}).join(" · ")));
+    box.appendChild(h("span",null,"Wage "+money0(cd.wage)+" a month · hiring fee "+money0(cd.fee)));
+    var b=h("button","buy sm","Hire for "+money0(cd.fee));
+    b.disabled=S.money<cd.fee;
+    b.onclick=function(){hireCand(role,i)};
+    box.appendChild(b);card.appendChild(box);
+  });
+  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
+  showOv(card);
+}
+function showNotice(){
+  var n=S.notice;if(!n)return;
+  var ov=$("#ov");if(ov.classList.contains("on"))return;
+  var card=h("div","card");
+  if(n.type==="repo"){
+    card.appendChild(h("h2",null,"The bank took your bar"));
+    card.appendChild(h("p",null,"You could not pay the bills for "+LATE_MAX+" months in a row, so the bank repossessed the "+n.from.toLowerCase()+" and sold it for "+money0(n.sale)+"."));
+    card.appendChild(h("p",null,(n.toDebt>0?money0(n.toDebt)+" went to the debt. ":"")+(n.cash>0?money0(n.cash)+" was left for you. ":"")+(n.debtLeft>0?"You still owe "+money0(n.debtLeft)+". ":"The debt is cleared. ")));
+    card.appendChild(h("p",null,"You are back at the "+n.to.toLowerCase()+(n.fired?", and "+n.fired+" staff had to go":"")+". The recipes you learned are still yours, but the fittings, the unlocked ingredients and the training are gone: you need the requirements again to buy ingredients."));
+  }else{
+    card.appendChild(h("h2",null,"The bank steps in"));
+    card.appendChild(h("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
+  }
+  var ok=h("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
+  showOv(card);
+}
+function showIncident(){
+  var ov=$("#ov");if(ov.classList.contains("on")||!S.inc)return;
+  var inc=incById(S.inc.id);if(!inc){S.inc=null;return}
+  var card=h("div","card");
+  card.appendChild(h("h2",null,inc.t));
+  card.appendChild(h("p",null,inc.x+(S.inc.ing?" It is "+INGM[S.inc.ing].n+".":"")));
+  incOptions(inc).forEach(function(op,i){
+    var box=h("div","cand"),c=op.c();
+    box.appendChild(h("b",null,op.l));
+    box.appendChild(h("span",null,c>0?"Costs "+money0(c):"Free"+(op.role?" · "+STAFFM[op.role].n+" on your team":"")));
+    var b=h("button","buy sm","Choose");b.disabled=c>S.money;
+    b.onclick=function(){
+      var text=resolveInc(i,false);if(text===null)return;
+      var out=h("div","card");out.appendChild(h("h2",null,inc.t));out.appendChild(h("p",null,text));
+      var ok=h("button","buy","Continue");ok.onclick=hideOv;out.appendChild(ok);showOv(out);
+    };
+    box.appendChild(b);card.appendChild(box);
+  });
+  showOv(card);
+}
 /* ---------- UI: build ---------- */
 var ref={ord:[],tr:{},grp:{},ing:{},staff:{},rec:{},exp:null,br:{},mk:{},cal:{},fin:[],ed:{sel:0},mood:{},emps:{},empSig:""};
 function mkRow(nameHtml,withBtn){
@@ -2266,9 +2649,9 @@ function build(){
       var box=h("div","pbox"),inp=h("input"),fair=h("small"),rst=h("button","tog");
       inp.type="number";inp.step="any";inp.min="0";inp.setAttribute("inputmode","decimal");
       inp.setAttribute("aria-label","Price of "+r.n);
-      inp.addEventListener("input",function(){var v=parseFloat(inp.value);if(isFinite(v)&&v>=0)S.price[r.id]=v});
-      inp.addEventListener("change",function(){if(inp.value===""||!isFinite(parseFloat(inp.value)))delete S.price[r.id]});
-      rst.onclick=function(){delete S.price[r.id]};
+      inp.addEventListener("input",function(){setPrice(r.id,parseFloat(inp.value))});
+      inp.addEventListener("change",function(){if(inp.value===""||!isFinite(parseFloat(inp.value)))clearPrice(r.id)});
+      rst.onclick=function(){clearPrice(r.id)};
       var pend=h("small");
       box.append(inp,fair,pend,rst);row.row.appendChild(box);
       row.box=box;row.inp=inp;row.fair=fair;row.pend=pend;row.rst=rst;
@@ -2329,7 +2712,7 @@ function build(){
     })(cw);
   }
   var ccopy=h("button","link","Copy Monday to every day");
-  ccopy.onclick=function(){var m0=S.hours[0].slice();S.hours=S.hours.map(function(){return m0.slice()});HV++};
+  ccopy.onclick=function(){copyHours(0)};
   cp.appendChild(ccopy);
 
 
@@ -2356,7 +2739,7 @@ function build(){
   var reset=h("button","link","Erase all progress");var rc=false,rt;
   reset.onclick=function(){
     if(!rc){rc=true;reset.textContent="Tap again to erase everything";clearTimeout(rt);rt=setTimeout(function(){rc=false;reset.textContent="Erase all progress"},4000)}
-    else{S=def();MI=null;recomputeMarket();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
+    else{newGame();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
   };
   br.appendChild(reset);
 }
@@ -2780,15 +3163,18 @@ function setTab(t){
 }
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"))}});
 
-$("#hh").onclick=function(){
-  var now=Date.now();
-  if(!S.kits||now<S.hhReady)return;
-  S.hhUntil=now+30000*(1+0.5*lvl("hhour"));S.hhReady=now+120000;
-};
+$("#hh").onclick=startHappyHour;
 
+/* ---------- saving: only the app touches localStorage; the engine asks with emit("save") ---------- */
+var KEY="last-call-orders-v5";
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){S=Object.assign(def(),JSON.parse(r))}}catch(e){}
+  migrate();
+}
+function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+onEv("save",save);
 /* ---------- loop ---------- */
 var lastT=Date.now(),lastSave=Date.now();
-function offlineCap(){return (2+2*lvl("offline"))*3600}
 function loop(){
   var now=Date.now(),dt=(now-lastT)/1000;lastT=now;
   if(S.kits){
@@ -2804,363 +3190,8 @@ function loop(){
 }
 
 
-/* ---------- special missions: finish a task before it runs out for a cash bonus ---------- */
-var MS_DAYREV=[505,3000,10400,22300,34000];
-var MS_MAX=2;     /* missions you can hold at once */     /* typical revenue of one day in each venue; rewards are a share of it */
-function msInit(){if(!S.ms)S.ms={offers:[],active:[],next:1,day:-1,done:0,failed:0,earned:0,last:null,seen:true};return S.ms}
-function msExpected(list){
-  /* how many drinks a day the bar sells, and each drink's share of them */
-  var hr=S.hours[gDay()%7],span=Math.max(6,spanOf(hr[0],hr[1])),arrivals=span*60/interval()*arrivalMult()*0.9;
-  var perOrder=1+(EXPS[S.exp].k+(S.upg.table?1:0)-1)/2,tot=0,w={};
-  list.forEach(function(x){w[x.id]=Math.pow(x.p,0.6)*(x.solo?0.5:1);tot+=w[x.id]});
-  return{perDay:arrivals*perOrder,share:function(x){return tot?w[x.id]/tot:0}};
-}
-function msRound(v){return Math.max(10,Math.round(v/10)*10)}
-function msGenerate(){
-  var ms=msInit(),m=mi(),list=m.list.filter(function(x){return !x.solo});
-  if(!list.length)list=m.list;
-  ms.offers=[];
-  if(!list.length)return;
-  var ex=msExpected(m.list),flat=MS_DAYREV[S.exp];
-  var fams={};list.forEach(function(x){(fams[x.f]=fams[x.f]||[]).push(x)});
-  var famNames=Object.keys(fams).filter(function(f){return fams[f].length>=2});
-  var avg=0;m.list.forEach(function(x){avg+=priceOf(x)});avg=avg/m.list.length||1;
-  var types=["drink","family","streak","drink"],picks=[],usedItem={};
-  while(picks.length<3&&types.length){var t=types.splice(Math.floor(Math.random()*types.length),1)[0];if(picks.indexOf(t)<0||t==="drink")picks.push(t)}
-  picks.forEach(function(type){
-    if(type==="drink"&&!list.some(function(x){return !usedItem[x.id]}))type="streak";
-    var id=ms.next++,n,m1,days,jitter=0.8+Math.random()*0.5;
-    if(type==="drink"||(type==="family"&&!famNames.length)){
-      var it=wpick(list,function(x){return usedItem[x.id]?0.0001:Math.pow(x.p,0.6)});usedItem[it.id]=1;
-      days=4;n=Math.max(6,Math.min(90,Math.round(ex.perDay*ex.share(it)*days*1.6*jitter)));
-      m1={id:id,type:"drink",item:it.id,n:n,days:days,title:"Serve "+n+" "+it.n,reward:msRound(flat*0.25*clamp(priceOf(it)/avg,0.8,1.3))};
-    }else if(type==="family"){
-      var fam=famNames[Math.floor(Math.random()*famNames.length)],sh=0,fa=0;
-      fams[fam].forEach(function(x){sh+=ex.share(x);fa+=priceOf(x)});fa=fa/fams[fam].length;
-      days=5;n=Math.max(10,Math.min(200,Math.round(ex.perDay*sh*days*1.6*jitter)));
-      m1={id:id,type:"family",fam:fam,n:n,days:days,title:"Serve "+n+" "+fam.toLowerCase()+" drinks",reward:msRound(flat*0.22*clamp(fa/avg,0.8,1.3))};
-    }else{
-      days=4;n=30+Math.floor(Math.random()*21);
-      m1={id:id,type:"streak",n:n,days:days,title:"Serve "+n+" orders in a row without losing a customer",reward:msRound(flat*0.14)};
-    }
-    ms.offers.push(m1);
-  });
-}
-function msAccept(id){
-  var ms=msInit();if(ms.active.length>=MS_MAX)return false;
-  for(var i=0;i<ms.offers.length;i++){if(ms.offers[i].id===id){var m1=ms.offers.splice(i,1)[0];m1.p=0;m1.dl=gDay()+m1.days;ms.active.push(m1);return true}}
-  return false;
-}
-function msAbandon(id){var ms=msInit();ms.active=ms.active.filter(function(m1){return m1.id!==id})}
-function msStreakBreak(){var ms=S.ms;if(!ms)return;ms.active.forEach(function(m1){if(m1.type==="streak")m1.p=0})}
-function msComplete(m1){
-  var ms=msInit();ms.active=ms.active.filter(function(x){return x!==m1});
-  S.money+=m1.reward;S.totalEarned+=m1.reward;S.month.rev+=m1.reward;S.dayE+=m1.reward;
-  ms.done++;ms.earned+=m1.reward;ms.last={t:m1.title,r:m1.reward};
-  toast("Mission complete: "+m1.title+". +"+money0(m1.reward));
-}
-function msProgress(o){
-  var ms=S.ms;if(!ms||!ms.active.length)return;
-  var done=[];
-  ms.active.forEach(function(m1){
-    if(m1.type==="drink"){o.items.forEach(function(it){if(it.r===m1.item)m1.p++})}
-    else if(m1.type==="family"){o.items.forEach(function(it){if(ITM[it.r].f===m1.fam)m1.p++})}
-    else m1.p++;
-    if(m1.p>=m1.n)done.push(m1);
-  });
-  done.forEach(msComplete);
-}
-function msDay(quiet){
-  var ms=msInit(),d=gDay();
-  ms.active=ms.active.filter(function(m1){if(d>m1.dl){ms.failed++;if(!quiet)toast("Mission expired: "+m1.title+".");return false}return true});
-  if(ms.day!==d){ms.day=d;ms.seen=false;msGenerate();if(!quiet&&S.served>=8)toast("New special missions are on offer.")}
-}
-
-
-/* ====================== long-term systems ====================== */
-function dRev(){return MS_DAYREV[S.exp]}
-function ic(f){return Math.max(10,Math.round(f*dRev()/10)*10)}
-function hasRole(r){return (S.staff[r]||0)>0}
-function legLvl(id){return ((S.leg&&S.leg.perks)||{})[id]||0}
-
-/* ---- seasons and weather: nothing is stored, both follow the calendar ---- */
-var SEASONN=["Winter","Spring","Summer","Autumn"],WXN=["Sunny","Cloudy","Rainy","Snowy"];
-function seasonOf(day){var m=dateOf(day).m;return (m===11||m<2)?0:(m<5?1:(m<8?2:3))}
-function weatherOf(day){
-  var P=[[0.28,0.30,0.30,0.12],[0.45,0.30,0.25,0],[0.70,0.18,0.12,0],[0.40,0.30,0.30,0]][seasonOf(day)],r=rnd(day*5.77+1.3),acc=0;
-  for(var t=0;t<4;t++){acc+=P[t];if(r<=acc)return t}
-  return 0;
-}
-
-/* ---- themed nights ---- */
-var NIGHTS={
-  live:{n:"Live music",k:0.08,per:{3:1.45,4:1.35},type:{"Couple":1.6,"Regular":1.3,"Tourist":1.2},fam:{Classic:1.2},sat:4},
-  quiz:{n:"Quiz night",k:0.06,per:{3:1.4},type:{"Office crowd":1.7,"Party crowd":1.2},fam:{},sat:3},
-  cocktail:{n:"Cocktail night",k:0.09,per:{3:1.3,4:1.25},type:{"Food critic":1.8,"Couple":1.3},fam:{Classic:1.4,Sour:1.4,Tropical:1.3},sat:5}
-};
-function nightCost(t){return ic(NIGHTS[t].k)}
-function bookNight(day,t){
-  S.nights=S.nights||{};
-  if(S.nights[day]||!NIGHTS[t])return false;
-  var c=nightCost(t);if(S.money<c)return false;
-  S.money-=c;S.month.cogs+=c;S.nights[day]=t;FXC.day=-1;
-  return true;
-}
-function addMod(days,dem,sat){(S.mods=S.mods||[]).push({from:gDay(),until:gDay()+days-1,dem:dem,sat:sat||0});FXC.day=-1}
-
-/* ---- Bar Guide: a monthly star rating ---- */
-var MENUREF=[3,12,25,45,60];
-function guideStars(){return S.guide?S.guide.stars:2}
-function guideCalc(){
-  var m=S.month,gn=Math.max(1,m.gn||0),sat=(m.gs||0)/gn,pr=(m.gp||0)/gn;
-  var comp={sat:clamp(sat/100,0,1),price:clamp(pr/100,0,1),menu:Math.min(1,mi().list.length/MENUREF[S.exp]),rep:Math.min(1,repLevel()/8),style:Math.min(1,stylePts()/11)};
-  return {comp:comp,score:0.32*comp.sat+0.22*comp.price+0.18*comp.menu+0.14*comp.rep+0.14*comp.style};
-}
-function guideUpdate(){
-  var gc=guideCalc(),prev=S.guide?S.guide.score:gc.score,sc=0.5*prev+0.5*gc.score;
-  S.guide={score:sc,stars:Math.max(0,Math.min(5,Math.round(sc*6.2-0.7))),comp:gc.comp,month:S.mcount};
-}
-
-/* ---- regulars: guests who come back, with a favourite drink and a bond with the bar ---- */
-var REGN=["Ana","Rui","Marta","Tiago","Ines","Carlos","Bea","Nuno","Sofia","Joao","Rita","Pedro","Lena","Hugo","Clara","Diogo","Maya","Tomas","Vera","Leo","Nina","Dario"];
-function regCap(){return [2,4,6,9,12][S.exp]||2}
-function regOf(id){var a=S.reg||[];for(var i=0;i<a.length;i++){if(a[i].id===id)return a[i]}return null}
-function bondOf(id){var r=regOf(id);return r?r.bond:0}
-function regBond(id,d){var r=regOf(id);if(r)r.bond=clamp(r.bond+d,0,100)}
-function custByName(n){for(var i=0;i<CUST.length;i++){if(CUST[i].n===n)return CUST[i]}return CUST[0]}
-function pickRegular(){
-  if(!S.reg||!S.reg.length)return null;
-  if(Math.random()>Math.min(0.5,0.05*S.reg.length*(1+0.1*(guideStars()-2))))return null;
-  var busy={},d=gDay();
-  S.orders.forEach(function(o){if(o.rid)busy[o.rid]=1});(S.hold||[]).forEach(function(x){if(x.rid)busy[x.rid]=1});
-  var pool=S.reg.filter(function(r){return !busy[r.id]&&r.last<d});
-  if(!pool.length)return null;
-  return wpick(pool,function(r){return 1+r.bond/50});
-}
-function regAfterServe(o){
-  if(!S.reg)S.reg=[];
-  if(o.rid){var r=regOf(o.rid);if(r){r.visits++;r.bond=clamp(r.bond+(o.sat>=70?6:(o.sat<45?-10:1)),0,100)}return}
-  if(o.sat>=85&&(o.re||0)===0&&S.reg.length<regCap()&&Math.random()<0.05+0.10*clamp((floorAvg(2)-1)/4,0,1)){
-    var used={};S.reg.forEach(function(x){used[x.name]=1});
-    var free=REGN.filter(function(n){return !used[n]});if(!free.length)return;
-    var nm=free[Math.floor(Math.random()*free.length)];
-    S.reg.push({id:(S.nextReg=(S.nextReg||0)+1),name:nm,type:o.who,cls:o.cls,fav:o.items[0]?o.items[0].r:null,bond:20,visits:1,last:gDay()});
-    toast(nm+" liked it here and became a regular.");
-  }
-}
-
-/* ---- decor and style ---- */
-var DECOR=[
-  {id:"bunting",n:"String lights",k:0.15,pts:1},
-  {id:"plant",n:"Potted plants",k:0.12,pts:1},
-  {id:"lamp",n:"Floor lamp",k:0.15,pts:1},
-  {id:"neon",n:"Neon sign",k:0.5,pts:2},
-  {id:"trophy",n:"Trophy case",k:0.8,pts:3},
-  {id:"jukebox",n:"Jukebox",k:1.0,pts:3}
-];
-var THEMES={
-  classic:{n:"Classic",w:"BAR",c:"#ffd36a",type:{"Business traveler":1.2,"Food critic":1.2,"Couple":1.1},fam:{Classic:1.15},d:"Business travellers, critics and couples."},
-  tiki:{n:"Tiki",w:"TIKI",c:"#6fe0a8",type:{"Tourist":1.35,"Party crowd":1.15},fam:{Tropical:1.3},d:"Tourists, party crowds and tropical drinks."},
-  jazz:{n:"Jazz",w:"JAZZ",c:"#8fb4ff",type:{"Couple":1.3,"Regular":1.2,"Night owl":1.2},fam:{Classic:1.2,Neat:1.15},d:"Couples, regulars, night owls and neat spirits."},
-  retro:{n:"Retro",w:"RETRO",c:"#ff9a5a",type:{"Commuter":1.2,"Regular":1.25,"Office crowd":1.15},fam:{Beer:1.25,Soft:1.1},d:"Commuters, the office crowd and beer."},
-  neon:{n:"Neon",w:"NEON",c:"#ff5ad8",type:{"Party crowd":1.35,"Night owl":1.25},fam:{Party:1.3,Sour:1.1},d:"Party crowds, night owls and party drinks."}
-};
-function stylePts(){var n=0;if(S.deco&&S.deco.items)DECOR.forEach(function(d){if(S.deco.items[d.id])n+=d.pts});return n}
-function styleSat(){return Math.min(4,0.35*stylePts())}
-function decorCost(d){return Math.max(10,Math.round(d.k*dRev()*3/10)*10)}
-function themeType(n){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.type[n])||1}
-function themeFam(f){var t=S.deco&&S.deco.theme&&THEMES[S.deco.theme];return (t&&t.fam[f])||1}
-function themeCost(){return (S.deco&&S.deco.theme)?ic(0.4):0}
-function setTheme(id){
-  if(!THEMES[id])return false;
-  var c=themeCost();if(S.money<c)return false;
-  S.money-=c;S.deco=S.deco||{items:{}};S.deco.theme=id;return true;
-}
-function buyDecor(id){
-  var d=null;DECOR.forEach(function(x){if(x.id===id)d=x});if(!d)return false;
-  S.deco=S.deco||{items:{}};if(S.deco.items[id])return false;
-  var c=decorCost(d);if(S.money<c)return false;
-  S.money-=c;S.deco.items[id]=1;return true;
-}
-
-/* ---- suppliers ---- */
-var SUPS={
-  spot:{n:"Spot market",d:"Buy at the daily market price. No commitments."},
-  contract:{n:"3-month contract",d:"Prices are frozen at 97% of today's market for 84 days. Great when prices climb, a loss when they fall."},
-  volume:{n:"Volume deal",d:"8% off everything, but you owe half of the shortfall if a month's purchases fall below the commitment."},
-  premium:{n:"Premium supplier",d:"Prices are 12% higher, but fresher produce leaves guests a little happier (+2 satisfaction)."}
-};
-function supMode(){return (S.sup&&S.sup.mode)||"spot"}
-function volCommit(){return Math.round(dRev()*28*0.05/100)*100}
-function supSet(mode){
-  if(!SUPS[mode]||mode===supMode())return false;
-  if(supMode()==="contract"&&gDay()<S.sup.until)return false;   /* a contract has to run its course */
-  var o={mode:mode};
-  if(mode==="contract"){
-    o.until=gDay()+84;o.lk={};
-    for(var id in INGM){var key=RAWOF[id]||id;if(o.lk[key]===undefined)o.lk[key]=(MK[key]||1)*0.97}
-  }
-  S.sup=o;return true;
-}
-
-/* ---- incidents: a surprise with a choice ---- */
-function loseStock(f){for(var k in S.stock){S.stock[k]=Math.floor((S.stock[k]||0)*(1-f))}}
-function incIng(){return S.inc&&S.inc.ing?INGM[S.inc.ing]:null}
-function shortCost(f){var x=incIng();return x?Math.round(40*unitCost(x,0)*f/10)*10:0}
-var INCS=[
-  {id:"fridge",from:1,t:"The fridge broke down",x:"The cold room stopped overnight and the stock is warming up.",o:[
-    {l:"Emergency repair",c:function(){return ic(0.07)},r:function(){return "The technician saved the stock. Nothing was lost."}},
-    {l:"Wait for the technician",c:function(){return 0},r:function(){loseStock(0.35);return "A third of your stock spoiled before it was fixed."}},
-    {l:"Let your manager handle it",role:"manager",c:function(){return ic(0.035)},r:function(){loseStock(0.1);return "Your manager sorted it out quickly. Only a little was lost."}}]},
-  {id:"inspect",from:2,t:"Health inspection",x:"An inspector walked in and wants to see the kitchen.",o:[
-    {l:"Deep clean right now",c:function(){return ic(0.04)},r:function(){addRep(3);return "Spotless. The inspector left a glowing note."}},
-    {l:"Carry on as usual",c:function(){return 0},r:function(){var p=clamp(0.35+0.1*(guideStars()-2)+(hasRole("manager")?0.15:0),0.15,0.9);if(Math.random()<p){addRep(2);return "You passed without drama."}var f=Math.min(S.money,ic(0.12));S.money-=f;addRep(-10);return "You failed the inspection: "+money0(f)+" in fines and a dent in your reputation."}},
-    {l:"Let your cost controller handle it",role:"controller",c:function(){return ic(0.02)},r:function(){if(Math.random()<0.85){addRep(2);return "The paperwork was perfect. You passed."}addRep(-4);return "A minor fail, but the controller limited the damage."}}]},
-  {id:"review",from:1,t:"A bad review is spreading",x:"A guest posted a harsh review of the bar and people are sharing it.",o:[
-    {l:"Reply graciously",c:function(){return 0},r:function(){var p=clamp(0.3+0.12*(floorAvg(2)-1),0.2,0.85);if(Math.random()<p){addRep(2);return "Your kind reply won people over. The review turned into praise."}addRep(-4);return "The reply did not land and your reputation took a hit."}},
-    {l:"Ignore it",c:function(){return 0},r:function(){addRep(-5);addMod(3,0.92,0);return "It stung: fewer guests for a few days."}},
-    {l:"Offer a free round to apologise",c:function(){return ic(0.03)},r:function(){addMod(3,1,5);return "The gesture calmed things down and guests left happier."}}]},
-  {id:"shortage",from:1,t:"Supplier shortage",x:"Your supplier cannot deliver one of your ingredients this week.",o:[
-    {l:"Emergency order at a premium",c:function(){return shortCost(1.6)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "A rush delivery arrived: 40 units on the shelf."}},
-    {l:"Do without for a few days",c:function(){return 0},r:function(){var x=incIng();if(x){S.ban=S.ban||{};S.ban[x.id]=gDay()+3;S.stock[x.id]=0}return "Drinks that need it are off the menu until the supplier recovers."}},
-    {l:"Let your clerk negotiate",role:"clerk",c:function(){return shortCost(1.15)},r:function(){var x=incIng();if(x)addStock(x.id,40);return "Your clerk found another supplier at a fair price."}}]},
-  {id:"power",from:2,t:"Power cut",x:"The lights went out across the street and your bar is dark.",o:[
-    {l:"Rent a generator",c:function(){return ic(0.05)},r:function(){return "The generator kept everything running."}},
-    {l:"Serve by candlelight",c:function(){return 0},r:function(){addMod(1,0.8,4);return "Fewer guests came, but the mood was lovely."}}]},
-  {id:"viral",from:1,t:"Your bar is trending",x:"A photo of your bar is going round the internet.",o:[
-    {l:"Run a quick promotion",c:function(){return ic(0.04)},r:function(){addMod(3,1.45,0);return "The promotion turned the buzz into a crowd for three days."}},
-    {l:"Let it ride",c:function(){return 0},r:function(){addMod(2,1.2,0);return "A few more curious guests came through."}}]}
-];
-function incById(id){for(var i=0;i<INCS.length;i++){if(INCS[i].id===id)return INCS[i]}return null}
-function rollIncident(quiet){
-  if(S.inc||S.served<30||S.mcount<1)return;
-  if(Math.random()>0.08+0.01*S.exp)return;
-  var pool=INCS.filter(function(i){return S.exp>=i.from});
-  if(!pool.length)return;
-  var inc=pool[Math.floor(Math.random()*pool.length)];
-  S.inc={id:inc.id};
-  if(inc.id==="shortage"){
-    var own=ING.filter(function(x){return S.ing[x.id]&&!x.raw});
-    if(!own.length){S.inc=null;return}
-    S.inc.ing=own[Math.floor(Math.random()*own.length)].id;
-  }
-  if(quiet)resolveInc(null,true);
-}
-function incOptions(inc){return inc.o.filter(function(op){return !op.role||hasRole(op.role)})}
-function resolveInc(i,auto){
-  var inc=incById(S.inc.id),ops=incOptions(inc),op=null;
-  if(i===null){for(var k=0;k<ops.length;k++){if(ops[k].c()===0){op=ops[k];break}}if(!op)op=ops[0]}else op=ops[i];
-  var c=op.c();
-  if(c>S.money&&c>0)return null;
-  S.money-=c;S.month.cogs+=c;
-  var text=op.r();
-  S.inc=null;
-  if(auto){S.notes=S.notes||[]}
-  return text;
-}
-function showIncident(){
-  var ov=$("#ov");if(ov.classList.contains("on")||!S.inc)return;
-  var inc=incById(S.inc.id);if(!inc){S.inc=null;return}
-  var card=h("div","card");
-  card.appendChild(h("h2",null,inc.t));
-  card.appendChild(h("p",null,inc.x+(S.inc.ing?" It is "+INGM[S.inc.ing].n+".":"")));
-  incOptions(inc).forEach(function(op,i){
-    var box=h("div","cand"),c=op.c();
-    box.appendChild(h("b",null,op.l));
-    box.appendChild(h("span",null,c>0?"Costs "+money0(c):"Free"+(op.role?" · "+STAFFM[op.role].n+" on your team":"")));
-    var b=h("button","buy sm","Choose");b.disabled=c>S.money;
-    b.onclick=function(){
-      var text=resolveInc(i,false);if(text===null)return;
-      var out=h("div","card");out.appendChild(h("h2",null,inc.t));out.appendChild(h("p",null,text));
-      var ok=h("button","buy","Continue");ok.onclick=hideOv;out.appendChild(ok);showOv(out);
-    };
-    box.appendChild(b);card.appendChild(box);
-  });
-  showOv(card);
-}
-
-/* ---- rowdy guests ---- */
-function rowdyChance(cust,per){
-  var base=0.006*(cust.n==="Party crowd"?3:cust.n==="Night owl"?2.5:cust.n==="Tourist"?1.3:0.6)*(per===4?1.6:1);
-  var g=shiftCounts().security||0;
-  return base*(1-Math.min(0.6,0.3*g));
-}
-function dropQuiet(o){
-  var ix=S.orders.indexOf(o);if(ix>=0)S.orders.splice(ix,1);
-  S.jobs=S.jobs.filter(function(j){return j.o!==o.id});o.gone=true;
-}
-function rowdyEscalate(o,quiet){
-  var f=Math.min(S.money,ic(0.04));S.money-=f;S.month.cogs+=f;addRep(-1.5,true);
-  S.orders.forEach(function(n){if(n!==o&&Math.abs(n.slot-o.slot)<=1&&!n.ready)n.left*=0.6});
-  o.rowdy=false;S.walkouts++;addSat(0);msStreakBreak();dropQuiet(o);
-  if(!quiet)toast("A rowdy guest made a scene: "+money0(f)+" in damages.");
-}
-function rowdyStep(o,dt,quiet){
-  o.rt=(o.rt||0)+dt;
-  if((shiftCounts().security||0)>0&&o.rt>5){o.rowdy=false;S.calmed=(S.calmed||0)+1;return}
-  if(o.rt>25)rowdyEscalate(o,quiet);
-}
-function rowdyCalmChance(){return clamp(0.35+0.15*(floorAvg(2)-1),0.2,0.9)}
-function calmRowdy(o){
-  if(Math.random()<rowdyCalmChance()){o.rowdy=false;toast("You talked them round.");return true}
-  rowdyEscalate(o,false);return false;
-}
-function escortRowdy(o){o.rowdy=false;dropQuiet(o);toast("You showed them out politely. No harm done.")}
-
-/* ---- branches and legacy: what comes after the global chain ---- */
-var CITIES=[
-  {id:"lisbon",n:"Lisbon",k:1.0,cost:2700000},{id:"london",n:"London",k:1.15,cost:4000000},{id:"nyc",n:"New York",k:1.3,cost:6000000},
-  {id:"tokyo",n:"Tokyo",k:1.2,cost:9000000},{id:"dubai",n:"Dubai",k:1.4,cost:13500000}
-];
-var HQP=455000;   /* a global chain's typical monthly profit: branches pay a share of it */
-function branchActive(){return Math.min((S.br||[]).length,S.staff.ambassador||0)}
-function branchIncome(){
-  var inc=0,act=branchActive();
-  (S.br||[]).slice(0,act).forEach(function(id){CITIES.forEach(function(c){if(c.id===id)inc+=0.3*HQP*c.k*(0.7+0.06*guideStars())})});
-  return Math.round(inc);
-}
-function openBranch(id){
-  var c=null;CITIES.forEach(function(x){if(x.id===id)c=x});
-  S.br=S.br||[];
-  if(!c||S.exp<4||S.br.indexOf(id)>=0||S.money<c.cost)return false;
-  S.money-=c.cost;S.br.push(id);return true;
-}
-function legacyPoints(){return Math.floor(Math.sqrt(S.totalEarned/250000))+3*(S.br?S.br.length:0)}
-function canRetire(){return S.exp>=4&&S.totalEarned>=3000000}
-var LEGP=[
-  {id:"seed",n:"Seed money",d:"Start each new bar with +$2,500 per level.",max:5,cost:[2,3,4,6,8]},
-  {id:"crew",n:"Loyal crew",d:"New hires ask 4% less in wages, per level.",max:5,cost:[2,3,4,6,8]},
-  {id:"fame",n:"Famous name",d:"Every order pays 4% more, per level.",max:5,cost:[3,4,6,8,12]},
-  {id:"estate",n:"Real estate",d:"Expansions cost 8% less, per level.",max:5,cost:[3,4,6,8,12]},
-  {id:"picks",n:"Insider tips",d:"+1 ingredient pick in every group, per level.",max:3,cost:[3,5,8]},
-  {id:"recipes",n:"Recipe book",d:"Keep the recipes you learned when you start over.",max:1,cost:[4]}
-];
-function buyLeg(id){
-  var p=null;LEGP.forEach(function(x){if(x.id===id)p=x});if(!p)return false;
-  S.leg=S.leg||{pts:0,perks:{}};var l=legLvl(id);
-  if(l>=p.max||S.leg.pts<p.cost[l])return false;
-  S.leg.pts-=p.cost[l];S.leg.perks[id]=l+1;return true;
-}
-function retire(){
-  var gain=legacyPoints(),perks=(S.leg&&S.leg.perks)||{},keepKnown=legLvl("recipes")?S.known.slice():[],seed=2500*legLvl("seed");
-  var keep={perm:S.perm,pts:S.pts,ach:S.ach,leg:{pts:((S.leg&&S.leg.pts)||0)+gain,perks:perks},legacy:(S.legacy||0)+1,wkMig:1};
-  S=Object.assign(def(),keep);
-  S.known=keepKnown;
-  beginRun();
-  S.money=300+seed;
-  save();
-}
-
-function cleanLT(){
-  var d=gDay();
-  if(S.nights){for(var k in S.nights){if(+k<d-1)delete S.nights[k]}}
-  if(S.mods)S.mods=S.mods.filter(function(m){return m.until>=d});
-  if(S.ban){for(var b in S.ban){if(S.ban[b]<=d)delete S.ban[b]}}
-}
-
 /* ---------- start ---------- */
 load();
-if(S.kits&&!S.wkMig){S.wkMig=1;var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}
 recomputeMarket();
 build();
 (function(){
@@ -3610,7 +3641,7 @@ function applyName(){
 function submitName(){
   var v=document.getElementById("pxin").value.replace(/\s+/g," ").trim().slice(0,18);
   if(!v)v=S.barName||"Last Call";
-  S.barName=v;applyName();save();toast("Welcome to "+v+"!");endTut();
+  nameBar(v);applyName();save();toast("Welcome to "+v+"!");endTut();
 }
 
 var tutOn=false,tutI=0,tutFull="",tutN=0,tutT=0,tutSnap=0;
@@ -4077,7 +4108,7 @@ function openBank(){
     card.appendChild(h("div","h","Repay"));
     var half=Math.min(S.money,Math.round(S.debt/2)),all=Math.min(S.money,S.debt);
     var r1=h("button","buy sm","Repay "+money0(half));r1.disabled=half<=0;
-    r1.onclick=function(){S.money-=half;S.debt-=half;if(S.debt<0.5)S.debt=0;sfx("buy");openBank()};
+    r1.onclick=function(){repayPart(half);sfx("buy");openBank()};
     var r2=h("button","buy sm","Repay "+money0(all)+(all>=S.debt?" (all)":""));r2.disabled=all<=0;
     r2.onclick=function(){repayDebt();sfx("buy");openBank()};
     var row=h("div","cand");row.appendChild(h("span",null,"Cash "+money0(S.money)));row.appendChild(r1);row.appendChild(r2);card.appendChild(row);

@@ -229,9 +229,9 @@ function build(){
       var box=h("div","pbox"),inp=h("input"),fair=h("small"),rst=h("button","tog");
       inp.type="number";inp.step="any";inp.min="0";inp.setAttribute("inputmode","decimal");
       inp.setAttribute("aria-label","Price of "+r.n);
-      inp.addEventListener("input",function(){var v=parseFloat(inp.value);if(isFinite(v)&&v>=0)S.price[r.id]=v});
-      inp.addEventListener("change",function(){if(inp.value===""||!isFinite(parseFloat(inp.value)))delete S.price[r.id]});
-      rst.onclick=function(){delete S.price[r.id]};
+      inp.addEventListener("input",function(){setPrice(r.id,parseFloat(inp.value))});
+      inp.addEventListener("change",function(){if(inp.value===""||!isFinite(parseFloat(inp.value)))clearPrice(r.id)});
+      rst.onclick=function(){clearPrice(r.id)};
       var pend=h("small");
       box.append(inp,fair,pend,rst);row.row.appendChild(box);
       row.box=box;row.inp=inp;row.fair=fair;row.pend=pend;row.rst=rst;
@@ -292,7 +292,7 @@ function build(){
     })(cw);
   }
   var ccopy=h("button","link","Copy Monday to every day");
-  ccopy.onclick=function(){var m0=S.hours[0].slice();S.hours=S.hours.map(function(){return m0.slice()});HV++};
+  ccopy.onclick=function(){copyHours(0)};
   cp.appendChild(ccopy);
 
 
@@ -319,7 +319,7 @@ function build(){
   var reset=h("button","link","Erase all progress");var rc=false,rt;
   reset.onclick=function(){
     if(!rc){rc=true;reset.textContent="Tap again to erase everything";clearTimeout(rt);rt=setTimeout(function(){rc=false;reset.textContent="Erase all progress"},4000)}
-    else{S=def();MI=null;recomputeMarket();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
+    else{newGame();save();rc=false;reset.textContent="Erase all progress";setTab("stock");beginRun()}
   };
   br.appendChild(reset);
 }

@@ -17,7 +17,7 @@ function openBank(){
     card.appendChild(h("div","h","Repay"));
     var half=Math.min(S.money,Math.round(S.debt/2)),all=Math.min(S.money,S.debt);
     var r1=h("button","buy sm","Repay "+money0(half));r1.disabled=half<=0;
-    r1.onclick=function(){S.money-=half;S.debt-=half;if(S.debt<0.5)S.debt=0;sfx("buy");openBank()};
+    r1.onclick=function(){repayPart(half);sfx("buy");openBank()};
     var r2=h("button","buy sm","Repay "+money0(all)+(all>=S.debt?" (all)":""));r2.disabled=all<=0;
     r2.onclick=function(){repayDebt();sfx("buy");openBank()};
     var row=h("div","cand");row.appendChild(h("span",null,"Cash "+money0(S.money)));row.appendChild(r1);row.appendChild(r2);card.appendChild(row);

@@ -11,10 +11,10 @@ function def(){return{money:300,totalEarned:0,served:0,walkouts:0,
   gt:600,curDay:0,hours:defHours(),dayE:0,dayN:0,prev:{e:0,n:0},
   picks:{},known:[],kits:false,
   team:[],cands:{},mood:60,moodB:0,nextEmp:1,maxStaff:{},
-  hhUntil:0,hhReady:0,last:Date.now(),newRec:false}}
+  hhUntil:0,hhReady:0,last:now(),newRec:false}}
 var S=def();
-function load(){
-  try{var r=localStorage.getItem(KEY);if(r){S=Object.assign(def(),JSON.parse(r))}}catch(e){}
+/* bring a loaded save up to date (new fields are also created lazily where they are used) */
+function migrate(){
   if(!Array.isArray(S.hours)||S.hours.length!==7)S.hours=defHours();
   if(!S.prev)S.prev={e:0,n:0};
   if(!S.month)S.month=newMonth();
@@ -23,6 +23,6 @@ function load(){
   S.team.forEach(function(e){delete e.sch;delete e.ot});
   [S.month,S.lastMonth].forEach(function(m){if(m&&m.ot!==undefined){m.pay+=m.ot||0;delete m.ot}});
   syncStaff();
+  if(S.kits&&!S.wkMig){S.wkMig=1;var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}
 }
-function save(){S.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 

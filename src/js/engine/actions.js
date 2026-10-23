@@ -1,4 +1,10 @@
 /* ---------- starting a bar ---------- */
+function checkUnlocks(){
+  var nw=ITEMS.filter(function(r){return unlocked(r)&&S.known.indexOf(r.id)<0});
+  if(!nw.length)return;
+  nw.forEach(function(r){S.known.push(r.id);if(S.act[r.id]===undefined)S.act[r.id]=stagedPrice(r)});
+  if(S.kits)emit("unlock",nw);
+}
 function usedIn(x){
   var n=REC.filter(function(r){return !r.s&&r.i.indexOf(x.id)>=0}).length;
   var s=n?"Used in "+n+(n>1?" recipes":" recipe"):"Special ingredient";
@@ -14,7 +20,7 @@ function beginRun(){
   checkUnlocks();
   S.newRec=false;
   toast("Your lemonade stand is open. Customers are ordering.");
-  save();
+  emit("save");
 }
 
 /* ---------- actions ---------- */
@@ -32,6 +38,17 @@ function unlockTier(id,t){
   S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);MI=null;
   checkUnlocks();
 }
+function setPrice(id,v){if(isFinite(v)&&v>=0)S.price[id]=v}
+function clearPrice(id){delete S.price[id]}
+function copyHours(from){var m0=S.hours[from].slice();S.hours=S.hours.map(function(){return m0.slice()});HV++}
+function startHappyHour(){
+  var t=now();
+  if(!S.kits||t<S.hhReady)return;
+  S.hhUntil=t+30000*(1+0.5*lvl("hhour"));S.hhReady=t+120000;
+}
+function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
+function nameBar(v){S.barName=v}
+function newGame(){S=def();MI=null;recomputeMarket()}
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
@@ -58,40 +75,25 @@ function upgradeClerk(e){
 function pickName(){
   var used={};S.team.forEach(function(e){used[e.name]=1});
   var free=NAMES.filter(function(n){return !used[n]}),src=free.length?free:NAMES;
-  return src[Math.floor(Math.random()*src.length)];
+  return src[Math.floor(random()*src.length)];
 }
 function genCand(role){
   var r=STAFFM[role],ns=skillNames(role).length;
   var lv=wpick([0,1,2],function(x){return x===0?70:x===1?25:5});
   var expect=ns===3?[7,9,11]:[4,6,8];
-  var budget=expect[lv]+Math.floor(Math.random()*3)-1;
+  var budget=expect[lv]+Math.floor(random()*3)-1;
   var sk=[],i;for(i=0;i<ns;i++)sk.push(1);
   var sum=ns,guard=0;
-  while(sum<budget&&guard++<60){var j=Math.floor(Math.random()*ns);if(sk[j]<5){sk[j]++;sum++}}
+  while(sum<budget&&guard++<60){var j=Math.floor(random()*ns);if(sk[j]<5){sk[j]++;sum++}}
   var prem=1+0.04*(sum-expect[lv]);
-  var wage=Math.round(r.w*wk()*LVLM[lv]*prem*clamp(1.25-0.5*S.mood/100,0.75,1.25)*(0.93+Math.random()*0.14)/10)*10;
+  var wage=Math.round(r.w*wk()*LVLM[lv]*prem*clamp(1.25-0.5*S.mood/100,0.75,1.25)*(0.93+random()*0.14)/10)*10;
   return{name:pickName(),role:role,lvl:lv,sk:sk,wage:wage,fee:Math.round(wage*HIRE)};
 }
-function openHire(role){
-  if(!roleUnlocked(role))return;
-  if((S.staff[role]||0)>=roleLimit(role)){toast(S.team.length>=staffCap()?"Your bar is full ("+staffCap()+" staff). Expand to make room for more.":"You cannot hire more "+STAFFM[role].pl+" right now.");return}
+/* today's three candidates for a role, drawn once a day */
+function candsToday(role){
   var c=S.cands[role];
   if(!c||c.day!==gDay()||!c.list.length)S.cands[role]=c={day:gDay(),list:[genCand(role),genCand(role),genCand(role)]};
-  var card=h("div","card");
-  card.appendChild(h("h2",null,"Hire a "+STAFFM[role].n.toLowerCase()));
-  card.appendChild(h("p",null,"Pick one of today’s candidates. A happy team attracts candidates who ask for less. New candidates come tomorrow."));
-  c.list.forEach(function(cd,i){
-    var box=h("div","cand");
-    box.appendChild(h("b",null,cd.name+" · "+LVLN[cd.lvl]));
-    box.appendChild(h("span",null,skillNames(role).map(function(sn,k){return sn+" "+cd.sk[k]+"/5"}).join(" · ")));
-    box.appendChild(h("span",null,"Wage "+money0(cd.wage)+" a month · hiring fee "+money0(cd.fee)));
-    var b=h("button","buy sm","Hire for "+money0(cd.fee));
-    b.disabled=S.money<cd.fee;
-    b.onclick=function(){hireCand(role,i)};
-    box.appendChild(b);card.appendChild(box);
-  });
-  var cl=h("button","link","Close");cl.onclick=hideOv;card.appendChild(cl);
-  showOv(card);
+  return c;
 }
 function hireCand(role,i){
   var c=S.cands[role],cd=c&&c.list[i];if(!cd)return;
@@ -103,8 +105,7 @@ function hireCand(role,i){
   S.team.push(e);c.list.splice(i,1);
   syncStaff();
   if(role==="clerk")autoAssignClerk();
-  ref.ed.sel=e.id;
-  hideOv();
+  emit("hired",e);
   var pk=false;for(var t2 in TIERS){if(picksTotal(t2)>before[t2])pk=true}
   toast(cd.name+" joined the team."+(e.starter?" Starter deal: half wage until you leave the stand.":"")+(pk?" New ingredient pick! Open Stock.":""));
 }

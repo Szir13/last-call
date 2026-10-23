@@ -43,6 +43,13 @@ Created by `def()`; many later features create their field lazily. Important gro
 - Orders: `orders[] jobs[] hold[]`.
 - Long-term (lazy): `ms` missions, `reg` regulars, `guide`, `deco`, `sup`, `nights`, `mods`, `ban`, `inc`, `br`, `leg`, `legacy`.
 
+## Engine and UI
+The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock access:
+- **Out**: `emit(name,data)`, heard by `onEv(name,fn)`. Events today: `toast`, `unlock` (new drinks), `hired`, `fired`, `save`. The UI registers its listeners in `ui/overlay.js` and `app/storage.js`.
+- **In**: `now()` and `random()` read `ENV`, which `setEnv({now,random})` replaces (tests, seeded runs).
+- Windows that only show engine state (`openHire`, `showNotice`, `showIncident`) live in `ui/windows.js`; `S.notice` and `S.inc` are still picked up by `loop()`.
+- `tools/engine.js` loads only the engine files (the list comes from `build.js`) into an empty Node `vm` context and runs `tools/js/scenario.js` and `bot.js` against it. `reference.py --node` and `run_bots.py --node` use it.
+
 ## UI layers
 1. **Engine UI** (original): panels `#p-stock #p-staff #p-upg #p-book #p-brand #p-cal`, built in `build()`, refreshed in `update()` using `setT/setC` and `ref.*`.
 2. **Skin**: CSS only, later blocks win. Cards and grids are applied with CSS to the same DOM (`#p-stock>.row` becomes a card).
@@ -56,4 +63,4 @@ Canvas is 160x140 logical pixels scaled by `Z` (fractional, snapped to device pi
 `localStorage`: engine state under `last-call-orders-v5` (every 5 s and on hide), scene preferences under `last-call-pixel-v1` (`done`, `hide`, `tabs`, `fold`, `mute`). `load()` merges the saved JSON over `def()`. `retire()` rebuilds `S` and the page reloads.
 
 ## Test hook
-`tools/harness.py` injects `window.__lc` before `setInterval(loop,100)`. Inner-IIFE functions are not reachable from the hook; test them through the DOM.
+`tools/harness.py` injects `window.__lc` before `setInterval(loop,100)`. Inner-IIFE functions are not reachable from the hook; test them through the DOM. With `node=True` the same scripts run against `tools/engine.js`, where `window.__lc` resolves any engine name.

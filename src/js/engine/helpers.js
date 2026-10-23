@@ -1,8 +1,4 @@
 /* ---------- helpers ---------- */
-function $(s){return document.querySelector(s)}
-function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
-function setT(e,t){if(e._t!==t){e._t=t;e.textContent=t}}
-function setC(e,c){if(e._c!==c){e._c=c;e.className=c}}
 var SUF=["","k","M","B","T","Qa","Qi","Sx","Sp"];
 function fmt(n){
   if(!isFinite(n))return "∞";
@@ -20,7 +16,7 @@ function roleUnlocked(id){return !!S.upg[id==="prepchef"?"kitchen":id]}
 function chefActive(){return !!S.upg.kitchen&&(S.staff.prepchef||0)>0}
 function wpick(arr,wf){
   var t=0,i;for(i=0;i<arr.length;i++)t+=wf(arr[i]);
-  var r=Math.random()*t;
+  var r=random()*t;
   for(i=0;i<arr.length;i++){r-=wf(arr[i]);if(r<=0)return arr[i]}
   return arr[arr.length-1];
 }
@@ -53,7 +49,7 @@ function spoil(quiet){
     var sh=shelfOf(key),b=S.bat[key],x=INGM[baseId(key)];
     while(b.length&&b[0].d+sh<=d){
       var n=b[0].n;b.shift();
-      var care=empAvg("clerk",1),keep=care>0?0.06*(care-1)*n:0,saved=Math.floor(keep)+(Math.random()<keep-Math.floor(keep)?1:0);
+      var care=empAvg("clerk",1),keep=care>0?0.06*(care-1)*n:0,saved=Math.floor(keep)+(random()<keep-Math.floor(keep)?1:0);
       if(saved>0){n=Math.max(0,n-saved);b.push({d:d,n:saved})}
       S.stock[key]=Math.max(0,(S.stock[key]||0)-n);
       cost+=n*(x.q?x.u[tierOfKey(key)]:x.u);

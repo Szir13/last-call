@@ -1,6 +1,5 @@
 /* ---------- loop ---------- */
 var lastT=Date.now(),lastSave=Date.now();
-function offlineCap(){return (2+2*lvl("offline"))*3600}
 function loop(){
   var now=Date.now(),dt=(now-lastT)/1000;lastT=now;
   if(S.kits){

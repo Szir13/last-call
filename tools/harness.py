@@ -1,10 +1,12 @@
-"""Shared helpers: inject a test hook into index.html and drive it with Playwright.
+"""Shared helpers: drive the engine through Playwright, or headless in Node.
 
-The game keeps everything inside one closure, so the tools build a copy of
+Browser: the game keeps everything inside one closure, so the tools build a copy of
 index.html (tools/.build/index.hooked.html) that exposes engine internals on
 window.__lc. The shipped index.html is never modified.
+Node (node=True): tools/engine.js loads only the engine files from src/ and runs the
+same tools/js scripts against it, several times faster and with no DOM at all.
 """
-import pathlib, time
+import json, pathlib, subprocess, time
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -54,8 +56,20 @@ def js(name):
     return (JS / name).read_text(encoding="utf-8")
 
 
-def run_scenarios(scenarios):
+def run_node(script, calls):
+    """Run a tools/js script headless once per argument in calls."""
+    job = json.dumps({"script": script, "calls": calls})
+    res = subprocess.run(["node", str(ROOT / "tools" / "engine.js")], input=job, capture_output=True, text=True, check=True)
+    return json.loads(res.stdout)
+
+
+def run_scenarios(scenarios, node=False):
     """scenarios: list of (name, config dict). Returns a list of result dicts."""
+    if node:
+        out = run_node("scenario.js", [cfg for _, cfg in scenarios])
+        for (name, _), r in zip(scenarios, out):
+            r["name"] = name
+        return out
     out = []
     with sync_playwright() as pw:
         browser, page = new_game(pw)
@@ -68,7 +82,9 @@ def run_scenarios(scenarios):
     return out
 
 
-def run_bot(style, months=30, seeds=1):
+def run_bot(style, months=30, seeds=1, node=False):
+    if node:
+        return run_node("bot.js", [[style, months]] * seeds)
     out = []
     with sync_playwright() as pw:
         browser, page = new_game(pw)

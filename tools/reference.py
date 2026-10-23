@@ -2,6 +2,7 @@
 
     python tools/reference.py            # reference teams at each stage's staff limit
     python tools/reference.py --sweep    # also show smaller and larger teams around the limit
+    python tools/reference.py --node     # headless engine in Node, a few seconds, no browser
 
 Look at: margin % (target 50-56), payback of the next expansion (target 1.5-2.5 months),
 and whether the team at the limit still earns more than a smaller one.
@@ -60,12 +61,13 @@ def show(rows):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--sweep", action="store_true")
+    ap.add_argument("--node", action="store_true", help="run the engine headless in Node instead of a browser")
     a = ap.parse_args()
-    rows = run_scenarios(REFERENCE)
+    rows = run_scenarios(REFERENCE, a.node)
     show(rows)
     prof = [r["profit"] for r in rows]
     print("\npayback of the next expansion (months of profit):", [round(EXPANSION_COST[i] / max(1, prof[i]), 1) for i in range(4)])
     print("daily revenue (feeds MS_DAYREV in index.html):", [round(r["rev"] / 28) for r in rows])
     if a.sweep:
         print()
-        show(run_scenarios(SWEEP))
+        show(run_scenarios(SWEEP, a.node))

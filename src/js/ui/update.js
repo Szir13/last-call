@@ -417,9 +417,5 @@ function setTab(t){
 }
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"))}});
 
-$("#hh").onclick=function(){
-  var now=Date.now();
-  if(!S.kits||now<S.hhReady)return;
-  S.hhUntil=now+30000*(1+0.5*lvl("hhour"));S.hhReady=now+120000;
-};
+$("#hh").onclick=startHappyHour;
 

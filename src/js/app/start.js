@@ -1,6 +1,5 @@
 /* ---------- start ---------- */
 load();
-if(S.kits&&!S.wkMig){S.wkMig=1;var wk0=wk();if(wk0!==1)S.team.forEach(function(e){e.wage=Math.round(e.wage*wk0/10)*10})}
 recomputeMarket();
 build();
 (function(){

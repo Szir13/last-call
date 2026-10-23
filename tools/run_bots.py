@@ -2,6 +2,7 @@
 
     python tools/run_bots.py                       # all five styles, 5 runs of 30 game months
     python tools/run_bots.py careful --months 12 --seeds 3
+    python tools/run_bots.py --node                # headless engine in Node, much faster
 
 Each run takes about 10 to 60 seconds. Styles run in parallel processes.
 """
@@ -22,9 +23,10 @@ if __name__ == "__main__":
     ap.add_argument("styles", nargs="*", default=list(STYLES))
     ap.add_argument("--months", type=int, default=30)
     ap.add_argument("--seeds", type=int, default=5)
+    ap.add_argument("--node", action="store_true", help="run the engine headless in Node instead of a browser")
     a = ap.parse_args()
     with ProcessPoolExecutor(max_workers=len(a.styles)) as ex:
-        results = dict(ex.map(job, [(s, a.months, a.seeds) for s in a.styles]))
+        results = dict(ex.map(job, [(s, a.months, a.seeds, a.node) for s in a.styles]))
     print(f"{'bot':28}{'best stage':>14}{'month at S2 / S3 / S4':>26}{'went bust':>11}{'net worth':>14}{'guest sat':>11}")
     for s in a.styles:
         d = results[s]

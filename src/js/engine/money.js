@@ -15,7 +15,7 @@ function fireEmp(e){
   var ix=S.team.indexOf(e);if(ix<0)return;
   S.team.splice(ix,1);
   syncStaff();trimAssign();
-  if(ref.ed&&ref.ed.sel===e.id)ref.ed.sel=0;
+  emit("fired",e);
 }
 function staffQuits(quiet){
   var best=null;
@@ -77,22 +77,6 @@ function repossess(quiet){
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }
-function showNotice(){
-  var n=S.notice;if(!n)return;
-  var ov=$("#ov");if(ov.classList.contains("on"))return;
-  var card=h("div","card");
-  if(n.type==="repo"){
-    card.appendChild(h("h2",null,"The bank took your bar"));
-    card.appendChild(h("p",null,"You could not pay the bills for "+LATE_MAX+" months in a row, so the bank repossessed the "+n.from.toLowerCase()+" and sold it for "+money0(n.sale)+"."));
-    card.appendChild(h("p",null,(n.toDebt>0?money0(n.toDebt)+" went to the debt. ":"")+(n.cash>0?money0(n.cash)+" was left for you. ":"")+(n.debtLeft>0?"You still owe "+money0(n.debtLeft)+". ":"The debt is cleared. ")));
-    card.appendChild(h("p",null,"You are back at the "+n.to.toLowerCase()+(n.fired?", and "+n.fired+" staff had to go":"")+". The recipes you learned are still yours, but the fittings, the unlocked ingredients and the training are gone: you need the requirements again to buy ingredients."));
-  }else{
-    card.appendChild(h("h2",null,"The bank steps in"));
-    card.appendChild(h("p",null,"You are back at the lemonade stand and still behind on payments, so there is nothing smaller to sell. The bank restructures your debt from "+money0(n.debtBefore)+" down to "+money0(S.debt)+"."));
-  }
-  var ok=h("button","buy","Continue");ok.onclick=function(){S.notice=null;hideOv()};card.appendChild(ok);
-  showOv(card);
-}
 function monthEnd(quiet){
   var m=S.month;
   if(S.mcount===0){m.rent*=0.5;m.util*=0.5;m.pay*=0.5}   /* the opening month is half price */
@@ -146,7 +130,7 @@ function staffDay(quiet){
     S.mood=clamp(S.mood+(target-S.mood)*0.2,0,100);
   }else S.mood+=(60-S.mood)*0.2;
   S.moodB*=0.9;
-  if(n>0&&S.mood<40&&Math.random()<(40-S.mood)/200)moodQuit(quiet);
+  if(n>0&&S.mood<40&&random()<(40-S.mood)/200)moodQuit(quiet);
 }
 function dayChange(quiet){
   var d=gDay();

@@ -9,6 +9,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: `src/` with `data/*.js` (ING, REC, STAFF, EXPS, CUST, calendar, trees), `state.js`, `engine/*.js` (orders, money, people, calendar, missions, longterm), `ui/*.js` (build, update, skin, venue, bank), `scene/*.js` (sprites, stages, customers, render, tutorial), `styles/*.css`. Build to a single `index.html` with esbuild or a 30-line Node concat script. Keep `npm run build` and `npm test` working. Keep ES5-compatible syntax or confirm the target browsers first.
 
 ## 2. Make the simulation independent from the DOM
+**Done.** Event bus (`engine/events.js`), injected `now()`/`random()`, DOM helpers, windows, storage and the loop moved out of the engine; the engine runs headless in Node (`tools/engine.js`, `--node` in the tools). Playwright stays for the smoke test and UI checks. Not done yet: Node unit tests (step 9).
 - **Symptom**: engine functions call `toast()`, `showOv()`, `$()`, read `ref.*`, and the UI layer reads engine state through polling. `simulate()` works headless only through a browser.
 - **Why**: Node unit tests, faster balance sims (minutes become seconds), and a clean port to a native shell.
 - **Step**: engine emits events (`served`, `walkout`, `monthEnd`, `dayChange`, `incident`, `notice`, `unlock`) through a tiny bus; UI subscribes. Pass `now()` and `random()` into the engine. Then run the engine in Node and keep Playwright for UI only.
