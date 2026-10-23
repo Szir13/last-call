@@ -25,6 +25,7 @@ Every item has the symptom, why it matters, and a suggested first step. Do them 
 - **Step**: remove the code and the editor DOM, add a save migration that drops `e.sch`, simplify `shiftCounts`, `staffAt`, `daysWorking`. Run the tools to confirm no change.
 
 ## 5. Replace polling with events or direct calls
+**Done.** 12 pollers removed; see `scene/ui/refresh.js`. Seeded engine output is identical before and after.
 - 13 `setInterval` pollers (500 to 1500 ms) keep the UI layer in sync: `updTabs`, `decorate`, `updDash`, `groupStock`, `applyFolds`, `clampNotes`, `updNext`, `watchRecipes`, buttons.
 - **Step**: after step 2, update only when the relevant event fires. Keep one `requestAnimationFrame` for the scene.
 

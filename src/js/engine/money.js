@@ -70,10 +70,11 @@ function repossess(quiet){
   S.maxStaff={};addStock("lemonjuice",20);
   S.orders=[];S.jobs=[];S.hold=[];S.arrive=2;S.cands={};
   S.nights={};S.sup={mode:"spot"};S.inc=null;S.br=[];S.deco={items:{},theme:null};
-  syncStaff();MI=null;
+  syncStaff();menuChanged();
   S.debt=Math.min(S.debt,Math.round(monthlyFixed()*2));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
   addRep(-Math.round(S.rep*0.4),true);S.mood=Math.max(20,S.mood-15);S.late=0;
   if(S.ms){S.ms.active=[];S.ms.day=-1}
+  emit("stage");
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }

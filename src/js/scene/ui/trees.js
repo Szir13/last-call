@@ -29,5 +29,5 @@ function updNext(key,tr,labels){
   }
   if(own.length)box.el.appendChild(el("div","pxown","Unlocked: "+own.join(", ")));
 }
-setInterval(function(){try{updNext("bar",ref.tr.bar,["Team","Service","Stock","Customers"]);updNext("train",ref.tr.train,null)}catch(e){}},500);
+function updTrees(){updNext("bar",ref.tr.bar,["Team","Service","Stock","Customers"]);updNext("train",ref.tr.train,null)}
 

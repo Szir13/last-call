@@ -68,6 +68,7 @@ function itemKeys(it){
   return it.i.map(function(id){return skey(id,INGM[id].q?brandOf(id):0)});
 }
 var MI=null;
+function menuChanged(){MI=null;emit("menu")}   /* ingredients or menu changed: drop the cache, tell the UI */
 function mi(){
   if(MI)return MI;
   var list=ITEMS.filter(unlocked),fam={};

@@ -45,7 +45,7 @@ Created by `def()`; many later features create their field lazily. Important gro
 
 ## Engine and UI
 The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock access:
-- **Out**: `emit(name,data)`, heard by `onEv(name,fn)`. Events today: `toast`, `unlock` (new drinks), `hired`, `fired`, `save`. The UI registers its listeners in `ui/overlay.js` and `app/storage.js`.
+- **Out**: `emit(name,data)`, heard by `onEv(name,fn)`. Engine events: `toast`, `unlock` (new drinks), `menu` (ingredients changed), `stage` (venue changed), `hired`, `fired`, `save`. UI events: `render` (end of every `loop()`), `tab` (tab switched). The UI registers its listeners in `ui/overlay.js` and `app/storage.js`.
 - **In**: `now()` reads `ENV.now`; `random()` is mulberry32 over `S.rng`, seeded by `def()` from `ENV.seed()`. `setEnv({now,seed})` replaces them (tests; `--seed` in the tools). The same seed gives identical results in the browser and in Node.
 - Windows that only show engine state (`openHire`, `showNotice`, `showIncident`) live in `ui/windows.js`; `S.notice` and `S.inc` are still picked up by `loop()`.
 - `tools/engine.js` loads only the engine files (the list comes from `build.js`) into an empty Node `vm` context and runs `tools/js/scenario.js` and `bot.js` against it. `reference.py --node` and `run_bots.py --node` use it.
@@ -54,7 +54,7 @@ The engine (`data/`, `engine/`, `state.js`) has no DOM, storage or wall-clock ac
 1. **Engine UI** (original): panels `#p-stock #p-staff #p-upg #p-book #p-brand #p-cal`, built in `build()`, refreshed in `update()` using `setT/setC` and `ref.*`.
 2. **Skin**: CSS only, later blocks win. Cards and grids are applied with CSS to the same DOM (`#p-stock>.row` becomes a card).
 3. **Scene module** adds: dock and strip, scene canvas, bubbles over the canvas (DOM, positioned by logical coordinates times `Z`), tutorial dialog, tab visibility, row decorations (`decorate()`), team dashboard, next-node cards for the upgrade tree, stock grouping (`groupStock()`), fold sections, and the Venue, Missions and Bank windows.
-4. Several `setInterval` pollers keep layer 3 in sync with layer 1 (list at the bottom of the script). They are cheap but are a smell, see `docs/REFACTOR.md`.
+4. Layer 3 has no timers. `scene/ui/refresh.js` runs its updates on events: `menu` (recipe banner, stock groups), `stage` (expansion preview), structural changes inside the panels (a `MutationObserver`: row icons, folds; its own edits are discarded), and the `render` event from `loop()`, where values that change all the time refresh every 500 ms (dashboard and trees only while their tab is open). The only timers left are `loop()` (100 ms) and the scene's `requestAnimationFrame`.
 
 ## Scene
 Canvas is 160x140 logical pixels scaled by `Z` (fractional, snapped to device pixels). Layers: sky (dynamic) -> `LA` back (cached per stage and shelf contents) -> weather -> crew behind counter -> `LB` counter (cached) -> decor -> customers sorted by y -> weather in front -> day/night tint. Customers are NPCs derived each frame from `S.orders` and `S.hold` (`sync()`), never stored. Seats: up to 15 in three rows (`SLOTX/SLOTY`).

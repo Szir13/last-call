@@ -21,5 +21,4 @@ function updTabs(){
     newly.forEach(function(k){var b=document.querySelector('nav button[data-tab="'+k+'"]');if(b){b.classList.add("pxnew");setTimeout(function(){b.classList.remove("pxnew")},5000)}})}
   tabsInit=true;
 }
-setInterval(updTabs,500);updTabs();
 

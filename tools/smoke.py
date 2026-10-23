@@ -13,9 +13,12 @@ from playwright.sync_api import sync_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHOTS = ROOT / "tools" / ".build" / "shots"
 TABS = ["stock", "staff", "upg", "book", "brand", "cal"]
-# Seed localStorage once per context (the init script also runs on reloads).
+# Seed localStorage once per context (the init script also runs on reloads). The save is dated
+# one minute ago, so it always replays the same short offline catch-up however old the fixture is.
 SEED = """(d)=>{if(sessionStorage.getItem('__seeded'))return;sessionStorage.setItem('__seeded','1');
-for(const k in d){if(d[k]!==null)localStorage.setItem(k,d[k])}}"""
+for(const k in d){if(d[k]===null)continue;let v=d[k];
+if(k==='last-call-orders-v5'){const s=JSON.parse(v);s.last=Date.now()-60e3;v=JSON.stringify(s)}
+localStorage.setItem(k,v)}}"""
 
 
 def visit(browser, url, scheme, label, save=None):

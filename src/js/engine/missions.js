@@ -64,6 +64,8 @@ function msProgress(o){
   });
   done.forEach(msComplete);
 }
+/* missions for today: offers are drawn the first time they are looked at on a new day */
+function msToday(){var ms=msInit();if(ms.day!==gDay())msDay(true);return ms}
 function msDay(quiet){
   var ms=msInit(),d=gDay();
   ms.active=ms.active.filter(function(m1){if(d>m1.dl){ms.failed++;if(!quiet)toast("Mission expired: "+m1.title+".");return false}return true});

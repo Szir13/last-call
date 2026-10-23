@@ -1136,6 +1136,7 @@ function itemKeys(it){
   return it.i.map(function(id){return skey(id,INGM[id].q?brandOf(id):0)});
 }
 var MI=null;
+function menuChanged(){MI=null;emit("menu")}   /* ingredients or menu changed: drop the cache, tell the UI */
 function mi(){
   if(MI)return MI;
   var list=ITEMS.filter(unlocked),fam={};
@@ -1467,10 +1468,11 @@ function repossess(quiet){
   S.maxStaff={};addStock("lemonjuice",20);
   S.orders=[];S.jobs=[];S.hold=[];S.arrive=2;S.cands={};
   S.nights={};S.sup={mode:"spot"};S.inc=null;S.br=[];S.deco={items:{},theme:null};
-  syncStaff();MI=null;
+  syncStaff();menuChanged();
   S.debt=Math.min(S.debt,Math.round(monthlyFixed()*2));   /* the bank writes off what the sale could not cover, beyond a recoverable amount */
   addRep(-Math.round(S.rep*0.4),true);S.mood=Math.max(20,S.mood-15);S.late=0;
   if(S.ms){S.ms.active=[];S.ms.day=-1}
+  emit("stage");
   S.notice={type:"repo",from:from.n,to:EXPS[S.exp].n,sale:sale,toDebt:paid,cash:extra,debtLeft:Math.round(S.debt),fired:fired};
   checkUnlocks();
 }
@@ -1864,7 +1866,7 @@ function beginRun(){
   S.ing={lemonjuice:1};S.ql={};S.brand={};S.stock={};S.bat={};S.auto={};S.par={};S.parCat={};S.notes=[];
   S.price={};S.act={};S.cprice={};
   addStock("lemonjuice",20);
-  S.money=300;S.orders=[];S.jobs=[];S.arrive=2;S.sat=60;S.ctlT=15;MI=null;
+  S.money=300;S.orders=[];S.jobs=[];S.arrive=2;S.sat=60;S.ctlT=15;menuChanged();
   S.kits=true;S.wkMig=1;
   applyPrices();
   checkUnlocks();
@@ -1879,13 +1881,13 @@ function unlockIng(id){
   if(x.raw||has(id)||S.money<fee||ingLock(x))return;
   S.money-=fee;
   if(TIERS[x.g])S.picks[x.g]=(S.picks[x.g]||0)+1;
-  S.ing[id]=1;addStock(id,10);MI=null;
+  S.ing[id]=1;addStock(id,10);menuChanged();
   checkUnlocks();
 }
 function unlockTier(id,t){
   var x=INGM[id],fee=Math.round(QFEE[t]*x.u[0]);
   if(tierLock(x,t)||S.money<fee)return;
-  S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);MI=null;
+  S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);menuChanged();
   checkUnlocks();
 }
 function setPrice(id,v){if(isFinite(v)&&v>=0)S.price[id]=v}
@@ -1898,7 +1900,7 @@ function startHappyHour(){
 }
 function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
 function nameBar(v){S.barName=v}
-function newGame(){S=def();MI=null;recomputeMarket()}
+function newGame(){S=def();menuChanged();recomputeMarket();emit("stage")}
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
@@ -1984,7 +1986,7 @@ function trainSkill(e,i){
   S.money-=c;e.sk[i]++;S.moodB+=1;TV++;
 }
 function raiseWage(e){e.wage=Math.round(e.wage*1.1/10)*10;S.moodB+=3;TV++}
-function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
+function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});emit("stage");toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
 
 /* tree nodes */
 function nLevel(n){return n.kind==="upg"?(S.upg[n.id]?1:0):n.kind==="train"?(S.train[n.role]||0):lvl(n.id)}
@@ -2007,7 +2009,7 @@ function nBuy(n){
   if(l>=nMax(n)||!nReqMet(n)||!canPay(n,l))return;
   var c=nCost(n,l);
   if(n.kind==="perm"){S.pts-=c;S.perm[n.id]=l+1}
-  else{S.money-=c;if(n.kind==="upg"){S.upg[n.id]=1;MI=null;if(n.id==="kitchen")autoAssignClerk()}else{S.train[n.role]=l+1;trainToast(n.role)}}
+  else{S.money-=c;if(n.kind==="upg"){S.upg[n.id]=1;menuChanged();if(n.id==="kitchen")autoAssignClerk()}else{S.train[n.role]=l+1;trainToast(n.role)}}
 }
 function trainToast(role){
   for(var tk in TIERS){if(TIERS[tk].staff===role)toast("Training done: +"+TIERS[tk].per+" ingredient picks. Open Stock!")}
@@ -2081,6 +2083,8 @@ function msProgress(o){
   });
   done.forEach(msComplete);
 }
+/* missions for today: offers are drawn the first time they are looked at on a new day */
+function msToday(){var ms=msInit();if(ms.day!==gDay())msDay(true);return ms}
 function msDay(quiet){
   var ms=msInit(),d=gDay();
   ms.active=ms.active.filter(function(m1){if(d>m1.dl){ms.failed++;if(!quiet)toast("Mission expired: "+m1.title+".");return false}return true});
@@ -3166,6 +3170,7 @@ function setTab(t){
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="p-"+t)});
   if(t==="book")S.newRec=false;
   drawAll();
+  emit("tab",t);
 }
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"))}});
 
@@ -3192,6 +3197,7 @@ function loop(){
   checkUnlocks();
   if(S.notice)showNotice();else if(S.inc)showIncident();
   update();
+  emit("render");
   if(now-lastSave>5000){lastSave=now;save()}
 }
 
@@ -3735,13 +3741,12 @@ document.getElementById("pxcol").addEventListener("click",function(){S.orders.fi
 applyHide();
 /* long help notes fold to two lines; tap to read the rest */
 function clampNotes(){
-  document.querySelectorAll(".panel .note,.panel .gnote").forEach(function(n){
+  document.querySelectorAll(".panel.on .note,.panel.on .gnote").forEach(function(n){
     if(n.classList.contains("clamp")||n.classList.contains("up")||n.classList.contains("down")||n.closest(".tdetail"))return;
     if(n.textContent.length>90)n.classList.add("clamp");
   });
 }
 document.addEventListener("click",function(e){var n=e.target.closest&&e.target.closest(".clamp");if(n)n.classList.toggle("open")});
-setInterval(clampNotes,1500);clampNotes();
 /* long sections fold; later tiers start closed */
 var DEFFOLD=/^(Unlocked by|Rare|Neat, beer|Achievements|Finances|Team satisfaction|Staff training)/;
 function foldKey(h){return h.parentNode.id+"|"+h.textContent}
@@ -3758,7 +3763,6 @@ document.addEventListener("click",function(e){
   var h=e.target.closest&&e.target.closest(".panel > .h");if(!h||h.classList.contains("pxsec"))return;
   var o=pget().fold||{};o[foldKey(h)]=!h.classList.contains("folded");pset("fold",o);applyFolds();
 });
-setInterval(applyFolds,1500);applyFolds();
 /* each tab opens at the top of its own scroll area */
 document.querySelectorAll("nav button").forEach(function(nb){nb.addEventListener("click",function(){var m=document.getElementById("main");if(m)m.scrollTo(0,0)})});
 applyName();updHelp();
@@ -3847,7 +3851,6 @@ function watchRecipes(){
   }
   knownRec=ids;
 }
-setInterval(watchRecipes,600);
 
 /* ---- tabs appear as the bar grows ---- */
 var tabsInit=false;
@@ -3872,7 +3875,6 @@ function updTabs(){
     newly.forEach(function(k){var b=document.querySelector('nav button[data-tab="'+k+'"]');if(b){b.classList.add("pxnew");setTimeout(function(){b.classList.remove("pxnew")},5000)}})}
   tabsInit=true;
 }
-setInterval(updTabs,500);updTabs();
 
 /* ---- icons and portraits on rows, cards open on tap ---- */
 function decorate(){
@@ -3904,7 +3906,6 @@ function decorate(){
   });
 }
 function portraitFor(e){var c=mk(12,18);drawPerson(c.getContext("2d"),staffLook(e),6,18,0,0,false);return pxCv(c,12,18,2)}
-setInterval(decorate,700);decorate();
 document.addEventListener("click",function(e){
   var row=e.target.closest&&e.target.closest("#p-stock>.row,#p-book>.row,#p-staff>.row");
   if(!row||e.target.closest("button,input,select"))return;
@@ -3947,7 +3948,6 @@ function updDash(){
   else if(left<=7&&S.money<est)w="Careful: about "+money0(est)+" is due in "+left+" day"+(left>1?"s":"")+".";
   dash.warn.hidden=!w;dash.wt.textContent=w;dash.wb.style.display=S.debt>0?"":"none";
 }
-setInterval(updDash,500);
 
 /* ---- the long finance and mood paragraphs start folded ---- */
 
@@ -3966,7 +3966,6 @@ function updExpPrev(){
     row._pv=st;row._pc=buildPrev(st);row.insertBefore(row._pc,row.firstChild);row.setAttribute("data-exp","1");
   }
 }
-setInterval(function(){try{updExpPrev()}catch(e){}},700);
 
 /* ---- upgrade trees show only the next nodes; the rest is tucked into one line ---- */
 var NXT={};
@@ -3999,7 +3998,7 @@ function updNext(key,tr,labels){
   }
   if(own.length)box.el.appendChild(el("div","pxown","Unlocked: "+own.join(", ")));
 }
-setInterval(function(){try{updNext("bar",ref.tr.bar,["Team","Service","Stock","Customers"]);updNext("train",ref.tr.train,null)}catch(e){}},500);
+function updTrees(){updNext("bar",ref.tr.bar,["Team","Service","Stock","Customers"]);updNext("train",ref.tr.train,null)}
 
 /* ---- stock: unlocked ingredients together, locked ones together ---- */
 var stkSig="",stkH=null;
@@ -4041,8 +4040,6 @@ function groupStock(){
   p.appendChild(frag);
   applyFolds();
 }
-setInterval(function(){try{groupStock()}catch(e){if(!window.__stkerr){window.__stkerr=e;if(window.console)console.error("stock grouping:",e)}}},500);
-try{groupStock()}catch(e){}
 
 /* ---- special missions: button, window and announcements ---- */
 function openMissions(){
@@ -4079,21 +4076,19 @@ document.getElementById("pxmis").addEventListener("click",openMissions);
 function updMisBtn(){
   var b=document.getElementById("pxmis"),ms=S.ms,show=(S.served>=8||S.mcount>=1||(ms&&ms.done>0));
   b.hidden=!show;if(!show)return;
-  ms=msInit();if(ms.day!==gDay())msDay(true);
+  ms=msToday();
   var t="Missions"+(ms.active.length?" "+ms.active.length+"/"+MS_MAX:"")+(!ms.seen&&ms.offers.length?" \u2022":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
 var lastMisDone=S.ms?S.ms.done:0;
-setInterval(function(){
-  try{
-    updMisBtn();
-    if(S.ms&&S.ms.done>lastMisDone){
-      lastMisDone=S.ms.done;
-      var cc=mk(8,8);spr(cc.getContext("2d"),SP.coin,0,0,{K:"#2a1a14",L:"#f2c14a",W:"#fff3b0"});pxCv(cc,8,8,3);
-      showBan("Mission complete!",S.ms.last.t+" \u00b7 +"+money0(S.ms.last.r),cc);sfx("new");
-    }
-  }catch(e){}
-},700);
+function misTick(){
+  updMisBtn();
+  if(S.ms&&S.ms.done>lastMisDone){
+    lastMisDone=S.ms.done;
+    var cc=mk(8,8);spr(cc.getContext("2d"),SP.coin,0,0,{K:"#2a1a14",L:"#f2c14a",W:"#fff3b0"});pxCv(cc,8,8,3);
+    showBan("Mission complete!",S.ms.last.t+" \u00b7 +"+money0(S.ms.last.r),cc);sfx("new");
+  }
+}
 
 /* ---- bank window ---- */
 function openBank(){
@@ -4129,7 +4124,6 @@ function updBankBtn(){
   var t="Bank"+(S.debt>0.5?" "+eur(S.debt):"")+(S.late>0?" \u2022":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
-setInterval(function(){try{updBankBtn()}catch(e){}},700);
 
 /* ---- weather, decor, night sign ---- */
 function wxIcon(x,y,wx){
@@ -4314,7 +4308,42 @@ function updVenBtn(){
   var t="Venue"+(guideStars()?" "+guideStars()+"\u2605":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
-setInterval(function(){try{updVenBtn()}catch(e){}},900);
+/* ---- refresh: this layer redraws on events, with no timers of its own ----
+   menu (ingredients changed)        -> new-recipe banner, stock groups
+   stage (venue changed)             -> expansion preview
+   a panel gains or loses elements   -> row icons, folded sections (MutationObserver)
+   tab (tab switched)                -> refresh the live values now
+   render (app loop, after update()) -> runs what is due; values that change all the time
+                                        (money, bills, timers, prices) refresh every 500 ms,
+                                        the team dashboard and the trees only while their tab is open */
+var DUE={},liveAt=0,errs={};
+var JOBS={recipes:watchRecipes,stock:groupStock,expansion:updExpPrev,panels:function(){decorate();applyFolds()}};
+function panelOn(id){var p=document.getElementById("p-"+id);return !!p&&p.classList.contains("on")}
+function live(){
+  updTabs();misTick();updBankBtn();updVenBtn();clampNotes();
+  if(panelOn("staff"))updDash();
+  if(panelOn("upg"))updTrees();
+}
+function safely(name,fn){try{fn()}catch(e){if(!errs[name]){errs[name]=1;if(window.console)console.error("ui refresh "+name+":",e)}}}
+function structural(rs){
+  for(var i=0;i<rs.length;i++){var ns=[].concat([].slice.call(rs[i].addedNodes),[].slice.call(rs[i].removedNodes));
+    for(var j=0;j<ns.length;j++)if(ns[j].nodeType===1)return true}
+  return false;
+}
+var panelObs=new MutationObserver(function(rs){if(structural(rs))DUE.panels=1});
+document.querySelectorAll(".panel").forEach(function(p){panelObs.observe(p,{childList:true,subtree:true})});
+onEv("menu",function(){DUE.recipes=1;DUE.stock=1});
+onEv("stage",function(){DUE.expansion=1});
+onEv("tab",function(){liveAt=0});
+onEv("render",function(){
+  if(structural(panelObs.takeRecords()))DUE.panels=1;   /* changes update() just made */
+  var t=Date.now();
+  if(t-liveAt>=500){liveAt=t;safely("live",live)}
+  for(var k in DUE){delete DUE[k];safely(k,JOBS[k])}
+  panelObs.takeRecords();                              /* our own edits are not news */
+});
+for(var k0 in JOBS)safely(k0,JOBS[k0]);
+safely("live",live);
 
 requestAnimationFrame(frame);
 })();

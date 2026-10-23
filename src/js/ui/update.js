@@ -414,6 +414,7 @@ function setTab(t){
   document.querySelectorAll(".panel").forEach(function(p){p.classList.toggle("on",p.id==="p-"+t)});
   if(t==="book")S.newRec=false;
   drawAll();
+  emit("tab",t);
 }
 document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"))}});
 

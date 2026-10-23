@@ -33,19 +33,17 @@ document.getElementById("pxmis").addEventListener("click",openMissions);
 function updMisBtn(){
   var b=document.getElementById("pxmis"),ms=S.ms,show=(S.served>=8||S.mcount>=1||(ms&&ms.done>0));
   b.hidden=!show;if(!show)return;
-  ms=msInit();if(ms.day!==gDay())msDay(true);
+  ms=msToday();
   var t="Missions"+(ms.active.length?" "+ms.active.length+"/"+MS_MAX:"")+(!ms.seen&&ms.offers.length?" \u2022":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
 var lastMisDone=S.ms?S.ms.done:0;
-setInterval(function(){
-  try{
-    updMisBtn();
-    if(S.ms&&S.ms.done>lastMisDone){
-      lastMisDone=S.ms.done;
-      var cc=mk(8,8);spr(cc.getContext("2d"),SP.coin,0,0,{K:"#2a1a14",L:"#f2c14a",W:"#fff3b0"});pxCv(cc,8,8,3);
-      showBan("Mission complete!",S.ms.last.t+" \u00b7 +"+money0(S.ms.last.r),cc);sfx("new");
-    }
-  }catch(e){}
-},700);
+function misTick(){
+  updMisBtn();
+  if(S.ms&&S.ms.done>lastMisDone){
+    lastMisDone=S.ms.done;
+    var cc=mk(8,8);spr(cc.getContext("2d"),SP.coin,0,0,{K:"#2a1a14",L:"#f2c14a",W:"#fff3b0"});pxCv(cc,8,8,3);
+    showBan("Mission complete!",S.ms.last.t+" \u00b7 +"+money0(S.ms.last.r),cc);sfx("new");
+  }
+}
 

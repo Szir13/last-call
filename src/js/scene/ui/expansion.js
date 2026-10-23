@@ -13,5 +13,4 @@ function updExpPrev(){
     row._pv=st;row._pc=buildPrev(st);row.insertBefore(row._pc,row.firstChild);row.setAttribute("data-exp","1");
   }
 }
-setInterval(function(){try{updExpPrev()}catch(e){}},700);
 

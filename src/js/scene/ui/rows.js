@@ -28,7 +28,6 @@ function decorate(){
   });
 }
 function portraitFor(e){var c=mk(12,18);drawPerson(c.getContext("2d"),staffLook(e),6,18,0,0,false);return pxCv(c,12,18,2)}
-setInterval(decorate,700);decorate();
 document.addEventListener("click",function(e){
   var row=e.target.closest&&e.target.closest("#p-stock>.row,#p-book>.row,#p-staff>.row");
   if(!row||e.target.closest("button,input,select"))return;
@@ -71,7 +70,6 @@ function updDash(){
   else if(left<=7&&S.money<est)w="Careful: about "+money0(est)+" is due in "+left+" day"+(left>1?"s":"")+".";
   dash.warn.hidden=!w;dash.wt.textContent=w;dash.wb.style.display=S.debt>0?"":"none";
 }
-setInterval(updDash,500);
 
 /* ---- the long finance and mood paragraphs start folded ---- */
 

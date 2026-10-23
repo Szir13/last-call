@@ -14,7 +14,7 @@ function beginRun(){
   S.ing={lemonjuice:1};S.ql={};S.brand={};S.stock={};S.bat={};S.auto={};S.par={};S.parCat={};S.notes=[];
   S.price={};S.act={};S.cprice={};
   addStock("lemonjuice",20);
-  S.money=300;S.orders=[];S.jobs=[];S.arrive=2;S.sat=60;S.ctlT=15;MI=null;
+  S.money=300;S.orders=[];S.jobs=[];S.arrive=2;S.sat=60;S.ctlT=15;menuChanged();
   S.kits=true;S.wkMig=1;
   applyPrices();
   checkUnlocks();
@@ -29,13 +29,13 @@ function unlockIng(id){
   if(x.raw||has(id)||S.money<fee||ingLock(x))return;
   S.money-=fee;
   if(TIERS[x.g])S.picks[x.g]=(S.picks[x.g]||0)+1;
-  S.ing[id]=1;addStock(id,10);MI=null;
+  S.ing[id]=1;addStock(id,10);menuChanged();
   checkUnlocks();
 }
 function unlockTier(id,t){
   var x=INGM[id],fee=Math.round(QFEE[t]*x.u[0]);
   if(tierLock(x,t)||S.money<fee)return;
-  S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);MI=null;
+  S.money-=fee;S.ql[id]=t;addStock(skey(id,t),10);menuChanged();
   checkUnlocks();
 }
 function setPrice(id,v){if(isFinite(v)&&v>=0)S.price[id]=v}
@@ -48,7 +48,7 @@ function startHappyHour(){
 }
 function repayPart(a){S.money-=a;S.debt-=a;if(S.debt<0.5)S.debt=0}
 function nameBar(v){S.barName=v}
-function newGame(){S=def();MI=null;recomputeMarket()}
+function newGame(){S=def();menuChanged();recomputeMarket();emit("stage")}
 function cycleBrand(id){var ql=S.ql[id]||0;S.brand[id]=((S.brand[id]||0)+1)%(ql+1)}
 function autoAssignClerk(){
   while(assignedCount()<clerkCap()){
@@ -134,7 +134,7 @@ function trainSkill(e,i){
   S.money-=c;e.sk[i]++;S.moodB+=1;TV++;
 }
 function raiseWage(e){e.wage=Math.round(e.wage*1.1/10)*10;S.moodB+=3;TV++}
-function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
+function buyExp(){var nx=EXPS[S.exp+1];if(!nx)return;var c=expCost(nx);if(S.money<c)return;if(S.debt>0.25*c){toast("The bank will not let you expand while you owe "+money0(S.debt)+". Pay the debt down first.");return}S.money-=c;var k0=wk();S.exp++;S.expAt=S.mcount;var ratio=wk()/k0;S.team.forEach(function(e){if(e.starter){e.wage=e.wage*2;delete e.starter}});if(ratio>1)S.team.forEach(function(e){e.wage=Math.round(e.wage*ratio/10)*10});emit("stage");toast("Expanded to "+nx.n.toLowerCase()+". Rent is now "+money0(nx.rent)+" a month. Room for "+staffCap()+" staff, and wages rise with the venue.")}
 
 /* tree nodes */
 function nLevel(n){return n.kind==="upg"?(S.upg[n.id]?1:0):n.kind==="train"?(S.train[n.role]||0):lvl(n.id)}
@@ -157,7 +157,7 @@ function nBuy(n){
   if(l>=nMax(n)||!nReqMet(n)||!canPay(n,l))return;
   var c=nCost(n,l);
   if(n.kind==="perm"){S.pts-=c;S.perm[n.id]=l+1}
-  else{S.money-=c;if(n.kind==="upg"){S.upg[n.id]=1;MI=null;if(n.id==="kitchen")autoAssignClerk()}else{S.train[n.role]=l+1;trainToast(n.role)}}
+  else{S.money-=c;if(n.kind==="upg"){S.upg[n.id]=1;menuChanged();if(n.id==="kitchen")autoAssignClerk()}else{S.train[n.role]=l+1;trainToast(n.role)}}
 }
 function trainToast(role){
   for(var tk in TIERS){if(TIERS[tk].staff===role)toast("Training done: +"+TIERS[tk].per+" ingredient picks. Open Stock!")}

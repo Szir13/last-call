@@ -60,3 +60,4 @@ python tools/run_bots.py careful --months 12 --seeds 2
 | 3. seeded randomness | ok | browser 5 runs: 72/56/57/57/53; Node 20 seeds: 72/56/57/57/55 | same seed gives identical numbers in the browser and in Node. 200 runs per batch, Node, share of runs at 52% or less: S1 old 12 and 22 vs new 22 and 18; S4 old 16 vs new 13 and 19; medians 56 / 55 in every batch |
 
 Margins have a low tail in every build (S1 down to 44%, S4 down to 47% in 200 runs, usually with walkouts from stock-outs). Single runs below 50% are not a regression by themselves; compare medians over 20+ seeds.
+| 5. pollers replaced by events | ok | browser 5 runs: 72/57/57/56/55 | `--node --seed 11` reference and `--seed 5` five bots × 30 months: output identical (md5) to step 3; UI flows (icons, stock groups, recipe and mission banners, dashboard, bank and mission buttons, expansion preview, trees, note clamps) match step 3 side by side |

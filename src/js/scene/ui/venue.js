@@ -131,4 +131,3 @@ function updVenBtn(){
   var t="Venue"+(guideStars()?" "+guideStars()+"\u2605":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
-setInterval(function(){try{updVenBtn()}catch(e){}},900);

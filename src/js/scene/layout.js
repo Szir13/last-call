@@ -28,13 +28,12 @@ document.getElementById("pxcol").addEventListener("click",function(){S.orders.fi
 applyHide();
 /* long help notes fold to two lines; tap to read the rest */
 function clampNotes(){
-  document.querySelectorAll(".panel .note,.panel .gnote").forEach(function(n){
+  document.querySelectorAll(".panel.on .note,.panel.on .gnote").forEach(function(n){
     if(n.classList.contains("clamp")||n.classList.contains("up")||n.classList.contains("down")||n.closest(".tdetail"))return;
     if(n.textContent.length>90)n.classList.add("clamp");
   });
 }
 document.addEventListener("click",function(e){var n=e.target.closest&&e.target.closest(".clamp");if(n)n.classList.toggle("open")});
-setInterval(clampNotes,1500);clampNotes();
 /* long sections fold; later tiers start closed */
 var DEFFOLD=/^(Unlocked by|Rare|Neat, beer|Achievements|Finances|Team satisfaction|Staff training)/;
 function foldKey(h){return h.parentNode.id+"|"+h.textContent}
@@ -51,7 +50,6 @@ document.addEventListener("click",function(e){
   var h=e.target.closest&&e.target.closest(".panel > .h");if(!h||h.classList.contains("pxsec"))return;
   var o=pget().fold||{};o[foldKey(h)]=!h.classList.contains("folded");pset("fold",o);applyFolds();
 });
-setInterval(applyFolds,1500);applyFolds();
 /* each tab opens at the top of its own scroll area */
 document.querySelectorAll("nav button").forEach(function(nb){nb.addEventListener("click",function(){var m=document.getElementById("main");if(m)m.scrollTo(0,0)})});
 applyName();updHelp();

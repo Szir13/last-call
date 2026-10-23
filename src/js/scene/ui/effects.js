@@ -46,5 +46,4 @@ function watchRecipes(){
   }
   knownRec=ids;
 }
-setInterval(watchRecipes,600);
 

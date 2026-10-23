@@ -11,6 +11,7 @@ function loop(){
   checkUnlocks();
   if(S.notice)showNotice();else if(S.inc)showIncident();
   update();
+  emit("render");
   if(now-lastSave>5000){lastSave=now;save()}
 }
 

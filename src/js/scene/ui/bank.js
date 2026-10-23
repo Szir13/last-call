@@ -32,5 +32,4 @@ function updBankBtn(){
   var t="Bank"+(S.debt>0.5?" "+eur(S.debt):"")+(S.late>0?" \u2022":"");
   if(b._t!==t){b._t=t;b.textContent=t}
 }
-setInterval(function(){try{updBankBtn()}catch(e){}},700);
 

@@ -38,6 +38,4 @@ function groupStock(){
   p.appendChild(frag);
   applyFolds();
 }
-setInterval(function(){try{groupStock()}catch(e){if(!window.__stkerr){window.__stkerr=e;if(window.console)console.error("stock grouping:",e)}}},500);
-try{groupStock()}catch(e){}
 
